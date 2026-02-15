@@ -1,0 +1,11 @@
+.DS_Store
+.venv
+.env*
+.python-version
+__pycache__/
+/volumes
+/*.json
+/app/temp.py
+.vscode/
+.idea/
+*.log
