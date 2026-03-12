@@ -2,7 +2,9 @@
 .venv
 .env*
 .python-version
+.pytest_cache
 __pycache__/
+/x_dev
 /volumes
 /*.json
 /app/temp.py
