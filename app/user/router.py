@@ -1,10 +1,11 @@
 # app/user/router.py
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastructure.database.dependencies import get_session
-from app.user.repository import UserRepository
+from app.user.models import AuthProvider
+from app.user.repository import UserFilter, UserRepository
 from app.user.schemas import UserCreate, UserResponse, UserUpdate
 
 router = APIRouter(prefix='/users', tags=['users'])
@@ -47,10 +48,12 @@ async def get_user(
 
 @router.get('/', response_model=list[UserResponse])
 async def list_users(
+    provider: AuthProvider | None = Query(default=None),
+    search: str | None = Query(default=None),
     session: AsyncSession = Depends(get_session),
 ):
     repo = UserRepository(session)
-    return await repo.get_all()
+    return await repo.get_filtered(UserFilter(provider=provider, search=search))
 
 
 @router.put('/{user_id}', response_model=UserResponse)

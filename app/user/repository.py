@@ -1,8 +1,16 @@
-from sqlalchemy import select
+from dataclasses import dataclass
+
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastructure.database.repositories.base_repository import BaseRepository
 from app.user.models import AuthProvider, User
+
+
+@dataclass
+class UserFilter:
+    provider: AuthProvider | None = None
+    search: str | None = None  # ILIKE по username, first_name, last_name
 
 
 class UserRepository(BaseRepository[User]):
@@ -20,6 +28,21 @@ class UserRepository(BaseRepository[User]):
         )
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def get_filtered(self, filters: UserFilter) -> list[User]:
+        stmt = select(User)
+        if filters.provider is not None:
+            stmt = stmt.where(User.provider == filters.provider)
+        if filters.search is not None:
+            pattern = f'%{filters.search}%'
+            stmt = stmt.where(
+                or_(
+                    User.username.ilike(pattern),
+                    User.first_name.ilike(pattern),
+                    User.last_name.ilike(pattern),
+                )
+            )
+        return list((await self.session.execute(stmt)).scalars().all())
 
     async def create(
         self,
