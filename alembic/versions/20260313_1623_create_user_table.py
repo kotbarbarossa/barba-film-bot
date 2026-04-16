@@ -20,7 +20,7 @@ depends_on: str | Sequence[str] | None = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    authprovider = sa.Enum('telegram', name='authprovider')
+    authprovider = sa.Enum('TELEGRAM', name='authprovider')
 
     op.create_table(
         'user',

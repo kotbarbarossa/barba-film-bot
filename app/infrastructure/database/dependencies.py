@@ -6,7 +6,6 @@ from .session_manager import session_manager
 
 
 async def get_session() -> AsyncGenerator[AsyncSession]:
-    session = session_manager.get_session()
-
-    async with session:
-        yield session
+    async with session_manager.get_session() as session:
+        async with session.begin():
+            yield session
