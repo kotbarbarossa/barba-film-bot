@@ -12,6 +12,11 @@ api:
 api-prod:
     uv run uvicorn app.api.main:app --host $API_HOST --port $API_PORT
 
+# --- Bot ---
+
+bot:
+    uv run python -m app.bot.main
+
 # --- Database ---
 
 migrate message:
