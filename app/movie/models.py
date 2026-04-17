@@ -50,7 +50,7 @@ movie_category = Table(
 
 
 class Movie(BaseModel):
-    title_original: Mapped[str] = mapped_column(String(512), nullable=False)
+    title_original: Mapped[str | None] = mapped_column(String(512), nullable=True)
     title_ru: Mapped[str | None] = mapped_column(String(512), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     year: Mapped[int | None] = mapped_column(SmallInteger, nullable=True)
@@ -67,6 +67,13 @@ class Movie(BaseModel):
     tmdb_id: Mapped[str | None] = mapped_column(String(16), unique=True, nullable=True)
     media_type: Mapped[MediaType] = mapped_column(
         Enum(MediaType, name='mediatype'), nullable=False, default=MediaType.FILM
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            'title_original IS NOT NULL OR title_ru IS NOT NULL',
+            name='title_required',
+        ),
     )
 
     categories: Mapped[list['Category']] = relationship(

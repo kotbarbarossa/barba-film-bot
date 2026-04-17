@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from sqlalchemy import or_, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastructure.database.repositories.base_repository import BaseRepository
 from app.user.models import AuthProvider, User
@@ -14,8 +13,7 @@ class UserFilter:
 
 
 class UserRepository(BaseRepository[User]):
-    def __init__(self, session: AsyncSession):
-        super().__init__(User, session)
+    model = User
 
     async def get_by_provider(
         self,

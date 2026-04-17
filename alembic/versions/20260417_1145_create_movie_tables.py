@@ -1,8 +1,8 @@
 """create movie tables
 
-Revision ID: 494de7f52a40
+Revision ID: a201684c5a16
 Revises: df50edb535df
-Create Date: 2026-04-16 18:52:46.259002
+Create Date: 2026-04-17 11:45:09.245332
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = '494de7f52a40'
+revision: str = 'a201684c5a16'
 down_revision: str | Sequence[str] | None = 'df50edb535df'
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
@@ -45,7 +45,7 @@ def upgrade() -> None:
     )
     op.create_table(
         'movie',
-        sa.Column('title_original', sa.String(length=512), nullable=False),
+        sa.Column('title_original', sa.String(length=512), nullable=True),
         sa.Column('title_ru', sa.String(length=512), nullable=True),
         sa.Column('description', sa.Text(), nullable=True),
         sa.Column('year', sa.SmallInteger(), nullable=True),
@@ -73,6 +73,10 @@ def upgrade() -> None:
             sa.DateTime(timezone=True),
             server_default=sa.text('now()'),
             nullable=False,
+        ),
+        sa.CheckConstraint(
+            'title_original IS NOT NULL OR title_ru IS NOT NULL',
+            name=op.f('ck_movie_title_required'),
         ),
         sa.PrimaryKeyConstraint('id', name=op.f('pk_movie')),
         sa.UniqueConstraint('imdb_id', name=op.f('uq_movie_imdb_id')),
@@ -194,7 +198,7 @@ def downgrade() -> None:
     op.drop_table('person')
     op.drop_table('movie')
     op.drop_table('category')
-    # ### end Alembic commands ###
     sa.Enum(name='watchstatus').drop(op.get_bind())
     sa.Enum(name='roletype').drop(op.get_bind())
     sa.Enum(name='mediatype').drop(op.get_bind())
+    # ### end Alembic commands ###
