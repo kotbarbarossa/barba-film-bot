@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict
 
-from app.movie.models import MediaType, RoleType, WatchStatus
+from app.movie.models import MediaType, ProcessingStatus, RoleType, WatchStatus
 
 
 class CategoryResponse(BaseModel):
@@ -37,10 +37,12 @@ class MovieListResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    user_query: str
+    processing_status: ProcessingStatus
     title_original: str | None
     title_ru: str | None
     year: int | None
-    media_type: MediaType
+    media_type: MediaType | None
     poster_url: str | None
     imdb_rating: Decimal | None
     kinopoisk_rating: Decimal | None
@@ -67,8 +69,7 @@ class MoviePersonCreate(BaseModel):
 
 
 class MovieCreate(BaseModel):
-    title: str
-    media_type: MediaType = MediaType.FILM
+    user_query: str
 
 
 class MovieUpdate(BaseModel):

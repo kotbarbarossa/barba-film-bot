@@ -72,14 +72,8 @@ class MovieRepository(BaseRepository[Movie]):
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def create(
-        self,
-        *,
-        title_original: str | None = None,
-        title_ru: str | None = None,
-        media_type: MediaType = MediaType.FILM,
-    ) -> Movie:
-        movie = Movie(title_original=title_original, title_ru=title_ru, media_type=media_type)
+    async def create(self, *, user_query: str) -> Movie:
+        movie = Movie(user_query=user_query)
         return await self.add(movie)
 
 
