@@ -7,12 +7,14 @@ from app.infrastructure.database.base import BaseModel
 
 
 class BaseRepository[Model: BaseModel]:
-    def __init__(
-        self,
-        model: type[Model],
-        session: AsyncSession,
-    ):
-        self.model = model
+    model: type[Model]
+
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        super().__init_subclass__(**kwargs)
+        if not hasattr(cls, 'model'):
+            raise TypeError(f'{cls.__name__} must define class variable `model`')
+
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def get(self, id_: int) -> Model | None:

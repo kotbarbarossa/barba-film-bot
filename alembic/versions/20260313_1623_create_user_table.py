@@ -46,7 +46,7 @@ def upgrade() -> None:
         sa.UniqueConstraint(
             'provider',
             'provider_user_id',
-            name=op.f('uq_user_provider_user_id'),
+            name=op.f('uq_user_provider'),
         ),
     )
 

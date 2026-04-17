@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 from app.core.config import settings
 from app.infrastructure.database.base import Base, BaseModel
+from app.movie.models import Category, Movie, MoviePerson, UserMovie, Person
 from app.user.models import User
 
 config = context.config
@@ -22,7 +23,7 @@ config.set_main_option(
     settings.database_url,
 )
 
-models: list[type[BaseModel]] = [User]
+models: list[type[Base]] = [User, Movie, Category, Person, MoviePerson, UserMovie]
 
 
 def run_migrations_offline() -> None:
