@@ -1,6 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from app.bot.callbacks.navigation import NavAction, NavigationCallback
+from app.bot.texts import BTN_MOVIE_ADD, BTN_MOVIE_LIST
 
 
 def main_menu_keyboard() -> InlineKeyboardMarkup:
@@ -8,13 +9,13 @@ def main_menu_keyboard() -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text='Мои фильмы',
+                    text=BTN_MOVIE_LIST,
                     callback_data=NavigationCallback(action=NavAction.movie_list).pack(),
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text='Добавить фильм',
+                    text=BTN_MOVIE_ADD,
                     callback_data=NavigationCallback(action=NavAction.movie_add).pack(),
                 )
             ],
