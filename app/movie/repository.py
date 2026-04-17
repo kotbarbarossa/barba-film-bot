@@ -11,6 +11,7 @@ from app.movie.models import (
     Movie,
     MoviePerson,
     Person,
+    ProcessingStatus,
     RoleType,
     UserMovie,
     WatchStatus,
@@ -24,6 +25,7 @@ class MovieFilter:
     year_to: int | None = None
     category_slug: str | None = None
     search: str | None = None  # ILIKE по title_original, title_ru
+    processing_status: ProcessingStatus | None = None
 
 
 @dataclass
@@ -58,6 +60,8 @@ class MovieRepository(BaseRepository[Movie]):
                     Movie.title_ru.ilike(pattern),
                 )
             )
+        if filters.processing_status is not None:
+            stmt = stmt.where(Movie.processing_status == filters.processing_status)
         return list((await self.session.execute(stmt)).scalars().all())
 
     async def get_detail(self, id_: int) -> Movie | None:

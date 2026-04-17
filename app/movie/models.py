@@ -82,10 +82,14 @@ class Movie(BaseModel):
     )
 
     categories: Mapped[list['Category']] = relationship(
-        secondary=movie_category, back_populates='movies'
+        secondary=movie_category, back_populates='movies', passive_deletes=True
     )
-    persons: Mapped[list['MoviePerson']] = relationship(back_populates='movie')
-    user_movies: Mapped[list['UserMovie']] = relationship(back_populates='movie')
+    persons: Mapped[list['MoviePerson']] = relationship(
+        back_populates='movie', passive_deletes=True
+    )
+    user_movies: Mapped[list['UserMovie']] = relationship(
+        back_populates='movie', passive_deletes=True
+    )
 
 
 class Category(BaseModel):

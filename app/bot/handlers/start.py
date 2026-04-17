@@ -1,40 +1,19 @@
 from aiogram import F, Router
 from aiogram.filters import CommandStart
 from aiogram.types import CallbackQuery, Message
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.bot.callbacks.navigation import NavAction, NavigationCallback
 from app.bot.keyboards.main_menu import main_menu_keyboard
-from app.bot.texts import MAIN_MENU, MOVIE_ADD, MOVIE_LIST, WELCOME
+from app.bot.texts import MAIN_MENU, MOVIE_LIST, WELCOME
 from app.bot.utils import safe_edit
-from app.user.models import AuthProvider
-from app.user.repository import UserRepository
+from app.user.models import User
 
 router = Router(name='start')
 
 
 @router.message(CommandStart())
-async def start_handler(message: Message, session: AsyncSession) -> None:
-    tg_user = message.from_user
-    if tg_user is None:
-        return
-
-    repo = UserRepository(session)
-    db_user = await repo.get_by_provider(
-        provider=AuthProvider.TELEGRAM,
-        provider_user_id=str(tg_user.id),
-    )
-
-    if db_user is None:
-        await repo.create(
-            provider=AuthProvider.TELEGRAM,
-            provider_user_id=str(tg_user.id),
-            username=tg_user.username,
-            first_name=tg_user.first_name,
-            last_name=tg_user.last_name,
-        )
-
-    name = tg_user.first_name or tg_user.username or '<username>'
+async def start_handler(message: Message, db_user: User) -> None:
+    name = db_user.first_name or db_user.username or '<username>'
     await message.answer(WELCOME.format(name=name), reply_markup=main_menu_keyboard())
 
 
@@ -52,11 +31,3 @@ async def nav_movie_list(callback: CallbackQuery) -> None:
     if not isinstance(callback.message, Message):
         return
     await safe_edit(callback.message, MOVIE_LIST, reply_markup=main_menu_keyboard())
-
-
-@router.callback_query(NavigationCallback.filter(F.action == NavAction.movie_add))
-async def nav_movie_add(callback: CallbackQuery) -> None:
-    await callback.answer()
-    if not isinstance(callback.message, Message):
-        return
-    await safe_edit(callback.message, MOVIE_ADD, reply_markup=main_menu_keyboard())

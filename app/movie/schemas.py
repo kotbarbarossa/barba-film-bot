@@ -73,6 +73,8 @@ class MovieCreate(BaseModel):
 
 
 class MovieUpdate(BaseModel):
+    user_query: str | None = None
+    processing_status: ProcessingStatus | None = None
     title_original: str | None = None
     title_ru: str | None = None
     description: str | None = None
