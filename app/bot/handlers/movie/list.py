@@ -33,7 +33,7 @@ from app.bot.texts import (
     MOVIE_RANDOM_EMPTY,
     MOVIE_WATCHED_STUB,
 )
-from app.bot.utils import safe_edit
+from app.bot.utils import safe_edit, safe_to_text, show_card
 from app.movie.models import Movie, ProcessingStatus, RoleType, WatchStatus
 from app.movie.repository import (
     CategoryRepository,
@@ -105,7 +105,7 @@ async def nav_movie_list(callback: CallbackQuery, state: FSMContext) -> None:
     if not isinstance(callback.message, Message):
         return
     await state.clear()
-    await safe_edit(callback.message, MOVIE_LIST_MENU, reply_markup=movie_list_menu_keyboard())
+    await safe_to_text(callback.message, MOVIE_LIST_MENU, reply_markup=movie_list_menu_keyboard())
 
 
 # --- Random ---
@@ -120,14 +120,15 @@ async def nav_movie_random(
 
     um = await UserMovieRepository(session).get_random_active_processed(db_user.id)
     if um is None:
-        await safe_edit(callback.message, MOVIE_RANDOM_EMPTY, reply_markup=movie_list_menu_keyboard())
+        await safe_to_text(callback.message, MOVIE_RANDOM_EMPTY, reply_markup=movie_list_menu_keyboard())
         return
 
     text = _format_card(um.movie)
-    await safe_edit(
+    await show_card(
         callback.message,
         text,
         reply_markup=movie_card_keyboard(um.movie_id, MovieCardSource.random),
+        poster_url=um.movie.poster_url,
     )
 
 
@@ -144,11 +145,11 @@ async def nav_movie_by_genre(
     categories = await CategoryRepository(session).get_by_user_active(db_user.id)
 
     if not categories:
-        await safe_edit(callback.message, MOVIE_LIST_NO_MOVIES, reply_markup=movie_list_menu_keyboard())
+        await safe_to_text(callback.message, MOVIE_LIST_NO_MOVIES, reply_markup=movie_list_menu_keyboard())
         return
 
     await state.clear()
-    await safe_edit(callback.message, MOVIE_LIST_GENRES, reply_markup=genre_list_keyboard(categories))
+    await safe_to_text(callback.message, MOVIE_LIST_GENRES, reply_markup=genre_list_keyboard(categories))
 
 
 @router.callback_query(CategoryCallback.filter())
@@ -165,7 +166,7 @@ async def genre_selected(
 
     category = await CategoryRepository(session).get_by_slug(callback_data.slug)
     if category is None:
-        await safe_edit(callback.message, MOVIE_LIST_NO_MOVIES, reply_markup=movie_list_menu_keyboard())
+        await safe_to_text(callback.message, MOVIE_LIST_NO_MOVIES, reply_markup=movie_list_menu_keyboard())
         return
 
     user_movies = await UserMovieRepository(session).get_filtered(
@@ -181,11 +182,11 @@ async def genre_selected(
     await state.update_data(slug=category.slug, name=category.name)
 
     if not user_movies:
-        await safe_edit(callback.message, MOVIE_LIST_NO_MOVIES, reply_markup=movie_list_menu_keyboard())
+        await safe_to_text(callback.message, MOVIE_LIST_NO_MOVIES, reply_markup=movie_list_menu_keyboard())
         return
 
     back_cb = NavigationCallback(action=NavAction.movie_by_genre).pack()
-    await safe_edit(
+    await safe_to_text(
         callback.message,
         MOVIE_LIST_GENRE_MOVIES.format(name=category.name),
         reply_markup=movie_buttons_keyboard(user_movies, MovieCardSource.genre, back_cb),
@@ -205,11 +206,11 @@ async def nav_movie_by_year(
     decades = await UserMovieRepository(session).get_active_decades(db_user.id)
 
     if not decades:
-        await safe_edit(callback.message, MOVIE_LIST_NO_MOVIES, reply_markup=movie_list_menu_keyboard())
+        await safe_to_text(callback.message, MOVIE_LIST_NO_MOVIES, reply_markup=movie_list_menu_keyboard())
         return
 
     await state.clear()
-    await safe_edit(callback.message, MOVIE_LIST_PERIODS, reply_markup=period_list_keyboard(decades))
+    await safe_to_text(callback.message, MOVIE_LIST_PERIODS, reply_markup=period_list_keyboard(decades))
 
 
 @router.callback_query(PeriodCallback.filter())
@@ -242,11 +243,11 @@ async def period_selected(
     )
 
     if not user_movies:
-        await safe_edit(callback.message, MOVIE_LIST_NO_MOVIES, reply_markup=movie_list_menu_keyboard())
+        await safe_to_text(callback.message, MOVIE_LIST_NO_MOVIES, reply_markup=movie_list_menu_keyboard())
         return
 
     back_cb = NavigationCallback(action=NavAction.movie_by_year).pack()
-    await safe_edit(
+    await safe_to_text(
         callback.message,
         MOVIE_LIST_PERIOD_MOVIES.format(label=callback_data.label),
         reply_markup=movie_buttons_keyboard(user_movies, MovieCardSource.period, back_cb),
@@ -266,11 +267,11 @@ async def nav_movie_recent(
     user_movies = await UserMovieRepository(session).get_recently_watched(db_user.id)
 
     if not user_movies:
-        await safe_edit(callback.message, MOVIE_LIST_RECENT_EMPTY, reply_markup=movie_list_menu_keyboard())
+        await safe_to_text(callback.message, MOVIE_LIST_RECENT_EMPTY, reply_markup=movie_list_menu_keyboard())
         return
 
     back_cb = NavigationCallback(action=NavAction.movie_list).pack()
-    await safe_edit(
+    await safe_to_text(
         callback.message,
         MOVIE_LIST_RECENT,
         reply_markup=movie_buttons_keyboard(user_movies, MovieCardSource.recent, back_cb),
@@ -284,7 +285,7 @@ async def nav_movie_all(callback: CallbackQuery) -> None:
     await callback.answer()
     if not isinstance(callback.message, Message):
         return
-    await safe_edit(callback.message, MOVIE_LIST_ALL_STUB, reply_markup=movie_list_menu_keyboard())
+    await safe_to_text(callback.message, MOVIE_LIST_ALL_STUB, reply_markup=movie_list_menu_keyboard())
 
 
 # --- Movie card ---
@@ -302,16 +303,17 @@ async def show_movie_card(
 
     um = await UserMovieRepository(session).get_detail(db_user.id, callback_data.movie_id)
     if um is None:
-        await safe_edit(callback.message, MOVIE_LIST_NO_MOVIES, reply_markup=movie_list_menu_keyboard())
+        await safe_to_text(callback.message, MOVIE_LIST_NO_MOVIES, reply_markup=movie_list_menu_keyboard())
         return
 
     source = callback_data.source
     show_watched = source != MovieCardSource.recent
     text = _format_card(um.movie)
-    await safe_edit(
+    await show_card(
         callback.message,
         text,
         reply_markup=movie_card_keyboard(um.movie_id, source, show_watched=show_watched),
+        poster_url=um.movie.poster_url,
     )
 
 
@@ -332,14 +334,14 @@ async def back_from_card(
     source = callback_data.source
 
     if source == MovieCardSource.random:
-        await safe_edit(callback.message, MOVIE_LIST_MENU, reply_markup=movie_list_menu_keyboard())
+        await safe_to_text(callback.message, MOVIE_LIST_MENU, reply_markup=movie_list_menu_keyboard())
 
     elif source == MovieCardSource.genre:
         data = await state.get_data()
         slug = data.get('slug')
         name = data.get('name', '')
         if not slug:
-            await safe_edit(callback.message, MOVIE_LIST_MENU, reply_markup=movie_list_menu_keyboard())
+            await safe_to_text(callback.message, MOVIE_LIST_MENU, reply_markup=movie_list_menu_keyboard())
             return
         user_movies = await UserMovieRepository(session).get_filtered(
             UserMovieFilter(
@@ -350,7 +352,7 @@ async def back_from_card(
             )
         )
         back_cb = NavigationCallback(action=NavAction.movie_by_genre).pack()
-        await safe_edit(
+        await safe_to_text(
             callback.message,
             MOVIE_LIST_GENRE_MOVIES.format(name=name),
             reply_markup=movie_buttons_keyboard(user_movies, MovieCardSource.genre, back_cb),
@@ -362,7 +364,7 @@ async def back_from_card(
         year_to = data.get('year_to')
         label = data.get('label', '')
         if year_from is None or year_to is None:
-            await safe_edit(callback.message, MOVIE_LIST_MENU, reply_markup=movie_list_menu_keyboard())
+            await safe_to_text(callback.message, MOVIE_LIST_MENU, reply_markup=movie_list_menu_keyboard())
             return
         user_movies = await UserMovieRepository(session).get_filtered(
             UserMovieFilter(
@@ -374,7 +376,7 @@ async def back_from_card(
             )
         )
         back_cb = NavigationCallback(action=NavAction.movie_by_year).pack()
-        await safe_edit(
+        await safe_to_text(
             callback.message,
             MOVIE_LIST_PERIOD_MOVIES.format(label=label),
             reply_markup=movie_buttons_keyboard(user_movies, MovieCardSource.period, back_cb),
@@ -384,11 +386,11 @@ async def back_from_card(
         user_movies = await UserMovieRepository(session).get_recently_watched(db_user.id)
         back_cb = NavigationCallback(action=NavAction.movie_list).pack()
         if not user_movies:
-            await safe_edit(
+            await safe_to_text(
                 callback.message, MOVIE_LIST_RECENT_EMPTY, reply_markup=movie_list_menu_keyboard()
             )
             return
-        await safe_edit(
+        await safe_to_text(
             callback.message,
             MOVIE_LIST_RECENT,
             reply_markup=movie_buttons_keyboard(user_movies, MovieCardSource.recent, back_cb),
