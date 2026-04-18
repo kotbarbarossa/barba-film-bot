@@ -101,7 +101,7 @@ class Movie(BaseModel):
 
 class Category(BaseModel):
     name: Mapped[str] = mapped_column(String(128), nullable=False, unique=True)
-    slug: Mapped[str] = mapped_column(String(128), nullable=False, unique=True)
+    name_original: Mapped[str | None] = mapped_column(String(128), nullable=True, unique=True)
 
     movies: Mapped[list['Movie']] = relationship(
         secondary=movie_category, back_populates='categories'

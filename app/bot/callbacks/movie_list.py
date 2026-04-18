@@ -4,7 +4,7 @@ from aiogram.filters.callback_data import CallbackData
 
 
 class CategoryCallback(CallbackData, prefix='cat'):
-    slug: str
+    id: int
 
 
 class PeriodCallback(CallbackData, prefix='per'):

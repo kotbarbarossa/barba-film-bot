@@ -24,7 +24,7 @@ class MovieFilter:
     media_type: MediaType | None = None
     year_from: int | None = None
     year_to: int | None = None
-    category_slug: str | None = None
+    category_id: int | None = None
     search: str | None = None  # exact case-insensitive по title_original, title_ru
     processing_status: ProcessingStatus | None = None
 
@@ -41,7 +41,7 @@ class UserMovieFilter:
     search: str | None = None  # exact case-insensitive по title_original, title_ru
     year_from: int | None = None
     year_to: int | None = None
-    category_slug: str | None = None
+    category_id: int | None = None
     processing_status: ProcessingStatus | None = None
 
 
@@ -56,8 +56,8 @@ class MovieRepository(BaseRepository[Movie]):
             stmt = stmt.where(Movie.year >= filters.year_from)
         if filters.year_to is not None:
             stmt = stmt.where(Movie.year <= filters.year_to)
-        if filters.category_slug is not None:
-            stmt = stmt.join(Movie.categories).where(Category.slug == filters.category_slug)
+        if filters.category_id is not None:
+            stmt = stmt.join(Movie.categories).where(Category.id == filters.category_id)
         if filters.search is not None:
             term = filters.search.lower()
             stmt = stmt.where(
@@ -113,9 +113,13 @@ class CategoryRepository(BaseRepository[Category]):
             stmt = stmt.where(Category.name.ilike(f'%{filters.search}%'))
         return list((await self.session.execute(stmt)).scalars().all())
 
-    async def get_by_slug(self, slug: str) -> Category | None:
-        result = await self.session.execute(select(Category).where(Category.slug == slug))
-        return result.scalar_one_or_none()
+    async def create(self, *, name: str, name_original: str | None = None) -> Category:
+        category = Category(name=name, name_original=name_original)
+        return await self.add(category)
+
+    async def get_many(self, ids: list[int]) -> list[Category]:
+        result = await self.session.execute(select(Category).where(Category.id.in_(ids)))
+        return list(result.scalars().all())
 
     async def get_by_user_active(self, user_id: int) -> list[Category]:
         """Categories from user's PROCESSED movies with status WANT or WATCHING."""
@@ -251,12 +255,12 @@ class UserMovieRepository(BaseRepository[UserMovie]):  # type: ignore[type-var]
             stmt = stmt.where(Movie.year >= filters.year_from)
         if filters.year_to is not None:
             stmt = stmt.where(Movie.year <= filters.year_to)
-        if filters.category_slug is not None:
+        if filters.category_id is not None:
             stmt = stmt.where(
                 UserMovie.movie_id.in_(
                     select(Movie.id)
                     .join(Movie.categories)
-                    .where(Category.slug == filters.category_slug)
+                    .where(Category.id == filters.category_id)
                 )
             )
         return list((await self.session.execute(stmt)).scalars().all())
@@ -299,7 +303,10 @@ class UserMovieRepository(BaseRepository[UserMovie]):  # type: ignore[type-var]
         return list(result.scalars().all())
 
     async def get_active_decades(self, user_id: int) -> list[int]:
-        """Returns sorted list of decade start years (e.g. 1990, 2000) from user's active processed movies."""
+        """
+        Returns sorted list of decade start years (e.g. 1990, 2000)
+        from user's active processed movies.
+        """
         decade = (func.floor(Movie.year / 10) * 10).label('decade')
         stmt = (
             select(decade)

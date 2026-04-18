@@ -11,7 +11,17 @@ class CategoryResponse(BaseModel):
 
     id: int
     name: str
-    slug: str
+    name_original: str | None
+
+
+class CategoryCreate(BaseModel):
+    name: str
+    name_original: str | None = None
+
+
+class CategoryUpdate(BaseModel):
+    name: str | None = None
+    name_original: str | None = None
 
 
 class PersonResponse(BaseModel):
@@ -94,6 +104,7 @@ class MovieUpdate(BaseModel):
     kp_id: str | None = None
     tmdb_id: str | None = None
     media_type: MediaType | None = None
+    category_ids: list[int] | None = None
 
 
 class PersonCreate(BaseModel):

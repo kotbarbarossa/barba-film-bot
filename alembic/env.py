@@ -7,8 +7,8 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 from app.core.config import settings
-from app.infrastructure.database.base import Base, BaseModel
-from app.movie.models import Category, Movie, MoviePerson, UserMovie, Person
+from app.infrastructure.database.base import Base
+from app.movie.models import Category, Movie, MoviePerson, Person, UserMovie
 from app.user.models import User
 
 config = context.config

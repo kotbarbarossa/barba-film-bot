@@ -1,5 +1,3 @@
-import re
-
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
@@ -12,6 +10,8 @@ from app.bot.keyboards.main_menu import main_menu_keyboard
 from app.bot.keyboards.media_type import media_type_keyboard
 from app.bot.states.movie import AddMovieStates
 from app.bot.texts import (
+    BTN_FILM,
+    BTN_SERIES,
     MOVIE_ADD_DETAILS_PROMPT,
     MOVIE_ADD_FOUND,
     MOVIE_ADD_MEDIA_TYPE_PROMPT,
@@ -27,12 +27,13 @@ from app.user.models import User
 router = Router(name='movie_add')
 
 _MEDIA_TYPE_LABELS = {
-    MediaType.FILM: '🎬 Фильм',
-    MediaType.SERIES: '📺 Сериал',
+    MediaType.FILM: BTN_FILM,
+    MediaType.SERIES: BTN_SERIES,
 }
 
 
 # --- Step 1: entry point → ask for title ---
+
 
 @router.callback_query(NavigationCallback.filter(F.action == NavAction.movie_add))
 async def nav_movie_add(callback: CallbackQuery, state: FSMContext) -> None:
@@ -44,6 +45,7 @@ async def nav_movie_add(callback: CallbackQuery, state: FSMContext) -> None:
 
 
 # --- Step 2: title received → ask for media type ---
+
 
 @router.message(AddMovieStates.waiting_for_title, F.text)
 async def movie_title_received(message: Message, state: FSMContext) -> None:
@@ -61,6 +63,7 @@ async def movie_title_received(message: Message, state: FSMContext) -> None:
 
 
 # --- Step 3: media type selected → ask for details ---
+
 
 @router.callback_query(MediaTypeCallback.filter())
 async def movie_media_type_selected(
@@ -89,6 +92,7 @@ async def movie_media_type_selected(
 
 # --- Step 4a: details text entered → finish ---
 
+
 @router.message(AddMovieStates.waiting_for_details, F.text)
 async def movie_details_received(
     message: Message,
@@ -106,6 +110,7 @@ async def movie_details_received(
 
 
 # --- Step 4b: details skipped → finish ---
+
 
 @router.callback_query(SkipDetailsCallback.filter())
 async def movie_details_skipped(
@@ -127,6 +132,7 @@ async def movie_details_skipped(
 
 
 # --- Shared finish logic ---
+
 
 async def _finish(
     message: Message,

@@ -4,6 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.infrastructure.database.dependencies import get_session
 from app.movie.models import MediaType, RoleType, WatchStatus
 from app.movie.repository import (
+    CategoryFilter,
+    CategoryRepository,
     MovieFilter,
     MoviePersonRepository,
     MovieRepository,
@@ -13,6 +15,9 @@ from app.movie.repository import (
     UserMovieRepository,
 )
 from app.movie.schemas import (
+    CategoryCreate,
+    CategoryResponse,
+    CategoryUpdate,
     MovieCreate,
     MovieDetailResponse,
     MovieListResponse,
@@ -32,6 +37,7 @@ from app.movie.use_cases import CreateMovieUseCase
 movies_router = APIRouter(prefix='/movies', tags=['movies'])
 movie_persons_router = APIRouter(prefix='/movies/{movie_id}/persons', tags=['movie-persons'])
 persons_router = APIRouter(prefix='/persons', tags=['persons'])
+categories_router = APIRouter(prefix='/categories', tags=['categories'])
 user_movies_router = APIRouter(prefix='/users/{user_id}/movies', tags=['user-movies'])
 
 
@@ -43,7 +49,7 @@ async def list_movies(
     media_type: MediaType | None = Query(default=None),
     year_from: int | None = Query(default=None),
     year_to: int | None = Query(default=None),
-    category_slug: str | None = Query(default=None),
+    category_id: int | None = Query(default=None),
     search: str | None = Query(default=None),
     session: AsyncSession = Depends(get_session),
 ):
@@ -53,7 +59,7 @@ async def list_movies(
             media_type=media_type,
             year_from=year_from,
             year_to=year_to,
-            category_slug=category_slug,
+            category_id=category_id,
             search=search,
         )
     )
@@ -92,11 +98,19 @@ async def update_movie(
     session: AsyncSession = Depends(get_session),
 ):
     repo = MovieRepository(session)
-    movie = await repo.get(movie_id)
+    movie = await repo.get_detail(movie_id)
     if not movie:
         raise HTTPException(status_code=404, detail='Movie not found')
-    updated = await repo.update(movie, data.model_dump(exclude_none=True))
-    return await repo.get_detail(updated.id)
+
+    if data.category_ids is not None:
+        categories = await CategoryRepository(session).get_many(data.category_ids)
+        if len(categories) != len(data.category_ids):
+            raise HTTPException(status_code=422, detail='One or more category IDs not found')
+        movie.categories = categories
+
+    scalar_data = data.model_dump(exclude_none=True, exclude={'category_ids'})
+    await repo.update(movie, scalar_data)
+    return await repo.get_detail(movie_id)
 
 
 @movies_router.delete('/{movie_id}', status_code=status.HTTP_204_NO_CONTENT)
@@ -206,6 +220,64 @@ async def delete_person(
     await repo.delete(person)
 
 
+# --- Categories ---
+
+
+@categories_router.get('/', response_model=list[CategoryResponse])
+async def list_categories(
+    search: str | None = Query(default=None),
+    session: AsyncSession = Depends(get_session),
+):
+    repo = CategoryRepository(session)
+    return await repo.get_filtered(CategoryFilter(search=search))
+
+
+@categories_router.post('/', response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
+async def create_category(
+    data: CategoryCreate,
+    session: AsyncSession = Depends(get_session),
+):
+    repo = CategoryRepository(session)
+    return await repo.create(name=data.name, name_original=data.name_original)
+
+
+@categories_router.get('/{category_id}', response_model=CategoryResponse)
+async def get_category(
+    category_id: int,
+    session: AsyncSession = Depends(get_session),
+):
+    repo = CategoryRepository(session)
+    category = await repo.get(category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail='Category not found')
+    return category
+
+
+@categories_router.put('/{category_id}', response_model=CategoryResponse)
+async def update_category(
+    category_id: int,
+    data: CategoryUpdate,
+    session: AsyncSession = Depends(get_session),
+):
+    repo = CategoryRepository(session)
+    category = await repo.get(category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail='Category not found')
+    return await repo.update(category, data.model_dump(exclude_none=True))
+
+
+@categories_router.delete('/{category_id}', status_code=status.HTTP_204_NO_CONTENT)
+async def delete_category(
+    category_id: int,
+    session: AsyncSession = Depends(get_session),
+):
+    repo = CategoryRepository(session)
+    category = await repo.get(category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail='Category not found')
+    await repo.delete(category)
+
+
 # --- User movies ---
 
 
@@ -217,7 +289,7 @@ async def list_user_movies(
     search: str | None = Query(default=None),
     year_from: int | None = Query(default=None),
     year_to: int | None = Query(default=None),
-    category_slug: str | None = Query(default=None),
+    category_id: int | None = Query(default=None),
     session: AsyncSession = Depends(get_session),
 ):
     repo = UserMovieRepository(session)
@@ -229,7 +301,7 @@ async def list_user_movies(
             search=search,
             year_from=year_from,
             year_to=year_to,
-            category_slug=category_slug,
+            category_id=category_id,
         )
     )
 
