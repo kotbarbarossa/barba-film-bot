@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -24,7 +24,7 @@ class MovieFilter:
     year_from: int | None = None
     year_to: int | None = None
     category_slug: str | None = None
-    search: str | None = None  # ILIKE по title_original, title_ru
+    search: str | None = None  # exact case-insensitive по title_original, title_ru
     processing_status: ProcessingStatus | None = None
 
 
@@ -33,7 +33,7 @@ class UserMovieFilter:
     user_id: int
     status: WatchStatus | None = None
     is_favorite: bool | None = None
-    search: str | None = None  # ILIKE по title_original, title_ru
+    search: str | None = None  # exact case-insensitive по title_original, title_ru
     year_from: int | None = None
     year_to: int | None = None
     category_slug: str | None = None
@@ -53,11 +53,11 @@ class MovieRepository(BaseRepository[Movie]):
         if filters.category_slug is not None:
             stmt = stmt.join(Movie.categories).where(Category.slug == filters.category_slug)
         if filters.search is not None:
-            pattern = f'%{filters.search}%'
+            term = filters.search.lower()
             stmt = stmt.where(
                 or_(
-                    Movie.title_original.ilike(pattern),
-                    Movie.title_ru.ilike(pattern),
+                    func.lower(Movie.title_original) == term,
+                    func.lower(Movie.title_ru) == term,
                 )
             )
         if filters.processing_status is not None:
@@ -76,8 +76,20 @@ class MovieRepository(BaseRepository[Movie]):
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def create(self, *, user_query: str) -> Movie:
-        movie = Movie(user_query=user_query)
+    async def create(
+        self,
+        *,
+        user_query: str | None = None,
+        title_ru: str | None = None,
+        title_original: str | None = None,
+        media_type: MediaType | None = None,
+    ) -> Movie:
+        movie = Movie(
+            user_query=user_query,
+            title_ru=title_ru,
+            title_original=title_original,
+            media_type=media_type,
+        )
         return await self.add(movie)
 
 
@@ -199,13 +211,13 @@ class UserMovieRepository(BaseRepository[UserMovie]):  # type: ignore[type-var]
         if filters.is_favorite is not None:
             stmt = stmt.where(UserMovie.is_favorite == filters.is_favorite)
         if filters.search is not None:
-            pattern = f'%{filters.search}%'
+            term = filters.search.lower()
             stmt = stmt.where(
                 UserMovie.movie_id.in_(
                     select(Movie.id).where(
                         or_(
-                            Movie.title_original.ilike(pattern),
-                            Movie.title_ru.ilike(pattern),
+                            func.lower(Movie.title_original) == term,
+                            func.lower(Movie.title_ru) == term,
                         )
                     )
                 )

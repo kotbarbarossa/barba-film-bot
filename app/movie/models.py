@@ -56,7 +56,7 @@ movie_category = Table(
 
 
 class Movie(BaseModel):
-    user_query: Mapped[str] = mapped_column(Text, nullable=False)
+    user_query: Mapped[str | None] = mapped_column(Text, nullable=True)
     processing_status: Mapped[ProcessingStatus] = mapped_column(
         Enum(ProcessingStatus, name='processingstatus'),
         nullable=False,
@@ -79,6 +79,13 @@ class Movie(BaseModel):
     tmdb_id: Mapped[str | None] = mapped_column(String(16), unique=True, nullable=True)
     media_type: Mapped[MediaType | None] = mapped_column(
         Enum(MediaType, name='mediatype'), nullable=True
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            'title_original IS NOT NULL OR title_ru IS NOT NULL',
+            name='ck_movie_title_required',
+        ),
     )
 
     categories: Mapped[list['Category']] = relationship(

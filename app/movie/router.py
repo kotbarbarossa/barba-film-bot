@@ -65,7 +65,12 @@ async def create_movie(
     session: AsyncSession = Depends(get_session),
 ):
     use_case = CreateMovieUseCase(session)
-    return await use_case.execute(user_query=data.user_query)
+    return await use_case.execute(
+        title_ru=data.title_ru,
+        title_original=data.title_original,
+        media_type=data.media_type,
+        user_query=data.user_query,
+    )
 
 
 @movies_router.get('/{movie_id}', response_model=MovieDetailResponse)

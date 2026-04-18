@@ -37,7 +37,7 @@ class MovieListResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    user_query: str
+    user_query: str | None
     processing_status: ProcessingStatus
     title_original: str | None
     title_ru: str | None
@@ -69,7 +69,10 @@ class MoviePersonCreate(BaseModel):
 
 
 class MovieCreate(BaseModel):
-    user_query: str
+    title_ru: str | None = None
+    title_original: str | None = None
+    media_type: MediaType
+    user_query: str | None = None
 
 
 class MovieUpdate(BaseModel):

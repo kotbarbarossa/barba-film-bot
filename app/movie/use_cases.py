@@ -1,22 +1,35 @@
-import logging
+import re
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.movie.models import Movie, ProcessingStatus
-from app.movie.query_parser import parse_movie_query
+from app.movie.models import MediaType, Movie, ProcessingStatus
 from app.movie.repository import MovieFilter, MovieRepository, UserMovieRepository
 
-logger = logging.getLogger(__name__)
+
+def _is_cyrillic(text: str) -> bool:
+    return bool(re.search(r'[а-яёА-ЯЁ]', text))
 
 
 class CreateMovieUseCase:
     def __init__(self, session: AsyncSession) -> None:
         self.repo = MovieRepository(session)
 
-    async def execute(self, user_query: str) -> Movie:
-        if not user_query.strip():
-            raise ValueError('Movie query cannot be empty')
-        return await self.repo.create(user_query=user_query)
+    async def execute(
+        self,
+        *,
+        title_ru: str | None = None,
+        title_original: str | None = None,
+        media_type: MediaType | None = None,
+        user_query: str | None = None,
+    ) -> Movie:
+        if not title_ru and not title_original:
+            raise ValueError('At least one title must be provided')
+        return await self.repo.create(
+            title_ru=title_ru,
+            title_original=title_original,
+            media_type=media_type,
+            user_query=user_query,
+        )
 
 
 class AddMovieToUserUseCase:
@@ -24,32 +37,45 @@ class AddMovieToUserUseCase:
         self.movie_repo = MovieRepository(session)
         self.user_movie_repo = UserMovieRepository(session)
 
-    async def execute(self, *, user_id: int, user_query: str) -> Movie:
-        if not user_query.strip():
-            raise ValueError('Movie query cannot be empty')
+    async def execute(
+        self,
+        *,
+        user_id: int,
+        title: str,
+        media_type: MediaType,
+        user_query: str | None,
+    ) -> tuple[Movie, bool]:
+        """
+        Returns (movie, found_existing) where found_existing=True means
+        the movie was matched in the database (no new entry created).
+        """
+        title_ru = title if _is_cyrillic(title) else None
+        title_original = title if not _is_cyrillic(title) else None
 
-        movie = await self._find_existing(user_query)
+        movie = await self._find_existing(title, media_type)
+        found_existing = movie is not None
+
         if movie is None:
-            movie = await self.movie_repo.create(user_query=user_query)
+            movie = await self.movie_repo.create(
+                title_ru=title_ru,
+                title_original=title_original,
+                media_type=media_type,
+                user_query=user_query,
+            )
             # TODO: запустить фоновую задачу обработки фильма (ChatGPT API)
 
-        await self.user_movie_repo.create(user_id=user_id, movie_id=movie.id)
-        return movie
+        existing_link = await self.user_movie_repo.get_by_user_and_movie(user_id, movie.id)
+        if existing_link is None:
+            await self.user_movie_repo.create(user_id=user_id, movie_id=movie.id)
 
-    async def _find_existing(self, user_query: str) -> Movie | None:
-        parsed = parse_movie_query(user_query)
-        logger.info('_find_existing: parsed=%s', parsed)
-        if not parsed.title:
-            return None
+        return movie, found_existing
 
+    async def _find_existing(self, title: str, media_type: MediaType) -> Movie | None:
         results = await self.movie_repo.get_filtered(
             MovieFilter(
-                search=parsed.title,
-                year_from=parsed.year_from,
-                year_to=parsed.year_to,
-                media_type=parsed.media_type,
+                search=title,
+                media_type=media_type,
                 processing_status=ProcessingStatus.PROCESSED,
             )
         )
-        logger.info('_find_existing: results=%s', results)
         return results[0] if len(results) == 1 else None

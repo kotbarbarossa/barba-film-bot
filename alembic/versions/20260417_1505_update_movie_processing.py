@@ -22,8 +22,7 @@ depends_on: str | Sequence[str] | None = None
 def upgrade() -> None:
     op.execute("CREATE TYPE processingstatus AS ENUM ('PENDING', 'PROCESSED', 'UNRECOGNIZED')")
 
-    op.add_column('movie', sa.Column('user_query', sa.Text(), nullable=False, server_default=''))
-    op.alter_column('movie', 'user_query', server_default=None)
+    op.add_column('movie', sa.Column('user_query', sa.Text(), nullable=True))
 
     op.add_column(
         'movie',
@@ -49,16 +48,8 @@ def upgrade() -> None:
         nullable=True,
     )
 
-    op.drop_constraint('title_required', 'movie', type_='check')
-
 
 def downgrade() -> None:
-    op.create_check_constraint(
-        'title_required',
-        'movie',
-        'title_original IS NOT NULL OR title_ru IS NOT NULL',
-    )
-
     op.alter_column(
         'movie',
         'media_type',
