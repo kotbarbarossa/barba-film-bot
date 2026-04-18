@@ -5,6 +5,7 @@ from app.core.config import settings
 from app.core.settings import Environment
 from app.infrastructure.database.lifespan import lifespan
 from app.movie.router import (
+    categories_router,
     movie_persons_router,
     movies_router,
     persons_router,
@@ -29,6 +30,7 @@ app.include_router(user_router, prefix=API_PREFIX)
 app.include_router(movies_router, prefix=API_PREFIX)
 app.include_router(movie_persons_router, prefix=API_PREFIX)
 app.include_router(persons_router, prefix=API_PREFIX)
+app.include_router(categories_router, prefix=API_PREFIX)
 app.include_router(user_movies_router, prefix=API_PREFIX)
 
 if __name__ == '__main__':

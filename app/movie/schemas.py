@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict
 
-from app.movie.models import MediaType, RoleType, WatchStatus
+from app.movie.models import MediaType, ProcessingStatus, RoleType, WatchStatus
 
 
 class CategoryResponse(BaseModel):
@@ -11,7 +11,17 @@ class CategoryResponse(BaseModel):
 
     id: int
     name: str
-    slug: str
+    name_original: str | None
+
+
+class CategoryCreate(BaseModel):
+    name: str
+    name_original: str | None = None
+
+
+class CategoryUpdate(BaseModel):
+    name: str | None = None
+    name_original: str | None = None
 
 
 class PersonResponse(BaseModel):
@@ -37,10 +47,12 @@ class MovieListResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    user_query: str | None
+    processing_status: ProcessingStatus
     title_original: str | None
     title_ru: str | None
     year: int | None
-    media_type: MediaType
+    media_type: MediaType | None
     poster_url: str | None
     imdb_rating: Decimal | None
     kinopoisk_rating: Decimal | None
@@ -67,11 +79,15 @@ class MoviePersonCreate(BaseModel):
 
 
 class MovieCreate(BaseModel):
-    title: str
-    media_type: MediaType = MediaType.FILM
+    title_ru: str | None = None
+    title_original: str | None = None
+    media_type: MediaType
+    user_query: str | None = None
 
 
 class MovieUpdate(BaseModel):
+    user_query: str | None = None
+    processing_status: ProcessingStatus | None = None
     title_original: str | None = None
     title_ru: str | None = None
     description: str | None = None
@@ -88,6 +104,7 @@ class MovieUpdate(BaseModel):
     kp_id: str | None = None
     tmdb_id: str | None = None
     media_type: MediaType | None = None
+    category_ids: list[int] | None = None
 
 
 class PersonCreate(BaseModel):

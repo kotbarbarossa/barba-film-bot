@@ -28,6 +28,12 @@ class MediaType(StrEnum):
     SERIES = 'series'
 
 
+class ProcessingStatus(StrEnum):
+    PENDING = 'pending'
+    PROCESSED = 'processed'
+    UNRECOGNIZED = 'unrecognized'
+
+
 class RoleType(StrEnum):
     ACTOR = 'actor'
     DIRECTOR = 'director'
@@ -50,6 +56,12 @@ movie_category = Table(
 
 
 class Movie(BaseModel):
+    user_query: Mapped[str | None] = mapped_column(Text, nullable=True)
+    processing_status: Mapped[ProcessingStatus] = mapped_column(
+        Enum(ProcessingStatus, name='processingstatus'),
+        nullable=False,
+        default=ProcessingStatus.PENDING,
+    )
     title_original: Mapped[str | None] = mapped_column(String(512), nullable=True)
     title_ru: Mapped[str | None] = mapped_column(String(512), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -65,27 +77,31 @@ class Movie(BaseModel):
     imdb_id: Mapped[str | None] = mapped_column(String(16), unique=True, nullable=True)
     kp_id: Mapped[str | None] = mapped_column(String(16), unique=True, nullable=True)
     tmdb_id: Mapped[str | None] = mapped_column(String(16), unique=True, nullable=True)
-    media_type: Mapped[MediaType] = mapped_column(
-        Enum(MediaType, name='mediatype'), nullable=False, default=MediaType.FILM
+    media_type: Mapped[MediaType | None] = mapped_column(
+        Enum(MediaType, name='mediatype'), nullable=True
     )
 
     __table_args__ = (
         CheckConstraint(
             'title_original IS NOT NULL OR title_ru IS NOT NULL',
-            name='title_required',
+            name='ck_movie_title_required',
         ),
     )
 
     categories: Mapped[list['Category']] = relationship(
-        secondary=movie_category, back_populates='movies'
+        secondary=movie_category, back_populates='movies', passive_deletes=True
     )
-    persons: Mapped[list['MoviePerson']] = relationship(back_populates='movie')
-    user_movies: Mapped[list['UserMovie']] = relationship(back_populates='movie')
+    persons: Mapped[list['MoviePerson']] = relationship(
+        back_populates='movie', passive_deletes=True
+    )
+    user_movies: Mapped[list['UserMovie']] = relationship(
+        back_populates='movie', passive_deletes=True
+    )
 
 
 class Category(BaseModel):
     name: Mapped[str] = mapped_column(String(128), nullable=False, unique=True)
-    slug: Mapped[str] = mapped_column(String(128), nullable=False, unique=True)
+    name_original: Mapped[str | None] = mapped_column(String(128), nullable=True, unique=True)
 
     movies: Mapped[list['Movie']] = relationship(
         secondary=movie_category, back_populates='categories'
