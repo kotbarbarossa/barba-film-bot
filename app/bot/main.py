@@ -11,6 +11,7 @@ from app.bot.handlers.movie import list_router as movie_list_router
 from app.bot.handlers.start import router as start_router
 from app.bot.middlewares.database import DatabaseMiddleware
 from app.core.config import settings
+from app.infrastructure import arq_pool
 from app.infrastructure.database.engine import create_engine
 from app.infrastructure.database.session_manager import session_manager
 
@@ -20,6 +21,7 @@ async def main() -> None:
 
     engine = create_engine()
     session_manager.init(engine)
+    await arq_pool.init(settings.redis_url)
 
     storage = RedisStorage.from_url(settings.redis_url)
     bot = Bot(
@@ -37,6 +39,7 @@ async def main() -> None:
         await dp.start_polling(bot)  # type: ignore
     finally:
         await session_manager.close()
+        await arq_pool.close()
         await storage.close()
         await bot.session.close()
 

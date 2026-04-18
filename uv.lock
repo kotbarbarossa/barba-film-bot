@@ -167,6 +167,20 @@ wheels = [
 ]
 
 [[package]]
+name = "arq"
+version = "0.25.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+    { name = "redis", extra = ["hiredis"] },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3a/ae/24a5e6476aba4e931b3b6ec19b6b45a9da2ba048992b4b49f12861a6df6f/arq-0.25.0.tar.gz", hash = "sha256:d176ebadfba920c039dc578814d19b7814d67fa15f82fdccccaedb4330d65dae", size = 288899, upload-time = "2022-12-02T13:21:18.284Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d1/47/626ad09333ffc73fdd2ed270d81ddd60befd8f5b3c904be132bc0e7ccede/arq-0.25.0-py3-none-any.whl", hash = "sha256:db072d0f39c0bc06b436db67ae1f315c81abc1527563b828955670531815290b", size = 25774, upload-time = "2022-12-02T13:21:15.874Z" },
+]
+
+[[package]]
 name = "asyncpg"
 version = "0.31.0"
 source = { registry = "https://pypi.org/simple" }
@@ -214,9 +228,11 @@ source = { editable = "." }
 dependencies = [
     { name = "aiogram", extra = ["redis"] },
     { name = "alembic" },
+    { name = "arq" },
     { name = "asyncpg" },
     { name = "fastapi" },
     { name = "greenlet" },
+    { name = "httpx" },
     { name = "pydantic-settings" },
     { name = "sqlalchemy" },
     { name = "uvicorn" },
@@ -233,9 +249,11 @@ dev = [
 requires-dist = [
     { name = "aiogram", extras = ["redis"], specifier = ">=3.25.0,<4.0.0" },
     { name = "alembic", specifier = ">=1.18.4,<2.0.0" },
+    { name = "arq", specifier = ">=0.25.0" },
     { name = "asyncpg", specifier = ">=0.31.0,<0.32.0" },
     { name = "fastapi", specifier = ">=0.129.0,<0.130.0" },
     { name = "greenlet", specifier = ">=3.3.2,<4.0.0" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "pydantic-settings", specifier = ">=2.12.0,<3.0.0" },
     { name = "sqlalchemy", specifier = ">=2.0.46,<3.0.0" },
     { name = "uvicorn", specifier = ">=0.40.0,<0.41.0" },
@@ -458,6 +476,34 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/3a/4fe39a169115434f911abff08ff485b9b6201c168500e112b3f6a8110c0a/hiredis-3.3.1-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:a110d19881ca78a88583d3b07231e7c6864864f5f1f3491b638863ea45fa8708", size = 176126, upload-time = "2026-03-16T15:20:31.958Z" },
     { url = "https://files.pythonhosted.org/packages/44/99/c1d0b0bc4f9e9150e24beb0dca2e186e32d5e749d0022e0d26453749ed51/hiredis-3.3.1-cp314-cp314t-win32.whl", hash = "sha256:98fd5b39410e9d69e10e90d0330e35650becaa5dd2548f509b9598f1f3c6124d", size = 22028, upload-time = "2026-03-16T15:20:33.33Z" },
     { url = "https://files.pythonhosted.org/packages/35/d6/191e6741addc97bcf5e755661f8c82f0fd0aa35f07ece56e858da689b57e/hiredis-3.3.1-cp314-cp314t-win_amd64.whl", hash = "sha256:ab1f646ff531d70bfd25f01e60708dfa3d105eb458b7dedd9fe9a443039fd809", size = 23811, upload-time = "2026-03-16T15:20:34.292Z" },
+]
+
+[[package]]
+name = "httpcore"
+version = "1.0.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "certifi" },
+    { name = "h11" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/06/94/82699a10bca87a5556c9c59b5963f2d039dbd239f25bc2a63907a05a14cb/httpcore-1.0.9.tar.gz", hash = "sha256:6e34463af53fd2ab5d807f399a9b45ea31c3dfa2276f15a2c3f00afff6e176e8", size = 85484, upload-time = "2025-04-24T22:06:22.219Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7e/f5/f66802a942d491edb555dd61e3a9961140fd64c90bce1eafd741609d334d/httpcore-1.0.9-py3-none-any.whl", hash = "sha256:2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55", size = 78784, upload-time = "2025-04-24T22:06:20.566Z" },
+]
+
+[[package]]
+name = "httpx"
+version = "0.28.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "certifi" },
+    { name = "httpcore" },
+    { name = "idna" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b1/df/48c586a5fe32a0f01324ee087459e112ebb7224f646c0b5023f5e79e9956/httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc", size = 141406, upload-time = "2024-12-06T15:37:23.222Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad", size = 73517, upload-time = "2024-12-06T15:37:21.509Z" },
 ]
 
 [[package]]

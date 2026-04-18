@@ -113,6 +113,12 @@ class CategoryRepository(BaseRepository[Category]):
             stmt = stmt.where(Category.name.ilike(f'%{filters.search}%'))
         return list((await self.session.execute(stmt)).scalars().all())
 
+    async def get_by_name(self, name: str) -> Category | None:
+        result = await self.session.execute(
+            select(Category).where(func.lower(Category.name) == name.lower())
+        )
+        return result.scalar_one_or_none()
+
     async def create(self, *, name: str, name_original: str | None = None) -> Category:
         category = Category(name=name, name_original=name_original)
         return await self.add(category)
@@ -146,6 +152,17 @@ class PersonFilter:
 
 class PersonRepository(BaseRepository[Person]):
     model = Person
+
+    async def get_by_name(self, name: str) -> Person | None:
+        result = await self.session.execute(
+            select(Person).where(
+                or_(
+                    func.lower(Person.name) == name.lower(),
+                    func.lower(Person.original_name) == name.lower(),
+                )
+            )
+        )
+        return result.scalar_one_or_none()
 
     async def create(self, *, name: str, **kwargs: object) -> Person:
         person = Person(name=name, **kwargs)
@@ -217,6 +234,12 @@ class MoviePersonRepository:
 
 class UserMovieRepository(BaseRepository[UserMovie]):  # type: ignore[type-var]
     model = UserMovie
+
+    async def get_all_by_movie(self, movie_id: int) -> list[UserMovie]:
+        result = await self.session.execute(
+            select(UserMovie).where(UserMovie.movie_id == movie_id)
+        )
+        return list(result.scalars().all())
 
     async def get_by_user_and_movie(self, user_id: int, movie_id: int) -> UserMovie | None:
         result = await self.session.execute(

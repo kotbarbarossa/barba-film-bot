@@ -128,7 +128,9 @@ async def movie_details_skipped(
     media_type: MediaType = data['media_type']
 
     await state.clear()
-    await _finish(callback.message, session, db_user.id, title, media_type, user_query=None)
+    await _finish(
+        callback.message, session, db_user.id, title, media_type, user_query=None, edit=True
+    )
 
 
 # --- Shared finish logic ---
@@ -141,6 +143,7 @@ async def _finish(
     title: str,
     media_type: MediaType,
     user_query: str | None,
+    edit: bool = False,
 ) -> None:
     movie, found_existing = await AddMovieToUserUseCase(session).execute(
         user_id=user_id,
@@ -154,4 +157,7 @@ async def _finish(
     else:
         text = MOVIE_ADD_QUEUED.format(title=display_title)
 
-    await message.answer(text, reply_markup=main_menu_keyboard())
+    if edit:
+        await safe_edit(message, text, reply_markup=main_menu_keyboard())
+    else:
+        await message.answer(text, reply_markup=main_menu_keyboard())

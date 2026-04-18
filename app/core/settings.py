@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     database_password: str = 'postgres'
     database_name: str = 'postgres'
     bot_token: str = ''
+    groq_api_key: str = ''
+    tmdb_api_key: str = ''
 
     redis_host: str = 'localhost'
     redis_port: int = 6379

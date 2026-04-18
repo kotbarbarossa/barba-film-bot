@@ -17,6 +17,9 @@ api-prod:
 bot:
     uv run python -m app.bot.main
 
+worker:
+    uv run arq app.worker.main.WorkerSettings
+
 # --- Database ---
 
 migrate message:
