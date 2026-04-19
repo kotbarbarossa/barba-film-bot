@@ -10,6 +10,7 @@ class NavAction(StrEnum):
     movie_random = 'movie_random'
     movie_by_genre = 'movie_by_genre'
     movie_by_year = 'movie_by_year'
+    movie_recent_added = 'movie_recent_added'
     movie_recent = 'movie_recent'
     movie_all = 'movie_all'
 

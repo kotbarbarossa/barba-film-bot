@@ -18,6 +18,7 @@ class MovieCardSource(StrEnum):
     genre = 'g'
     period = 'p'
     recent = 'w'
+    added = 'a'
 
 
 class MovieCardCallback(CallbackData, prefix='mc'):
@@ -27,7 +28,23 @@ class MovieCardCallback(CallbackData, prefix='mc'):
 
 class WatchedCallback(CallbackData, prefix='mw'):
     movie_id: int
+    source: MovieCardSource
+
+
+class RatingCallback(CallbackData, prefix='mr'):
+    movie_id: int
+    rating: int
+    source: MovieCardSource
 
 
 class BackFromCardCallback(CallbackData, prefix='bfc'):
     source: MovieCardSource
+
+
+class ShareCallback(CallbackData, prefix='ms'):
+    movie_id: int
+    source: MovieCardSource
+
+
+class AddToListCallback(CallbackData, prefix='mal'):
+    movie_id: int

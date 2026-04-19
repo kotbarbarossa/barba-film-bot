@@ -1,4 +1,4 @@
-from aiogram import F, Router
+from aiogram import Bot, F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,6 +9,8 @@ from app.bot.callbacks.movie_list import (
     MovieCardCallback,
     MovieCardSource,
     PeriodCallback,
+    RatingCallback,
+    ShareCallback,
     WatchedCallback,
 )
 from app.bot.callbacks.navigation import NavAction, NavigationCallback
@@ -18,6 +20,8 @@ from app.bot.keyboards.movie_list import (
     movie_card_keyboard,
     movie_list_menu_keyboard,
     period_list_keyboard,
+    rating_keyboard,
+    share_message_keyboard,
 )
 from app.bot.states.browse import BrowseStates
 from app.bot.texts import (
@@ -29,12 +33,16 @@ from app.bot.texts import (
     MOVIE_LIST_PERIOD_MOVIES,
     MOVIE_LIST_PERIODS,
     MOVIE_LIST_RECENT,
+    MOVIE_LIST_RECENT_ADDED,
+    MOVIE_LIST_RECENT_ADDED_EMPTY,
     MOVIE_LIST_RECENT_EMPTY,
     MOVIE_RANDOM_EMPTY,
-    MOVIE_WATCHED_STUB,
+    MOVIE_RATING_SAVED,
+    MOVIE_SHARE_TEXT,
+    MOVIE_WATCHED_SUCCESS,
 )
-from app.bot.utils import safe_to_text, show_card
-from app.movie.models import Movie, ProcessingStatus, RoleType, WatchStatus
+from app.bot.utils import format_movie_card, safe_edit, safe_to_text, show_card
+from app.movie.models import ProcessingStatus, WatchStatus
 from app.movie.repository import (
     CategoryRepository,
     UserMovieFilter,
@@ -45,58 +53,6 @@ from app.user.models import User
 router = Router(name='movie_list')
 
 _ACTIVE_STATUSES = [WatchStatus.WANT, WatchStatus.WATCHING]
-
-
-# --- Helpers ---
-
-
-def _format_card(movie: Movie) -> str:
-    title = movie.title_ru or movie.title_original or '—'
-    lines: list[str] = [f'<b>{title}</b>']
-
-    if movie.title_original and movie.title_ru:
-        lines.append(f'<i>{movie.title_original}</i>')
-
-    meta: list[str] = []
-    if movie.year:
-        meta.append(str(movie.year))
-    if movie.country:
-        meta.append(movie.country)
-    if movie.media_type:
-        meta.append('Сериал' if movie.media_type.value == 'series' else 'Фильм')
-    if meta:
-        lines.append(' · '.join(meta))
-
-    if movie.duration_minutes:
-        lines.append(f'⏱ {movie.duration_minutes} мин')
-    if movie.age_rating:
-        lines.append(f'🔞 {movie.age_rating}')
-
-    ratings: list[str] = []
-    if movie.imdb_rating:
-        ratings.append(f'IMDb {movie.imdb_rating}')
-    if movie.kinopoisk_rating:
-        ratings.append(f'КП {movie.kinopoisk_rating}')
-    if ratings:
-        lines.append('⭐ ' + ' · '.join(ratings))
-
-    if hasattr(movie, 'categories') and movie.categories:
-        cats = ', '.join(c.name for c in movie.categories)
-        lines.append(f'🎭 {cats}')
-
-    if movie.description:
-        lines.append(f'\n{movie.description}')
-
-    if hasattr(movie, 'persons') and movie.persons:
-        lines.append('')
-        directors = [mp.person.name for mp in movie.persons if mp.role_type == RoleType.DIRECTOR]
-        if directors:
-            lines.append(f'🎬 Режиссёр: {", ".join(directors)}')
-        actors = [mp.person.name for mp in movie.persons if mp.role_type == RoleType.ACTOR]
-        if actors:
-            lines.append(f'👥 В ролях: {", ".join(actors[:3])}')
-
-    return '\n'.join(lines)
 
 
 # --- Movie list menu ---
@@ -127,11 +83,15 @@ async def nav_movie_random(callback: CallbackQuery, session: AsyncSession, db_us
         )
         return
 
-    text = _format_card(um.movie)
+    text = format_movie_card(um.movie, um)
     await show_card(
         callback.message,
         text,
-        reply_markup=movie_card_keyboard(um.movie_id, MovieCardSource.random),
+        reply_markup=movie_card_keyboard(
+            um.movie_id,
+            MovieCardSource.random,
+            show_watched=um.status != WatchStatus.WATCHED,
+        ),
         poster_url=um.movie.poster_url,
     )
 
@@ -274,6 +234,35 @@ async def period_selected(
     )
 
 
+# --- Recently added ---
+
+
+@router.callback_query(NavigationCallback.filter(F.action == NavAction.movie_recent_added))
+async def nav_movie_recent_added(
+    callback: CallbackQuery, session: AsyncSession, db_user: User
+) -> None:
+    await callback.answer()
+    if not isinstance(callback.message, Message):
+        return
+
+    user_movies = await UserMovieRepository(session).get_recently_added(db_user.id)
+
+    if not user_movies:
+        await safe_to_text(
+            callback.message,
+            MOVIE_LIST_RECENT_ADDED_EMPTY,
+            reply_markup=movie_list_menu_keyboard(),
+        )
+        return
+
+    back_cb = NavigationCallback(action=NavAction.movie_list).pack()
+    await safe_to_text(
+        callback.message,
+        MOVIE_LIST_RECENT_ADDED,
+        reply_markup=movie_buttons_keyboard(user_movies, MovieCardSource.added, back_cb),
+    )
+
+
 # --- Recent watched ---
 
 
@@ -334,8 +323,8 @@ async def show_movie_card(
         return
 
     source = callback_data.source
-    show_watched = source != MovieCardSource.recent
-    text = _format_card(um.movie)
+    show_watched = source != MovieCardSource.recent and um.status != WatchStatus.WATCHED
+    text = format_movie_card(um.movie, um)
     await show_card(
         callback.message,
         text,
@@ -430,10 +419,86 @@ async def back_from_card(
             reply_markup=movie_buttons_keyboard(user_movies, MovieCardSource.recent, back_cb),
         )
 
+    elif source == MovieCardSource.added:
+        user_movies = await UserMovieRepository(session).get_recently_added(db_user.id)
+        back_cb = NavigationCallback(action=NavAction.movie_list).pack()
+        if not user_movies:
+            await safe_to_text(
+                callback.message,
+                MOVIE_LIST_RECENT_ADDED_EMPTY,
+                reply_markup=movie_list_menu_keyboard(),
+            )
+            return
+        await safe_to_text(
+            callback.message,
+            MOVIE_LIST_RECENT_ADDED,
+            reply_markup=movie_buttons_keyboard(user_movies, MovieCardSource.added, back_cb),
+        )
 
-# --- Watched (stub) ---
+
+# --- Watched ---
 
 
 @router.callback_query(WatchedCallback.filter())
-async def watched_stub(callback: CallbackQuery) -> None:
-    await callback.answer(MOVIE_WATCHED_STUB, show_alert=True)
+async def watched_handler(
+    callback: CallbackQuery,
+    callback_data: WatchedCallback,
+    session: AsyncSession,
+    db_user: User,
+) -> None:
+    await callback.answer()
+    if not isinstance(callback.message, Message):
+        return
+
+    await UserMovieRepository(session).mark_watched(db_user.id, callback_data.movie_id)
+    await safe_to_text(
+        callback.message,
+        MOVIE_WATCHED_SUCCESS,
+        reply_markup=rating_keyboard(callback_data.movie_id, callback_data.source),
+    )
+
+
+@router.callback_query(RatingCallback.filter())
+async def rating_received(
+    callback: CallbackQuery,
+    callback_data: RatingCallback,
+    session: AsyncSession,
+    db_user: User,
+) -> None:
+    await callback.answer()
+    if not isinstance(callback.message, Message):
+        return
+
+    um = await UserMovieRepository(session).get_by_user_and_movie(
+        db_user.id, callback_data.movie_id
+    )
+    if um is not None:
+        await UserMovieRepository(session).update(um, {'rating': callback_data.rating})
+
+    await safe_edit(
+        callback.message,
+        MOVIE_RATING_SAVED,
+        reply_markup=share_message_keyboard(callback_data.movie_id, callback_data.source),
+    )
+
+
+# --- Share ---
+
+
+@router.callback_query(ShareCallback.filter())
+async def share_handler(
+    callback: CallbackQuery,
+    callback_data: ShareCallback,
+    bot: Bot,
+) -> None:
+    await callback.answer()
+    if not isinstance(callback.message, Message):
+        return
+
+    me = await bot.get_me()
+    link = f'https://t.me/{me.username}?start=movie_{callback_data.movie_id}'
+    await safe_to_text(
+        callback.message,
+        MOVIE_SHARE_TEXT.format(link=link),
+        reply_markup=share_message_keyboard(callback_data.movie_id, callback_data.source),
+    )
