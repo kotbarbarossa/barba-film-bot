@@ -1,0 +1,75 @@
+stages:
+  - lint
+  - build
+  - deploy
+
+variables:
+  IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  IMAGE_LATEST: $CI_REGISTRY_IMAGE:latest
+
+# ──────────────────────────────────────────────
+# Lint
+# ──────────────────────────────────────────────
+lint:
+  stage: lint
+  image: python:3.13-slim
+  before_script:
+    - pip install uv --quiet
+  script:
+    - uv run --frozen ruff check .
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "dev"
+
+# ──────────────────────────────────────────────
+# Build & push image to GitLab Container Registry
+# ──────────────────────────────────────────────
+build:
+  stage: build
+  image: docker:27-cli
+  services:
+    - docker:27-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $IMAGE -t $IMAGE_LATEST .
+    - docker push $IMAGE
+    - docker push $IMAGE_LATEST
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+# ──────────────────────────────────────────────
+# Deploy to AWS EC2 via SSH
+#
+# Required GitLab CI/CD variables (Settings → CI/CD → Variables):
+#   SSH_PRIVATE_KEY  — EC2 SSH private key (PEM, protected)
+#   DEPLOY_HOST      — EC2 public IP or hostname
+#   DEPLOY_USER      — SSH user (ubuntu / ec2-user)
+#   DEPLOY_DIR       — project directory on server (e.g. /home/ubuntu/barba-film-bot)
+# ──────────────────────────────────────────────
+deploy:
+  stage: deploy
+  image: alpine:3.20
+  before_script:
+    - apk add --no-cache openssh-client bash
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+  script:
+    - scp docker-compose.yml $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_DIR/docker-compose.yml
+    - |
+      ssh $DEPLOY_USER@$DEPLOY_HOST "
+        set -e
+        cd $DEPLOY_DIR
+        docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+        APP_IMAGE=$IMAGE docker compose pull
+        APP_IMAGE=$IMAGE docker compose up -d --remove-orphans
+        docker image prune -f
+      "
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  environment:
+    name: production

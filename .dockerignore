@@ -1,0 +1,15 @@
+.venv/
+.git/
+.env*
+.python-version
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+__pycache__/
+*.pyc
+tests/
+x_dev/
+volumes/
+*.log
+poetry.lock
+README.md
