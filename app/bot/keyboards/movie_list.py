@@ -1,21 +1,28 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from app.bot.callbacks.movie_list import (
+    AddToListCallback,
     BackFromCardCallback,
     CategoryCallback,
     MovieCardCallback,
     MovieCardSource,
     PeriodCallback,
+    RatingCallback,
+    ShareCallback,
     WatchedCallback,
 )
 from app.bot.callbacks.navigation import NavAction, NavigationCallback
 from app.bot.texts import (
+    BTN_ADD_TO_LIST,
     BTN_BACK,
+    BTN_MAIN_MENU,
     BTN_MOVIE_ALL,
     BTN_MOVIE_BY_GENRE,
     BTN_MOVIE_BY_YEAR,
     BTN_MOVIE_RANDOM,
     BTN_MOVIE_RECENT,
+    BTN_MOVIE_RECENT_ADDED,
+    BTN_SHARE,
     BTN_WATCHED,
 )
 from app.movie.models import Category, UserMovie
@@ -40,6 +47,12 @@ def movie_list_menu_keyboard() -> InlineKeyboardMarkup:
             [
                 InlineKeyboardButton(
                     text=BTN_MOVIE_BY_YEAR, callback_data=nav(NavAction.movie_by_year)
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text=BTN_MOVIE_RECENT_ADDED,
+                    callback_data=nav(NavAction.movie_recent_added),
                 )
             ],
             [
@@ -117,6 +130,31 @@ def movie_buttons_keyboard(
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
+def rating_keyboard(movie_id: int, source: MovieCardSource) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text=str(r),
+                    callback_data=RatingCallback(
+                        movie_id=movie_id, rating=r, source=source
+                    ).pack(),
+                )
+                for r in range(10, 5, -1)
+            ],
+            [
+                InlineKeyboardButton(
+                    text=str(r),
+                    callback_data=RatingCallback(
+                        movie_id=movie_id, rating=r, source=source
+                    ).pack(),
+                )
+                for r in range(5, 0, -1)
+            ],
+        ]
+    )
+
+
 def movie_card_keyboard(
     movie_id: int, source: MovieCardSource, show_watched: bool = True
 ) -> InlineKeyboardMarkup:
@@ -126,10 +164,18 @@ def movie_card_keyboard(
             [
                 InlineKeyboardButton(
                     text=BTN_WATCHED,
-                    callback_data=WatchedCallback(movie_id=movie_id).pack(),
+                    callback_data=WatchedCallback(movie_id=movie_id, source=source).pack(),
                 )
             ]
         )
+    rows.append(
+        [
+            InlineKeyboardButton(
+                text=BTN_SHARE,
+                callback_data=ShareCallback(movie_id=movie_id, source=source).pack(),
+            )
+        ]
+    )
     rows.append(
         [
             InlineKeyboardButton(
@@ -139,3 +185,48 @@ def movie_card_keyboard(
         ]
     )
     return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def share_message_keyboard(movie_id: int, source: MovieCardSource) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text=BTN_BACK,
+                    callback_data=MovieCardCallback(movie_id=movie_id, source=source).pack(),
+                )
+            ]
+        ]
+    )
+
+
+def to_main_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text=BTN_MAIN_MENU,
+                    callback_data=NavigationCallback(action=NavAction.main_menu).pack(),
+                )
+            ]
+        ]
+    )
+
+
+def add_to_list_keyboard(movie_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text=BTN_ADD_TO_LIST,
+                    callback_data=AddToListCallback(movie_id=movie_id).pack(),
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text=BTN_MAIN_MENU,
+                    callback_data=NavigationCallback(action=NavAction.main_menu).pack(),
+                )
+            ],
+        ]
+    )

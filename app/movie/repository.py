@@ -309,6 +309,17 @@ class UserMovieRepository(BaseRepository[UserMovie]):  # type: ignore[type-var]
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_recently_added(self, user_id: int, limit: int = 5) -> list[UserMovie]:
+        stmt = (
+            select(UserMovie)
+            .where(UserMovie.user_id == user_id)
+            .order_by(UserMovie.added_at.desc())
+            .limit(limit)
+            .options(selectinload(UserMovie.movie))
+        )
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
     async def get_recently_watched(self, user_id: int, limit: int = 10) -> list[UserMovie]:
         stmt = (
             select(UserMovie)
@@ -359,6 +370,21 @@ class UserMovieRepository(BaseRepository[UserMovie]):  # type: ignore[type-var]
         )
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def mark_watched(self, user_id: int, movie_id: int) -> UserMovie | None:
+        from datetime import UTC, datetime
+
+        um = await self.get_by_user_and_movie(user_id, movie_id)
+        if um is None:
+            return None
+        return await self.update(
+            um,
+            {
+                'status': WatchStatus.WATCHED,
+                'rewatch_count': um.rewatch_count + 1,
+                'watched_at': datetime.now(UTC),
+            },
+        )
 
     async def create(
         self, *, user_id: int, movie_id: int, status: WatchStatus = WatchStatus.WANT
