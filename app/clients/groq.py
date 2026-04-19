@@ -21,7 +21,7 @@ If the movie/series is found, return:
   "found": true,
   "movie": {
     "title_original": "original title (English or native language) or null",
-    "title_ru": "Russian title or null",
+    "title_ru": "official Russian title as listed on Кинопоиск",
     "description": "brief description in Russian, 2-3 sentences, or null",
     "year": release year as integer or null,
     "duration_minutes": duration as integer or null,
