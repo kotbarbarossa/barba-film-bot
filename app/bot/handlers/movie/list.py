@@ -14,6 +14,7 @@ from app.bot.callbacks.movie_list import (
     WatchedCallback,
 )
 from app.bot.callbacks.navigation import NavAction, NavigationCallback
+from app.bot.handlers.movie.all_movies import back_to_all_movies
 from app.bot.keyboards.movie_list import (
     genre_list_keyboard,
     movie_buttons_keyboard,
@@ -25,7 +26,6 @@ from app.bot.keyboards.movie_list import (
 )
 from app.bot.states.browse import BrowseStates
 from app.bot.texts import (
-    MOVIE_LIST_ALL_STUB,
     MOVIE_LIST_GENRE_MOVIES,
     MOVIE_LIST_GENRES,
     MOVIE_LIST_MENU,
@@ -288,19 +288,6 @@ async def nav_movie_recent(callback: CallbackQuery, session: AsyncSession, db_us
     )
 
 
-# --- All movies (stub) ---
-
-
-@router.callback_query(NavigationCallback.filter(F.action == NavAction.movie_all))
-async def nav_movie_all(callback: CallbackQuery) -> None:
-    await callback.answer()
-    if not isinstance(callback.message, Message):
-        return
-    await safe_to_text(
-        callback.message, MOVIE_LIST_ALL_STUB, reply_markup=movie_list_menu_keyboard()
-    )
-
-
 # --- Movie card ---
 
 
@@ -434,6 +421,9 @@ async def back_from_card(
             MOVIE_LIST_RECENT_ADDED,
             reply_markup=movie_buttons_keyboard(user_movies, MovieCardSource.added, back_cb),
         )
+
+    elif source == MovieCardSource.all:
+        await back_to_all_movies(callback.message, session, state, db_user)
 
 
 # --- Watched ---

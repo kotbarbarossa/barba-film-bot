@@ -42,7 +42,14 @@ class UserMovieFilter:
     year_from: int | None = None
     year_to: int | None = None
     category_id: int | None = None
+    category_ids: list[int] | None = field(default=None)  # OR logic
     processing_status: ProcessingStatus | None = None
+    imdb_from: float | None = None
+    imdb_to: float | None = None
+    user_rating_from: int | None = None
+    user_rating_to: int | None = None
+    media_types: list[MediaType] | None = field(default=None)
+    sort_by: str = 'imdb_rating'  # imdb_rating | year | user_rating | added_at | watched_at
 
 
 class MovieRepository(BaseRepository[Movie]):
@@ -126,6 +133,22 @@ class CategoryRepository(BaseRepository[Category]):
     async def get_many(self, ids: list[int]) -> list[Category]:
         result = await self.session.execute(select(Category).where(Category.id.in_(ids)))
         return list(result.scalars().all())
+
+    async def get_by_user_processed(self, user_id: int) -> list[Category]:
+        """All categories from user's PROCESSED movies (any watch status)."""
+        stmt = (
+            select(Category)
+            .join(movie_category, Category.id == movie_category.c.category_id)
+            .join(Movie, Movie.id == movie_category.c.movie_id)
+            .join(UserMovie, UserMovie.movie_id == Movie.id)
+            .where(
+                UserMovie.user_id == user_id,
+                Movie.processing_status == ProcessingStatus.PROCESSED,
+            )
+            .distinct()
+            .order_by(Category.name)
+        )
+        return list((await self.session.execute(stmt)).scalars().all())
 
     async def get_by_user_active(self, user_id: int) -> list[Category]:
         """Categories from user's PROCESSED movies with status WANT or WATCHING."""
@@ -256,7 +279,6 @@ class UserMovieRepository(BaseRepository[UserMovie]):  # type: ignore[type-var]
             .join(Movie, UserMovie.movie_id == Movie.id)
             .where(UserMovie.user_id == filters.user_id)
             .options(selectinload(UserMovie.movie))
-            .order_by(Movie.imdb_rating.desc().nullslast())
         )
         if filters.status is not None:
             stmt = stmt.where(UserMovie.status == filters.status)
@@ -286,6 +308,32 @@ class UserMovieRepository(BaseRepository[UserMovie]):  # type: ignore[type-var]
                     .where(Category.id == filters.category_id)
                 )
             )
+        if filters.category_ids:
+            stmt = stmt.where(
+                UserMovie.movie_id.in_(
+                    select(Movie.id)
+                    .join(Movie.categories)
+                    .where(Category.id.in_(filters.category_ids))
+                )
+            )
+        if filters.imdb_from is not None:
+            stmt = stmt.where(Movie.imdb_rating >= filters.imdb_from)
+        if filters.imdb_to is not None:
+            stmt = stmt.where(Movie.imdb_rating <= filters.imdb_to)
+        if filters.user_rating_from is not None:
+            stmt = stmt.where(UserMovie.rating >= filters.user_rating_from)
+        if filters.user_rating_to is not None:
+            stmt = stmt.where(UserMovie.rating <= filters.user_rating_to)
+        if filters.media_types:
+            stmt = stmt.where(Movie.media_type.in_(filters.media_types))
+        _sort_map = {
+            'imdb_rating': Movie.imdb_rating.desc().nullslast(),
+            'year': Movie.year.desc().nullslast(),
+            'user_rating': UserMovie.rating.desc().nullslast(),
+            'added_at': UserMovie.added_at.desc(),
+            'watched_at': UserMovie.watched_at.desc().nullslast(),
+        }
+        stmt = stmt.order_by(_sort_map.get(filters.sort_by, Movie.imdb_rating.desc().nullslast()))
         return list((await self.session.execute(stmt)).scalars().all())
 
     async def get_random_active_processed(self, user_id: int) -> UserMovie | None:
