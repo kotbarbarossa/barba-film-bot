@@ -45,6 +45,6 @@ class DatabaseMiddleware(BaseMiddleware):
 
                 try:
                     return await asyncio.wait_for(handler(event, data), timeout=_HANDLER_TIMEOUT)
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     logger.error('Handler timed out after %.0fs', _HANDLER_TIMEOUT)
                     raise
