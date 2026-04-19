@@ -57,7 +57,7 @@ class ProcessMovieUseCase:
             return
 
         if data.title_original:
-            data.poster_url = await fetch_poster_url(
+            data.poster_url, data.tmdb_id = await fetch_poster_url(
                 title_original=data.title_original,
                 media_type=data.media_type,
                 year=data.year,
@@ -116,8 +116,6 @@ class ProcessMovieUseCase:
                 'country': data.country,
                 'poster_url': data.poster_url,
                 'trailer_url': data.trailer_url,
-                'imdb_id': data.imdb_id,
-                'kp_id': data.kp_id,
                 'tmdb_id': data.tmdb_id,
                 'media_type': data.media_type,
                 'processing_status': ProcessingStatus.PROCESSED,

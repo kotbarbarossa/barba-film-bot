@@ -7,6 +7,7 @@ from arq import Retry
 from app.infrastructure.database.session_manager import session_manager
 from app.movie.processing_use_case import ProcessMovieUseCase
 from app.movie.repository import MovieRepository
+import app.user.models  # noqa: F401 — registers User table in SQLAlchemy metadata
 
 logger = logging.getLogger(__name__)
 

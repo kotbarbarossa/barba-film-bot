@@ -16,7 +16,8 @@ async def fetch_poster_url(
     media_type: MediaType,
     year: int | None,
     api_key: str,
-) -> str | None:
+) -> tuple[str | None, str | None]:
+    """Returns (poster_url, tmdb_id)."""
     endpoint = 'tv' if media_type == MediaType.SERIES else 'movie'
     params: dict[str, str | int] = {'api_key': api_key, 'query': title_original}
     if year:
@@ -29,10 +30,13 @@ async def fetch_poster_url(
 
         results = response.json().get('results', [])
         if not results:
-            return None
-        poster_path = results[0].get('poster_path')
-        return f'{_POSTER_BASE_URL}{poster_path}' if poster_path else None
+            return None, None
+        first = results[0]
+        poster_path = first.get('poster_path')
+        poster_url = f'{_POSTER_BASE_URL}{poster_path}' if poster_path else None
+        tmdb_id = str(first['id']) if first.get('id') else None
+        return poster_url, tmdb_id
 
     except httpx.HTTPError as e:
         logger.error('fetch_poster_url: HTTP error for %r: %s', title_original, e)
-        return None
+        return None, None

@@ -1,3 +1,5 @@
+import asyncio
+import logging
 from collections.abc import Awaitable, Callable
 from typing import Any
 
@@ -7,6 +9,10 @@ from aiogram.types import TelegramObject, User
 from app.infrastructure.database.session_manager import session_manager
 from app.user.models import AuthProvider
 from app.user.repository import UserRepository
+
+logger = logging.getLogger(__name__)
+
+_HANDLER_TIMEOUT = 30.0
 
 
 class DatabaseMiddleware(BaseMiddleware):
@@ -37,4 +43,8 @@ class DatabaseMiddleware(BaseMiddleware):
                         )
                     data['db_user'] = db_user
 
-                return await handler(event, data)
+                try:
+                    return await asyncio.wait_for(handler(event, data), timeout=_HANDLER_TIMEOUT)
+                except asyncio.TimeoutError:
+                    logger.error('Handler timed out after %.0fs', _HANDLER_TIMEOUT)
+                    raise

@@ -1,3 +1,5 @@
+from typing import TypedDict
+
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from app.bot.callbacks.all_movies import (
@@ -18,7 +20,23 @@ from app.bot.callbacks.navigation import NavAction, NavigationCallback
 from app.bot.texts import BTN_BACK
 from app.movie.models import Category, MediaType, UserMovie, WatchStatus
 
-_PAGE_SIZE = 10
+
+class FilterData(TypedDict, total=False):
+    page: int
+    year_from: int | None
+    year_to: int | None
+    imdb_from: float | None
+    imdb_to: float | None
+    rating_from: int | None
+    rating_to: int | None
+    media_types: list[str]
+    category_ids: list[int]
+    statuses: list[str]
+    sort_by: str
+    filter_msg_id: int | None
+
+
+PAGE_SIZE: int = 10
 
 _SORT_LABELS: dict[str, str] = {
     'imdb_rating': 'IMDB ↓',
@@ -48,7 +66,7 @@ def all_movies_list_keyboard(
     page: int,
     total: int,
 ) -> InlineKeyboardMarkup:
-    total_pages = max(1, (total + _PAGE_SIZE - 1) // _PAGE_SIZE)
+    total_pages: int = max(1, (total + PAGE_SIZE - 1) // PAGE_SIZE)
     rows: list[list[InlineKeyboardButton]] = []
 
     rows.append(
@@ -101,14 +119,6 @@ def all_movies_list_keyboard(
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
-def _range_btn(label: str, value: int | float | None, field: str) -> InlineKeyboardButton:
-    display = str(value) if value is not None else '—'
-    return InlineKeyboardButton(
-        text=f'{label}: {display}',
-        callback_data=AllMoviesFieldInput(field=field).pack(),
-    )
-
-
 def _range_clear_btn(label: str, value: int | float | None, field: str) -> InlineKeyboardButton:
     if value is not None:
         return InlineKeyboardButton(
@@ -122,12 +132,12 @@ def _range_clear_btn(label: str, value: int | float | None, field: str) -> Inlin
 
 
 def all_movies_filter_keyboard(
-    data: dict,
+    data: FilterData,
     categories: list[Category],
 ) -> InlineKeyboardMarkup:
     rows: list[list[InlineKeyboardButton]] = []
 
-    # --- Диапазоны ---
+    # --- Ranges ---
     rows.append(
         [
             _range_clear_btn('Год от', data.get('year_from'), 'year_from'),
@@ -147,7 +157,7 @@ def all_movies_filter_keyboard(
         ]
     )
 
-    # --- Тип медиа ---
+    # --- Media type ---
     active_media: list[str] = data.get('media_types', [])
     rows.append(
         [
@@ -159,9 +169,9 @@ def all_movies_filter_keyboard(
         ]
     )
 
-    # --- Категории (по 2 в ряд) ---
+    # --- Categories (2 per row) ---
     active_cats: list[int] = data.get('category_ids', [])
-    cat_buttons = [
+    cat_buttons: list[InlineKeyboardButton] = [
         InlineKeyboardButton(
             text=f'{_check(cat.id in active_cats)}{cat.name}',
             callback_data=AllMoviesToggleCategory(id=cat.id).pack(),
@@ -171,7 +181,7 @@ def all_movies_filter_keyboard(
     for i in range(0, len(cat_buttons), 2):
         rows.append(cat_buttons[i : i + 2])
 
-    # --- Статус ---
+    # --- Status ---
     active_statuses: list[str] = data.get('statuses', [])
     rows.append(
         [
@@ -183,12 +193,12 @@ def all_movies_filter_keyboard(
         ]
     )
 
-    # --- Сортировка (заголовок + кнопки) ---
+    # --- Sort (header + buttons) ---
     rows.append(
         [InlineKeyboardButton(text='— Сортировка —', callback_data=AllMoviesNoop().pack())]
     )
     active_sort: str = data.get('sort_by', 'imdb_rating')
-    sort_buttons = [
+    sort_buttons: list[InlineKeyboardButton] = [
         InlineKeyboardButton(
             text=f'{_check(key == active_sort)}{label}',
             callback_data=AllMoviesToggleSort(value=key).pack(),
@@ -198,7 +208,7 @@ def all_movies_filter_keyboard(
     for i in range(0, len(sort_buttons), 3):
         rows.append(sort_buttons[i : i + 3])
 
-    # --- Закрыть ---
+    # --- Close ---
     rows.append(
         [InlineKeyboardButton(text='← Список', callback_data=AllMoviesFilterClose().pack())]
     )

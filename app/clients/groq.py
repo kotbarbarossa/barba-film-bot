@@ -30,9 +30,6 @@ If the movie/series is found, return:
     "kinopoisk_rating": float 0.0-10.0 or null,
     "tmdb_rating": float 0.0-10.0 or null,
     "country": "country of origin in Russian or null",
-    "imdb_id": "tt followed by digits, e.g. tt0468569, or null",
-    "kp_id": "Kinopoisk film ID as string or null",
-    "tmdb_id": "TMDB film ID as string or null",
     "media_type": "film" or "series",
     "categories": [
       {"name": "genre in Russian", "name_original": "genre in English or null"}
@@ -89,8 +86,6 @@ class MovieData(BaseModel):
     country: str | None = None
     poster_url: str | None = None
     trailer_url: str | None = None
-    imdb_id: str | None = None
-    kp_id: str | None = None
     tmdb_id: str | None = None
     media_type: MediaType
     categories: list[CategoryData]
