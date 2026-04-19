@@ -7,6 +7,7 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.storage.redis import RedisStorage
 
 from app.bot.handlers.movie import add_router as movie_add_router
+from app.bot.handlers.movie import all_movies_router
 from app.bot.handlers.movie import list_router as movie_list_router
 from app.bot.handlers.start import router as start_router
 from app.bot.middlewares.database import DatabaseMiddleware
@@ -32,6 +33,7 @@ async def main() -> None:
 
     dp.update.outer_middleware(DatabaseMiddleware())
     dp.include_router(start_router)
+    dp.include_router(all_movies_router)
     dp.include_router(movie_list_router)
     dp.include_router(movie_add_router)
 

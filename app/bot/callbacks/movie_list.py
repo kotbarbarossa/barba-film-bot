@@ -19,6 +19,7 @@ class MovieCardSource(StrEnum):
     period = 'p'
     recent = 'w'
     added = 'a'
+    all = 'l'
 
 
 class MovieCardCallback(CallbackData, prefix='mc'):

@@ -29,7 +29,6 @@ MOVIE_LIST_RECENT_ADDED = 'Недавно добавленные фильмы:'
 MOVIE_LIST_RECENT_ADDED_EMPTY = 'Ты ещё не добавил ни одного фильма.'
 MOVIE_LIST_RECENT = 'Последние просмотренные фильмы:'
 MOVIE_LIST_RECENT_EMPTY = 'Ты ещё не отметил ни одного фильма как просмотренный.'
-MOVIE_LIST_ALL_STUB = 'Все мои фильмы — скоро здесь'
 MOVIE_RANDOM_EMPTY = 'У тебя нет обработанных фильмов для просмотра.'
 MOVIE_WATCHED_SUCCESS = '✅ Отмечено как просмотренное!\n\nКак тебе фильм?'
 MOVIE_RATING_SAVED = 'Оценка сохранена!'
@@ -40,6 +39,18 @@ MOVIE_SHARE_TEXT = (
 )
 MOVIE_ADD_TO_LIST_SUCCESS = '✅ Фильм добавлен в твой список!'
 MOVIE_ALREADY_IN_LIST = 'Этот фильм уже есть в твоём списке.'
+
+# --- All movies ---
+
+ALL_MOVIES_LIST_TITLE = 'Все мои фильмы'
+ALL_MOVIES_EMPTY = 'Нет фильмов по выбранным фильтрам.'
+ALL_MOVIES_FILTER_TITLE = 'Фильтры'
+ALL_MOVIES_INPUT_YEAR_FROM = 'Введи год от (например 1990):'
+ALL_MOVIES_INPUT_YEAR_TO = 'Введи год до (например 2024):'
+ALL_MOVIES_INPUT_IMDB_FROM = 'Введи минимальный IMDB рейтинг (например 7.5):'
+ALL_MOVIES_INPUT_IMDB_TO = 'Введи максимальный IMDB рейтинг (например 10):'
+ALL_MOVIES_INPUT_RATING_FROM = 'Введи минимальную мою оценку (1–10):'
+ALL_MOVIES_INPUT_RATING_TO = 'Введи максимальную мою оценку (1–10):'
 
 # --- Buttons ---
 
