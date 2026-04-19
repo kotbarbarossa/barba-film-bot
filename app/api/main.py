@@ -2,8 +2,11 @@ import uvicorn
 from fastapi import FastAPI
 
 from app.core.config import settings
+from app.core.sentry import init_sentry
 from app.core.settings import Environment
 from app.infrastructure.database.lifespan import lifespan
+
+init_sentry('api')
 from app.movie.router import (
     categories_router,
     movie_persons_router,

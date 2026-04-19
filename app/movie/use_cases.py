@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import re
 
@@ -66,7 +67,15 @@ class AddMovieToUserUseCase:
                 media_type=media_type,
                 user_query=user_query,
             )
-            await arq_pool.get().enqueue_job('process_movie', movie_id=movie.id)
+            try:
+                await asyncio.wait_for(
+                    arq_pool.get().enqueue_job('process_movie', movie_id=movie.id),
+                    timeout=5.0,
+                )
+            except asyncio.TimeoutError:
+                logger.error('enqueue_job timed out for movie_id=%d', movie.id)
+            except Exception:
+                logger.exception('enqueue_job failed for movie_id=%d', movie.id)
 
         existing_link = await self.user_movie_repo.get_by_user_and_movie(user_id, movie.id)
         if existing_link is None:

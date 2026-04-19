@@ -53,21 +53,21 @@ class MovieListResponse(BaseModel):
     title_ru: str | None
     year: int | None
     media_type: MediaType | None
-    poster_url: str | None
-    imdb_rating: Decimal | None
-    kinopoisk_rating: Decimal | None
-    tmdb_rating: Decimal | None
-
-
-class MovieDetailResponse(MovieListResponse):
-    description: str | None
     duration_minutes: int | None
     age_rating: str | None
     country: str | None
-    trailer_url: str | None
+    poster_url: str | None
     imdb_id: str | None
+    imdb_rating: Decimal | None
     kp_id: str | None
+    kinopoisk_rating: Decimal | None
     tmdb_id: str | None
+    tmdb_rating: Decimal | None
+    description: str | None
+
+
+class MovieDetailResponse(MovieListResponse):
+    trailer_url: str | None
     categories: list[CategoryResponse]
     persons: list[PersonInMovieResponse]
 

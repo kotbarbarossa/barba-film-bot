@@ -1,4 +1,5 @@
 from aiogram import F, Router
+from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -65,7 +66,9 @@ async def movie_title_received(message: Message, state: FSMContext) -> None:
 # --- Step 3: media type selected → ask for details ---
 
 
-@router.callback_query(MediaTypeCallback.filter())
+@router.callback_query(
+    MediaTypeCallback.filter(), StateFilter(AddMovieStates.waiting_for_media_type)
+)
 async def movie_media_type_selected(
     callback: CallbackQuery,
     callback_data: MediaTypeCallback,
@@ -112,7 +115,9 @@ async def movie_details_received(
 # --- Step 4b: details skipped → finish ---
 
 
-@router.callback_query(SkipDetailsCallback.filter())
+@router.callback_query(
+    SkipDetailsCallback.filter(), StateFilter(AddMovieStates.waiting_for_details)
+)
 async def movie_details_skipped(
     callback: CallbackQuery,
     state: FSMContext,

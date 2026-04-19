@@ -1,5 +1,8 @@
+from collections.abc import Callable
+
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,7 +21,8 @@ from app.bot.callbacks.all_movies import (
 )
 from app.bot.callbacks.navigation import NavAction, NavigationCallback
 from app.bot.keyboards.all_movies import (
-    _PAGE_SIZE,
+    PAGE_SIZE,
+    FilterData,
     all_movies_filter_keyboard,
     all_movies_input_keyboard,
     all_movies_list_keyboard,
@@ -42,7 +46,7 @@ from app.user.models import User
 
 router = Router(name='all_movies')
 
-_DEFAULT_FILTER: dict = {
+_DEFAULT_FILTER: FilterData = {
     'page': 0,
     'year_from': None,
     'year_to': None,
@@ -66,7 +70,7 @@ _FIELD_PROMPTS: dict[str, str] = {
     'rating_to': ALL_MOVIES_INPUT_RATING_TO,
 }
 
-_FIELD_STATES: dict[str, AllMoviesStates] = {
+_FIELD_STATES: dict[str, State] = {
     'year_from': AllMoviesStates.entering_year_from,
     'year_to': AllMoviesStates.entering_year_to,
     'imdb_from': AllMoviesStates.entering_imdb_from,
@@ -76,7 +80,7 @@ _FIELD_STATES: dict[str, AllMoviesStates] = {
 }
 
 
-def _build_um_filter(user_id: int, data: dict) -> UserMovieFilter:
+def _build_um_filter(user_id: int, data: FilterData) -> UserMovieFilter:
     statuses = data.get('statuses', [])
     media_types_raw = data.get('media_types', [])
     return UserMovieFilter(
@@ -95,7 +99,7 @@ def _build_um_filter(user_id: int, data: dict) -> UserMovieFilter:
     )
 
 
-def _build_active_filters_text(data: dict) -> str:
+def _build_active_filters_text(data: FilterData) -> str:
     parts: list[str] = []
     if data.get('year_from') or data.get('year_to'):
         parts.append(f'📅 {data.get("year_from", "—")}–{data.get("year_to", "—")}')
@@ -105,26 +109,28 @@ def _build_active_filters_text(data: dict) -> str:
         parts.append(f'🌟 Рейт. {data.get("rating_from", "—")}–{data.get("rating_to", "—")}')
     if data.get('media_types'):
         labels = {'film': 'Фильм', 'series': 'Сериал'}
-        parts.append(' / '.join(labels.get(m, m) for m in data['media_types']))
+        parts.append(' / '.join(labels.get(m, m) for m in data.get('media_types', [])))
     if data.get('statuses'):
         labels = {'want': 'Хочу', 'watched': 'Просмотрено'}
-        parts.append(' / '.join(labels.get(s, s) for s in data['statuses']))
+        parts.append(' / '.join(labels.get(s, s) for s in data.get('statuses', [])))
     return '\n'.join(parts)
 
 
-async def _show_list(message: Message, session: AsyncSession, db_user: User, data: dict) -> None:
+async def _show_list(
+    message: Message, session: AsyncSession, db_user: User, data: FilterData
+) -> None:
     um_filter = _build_um_filter(db_user.id, data)
     all_movies = await UserMovieRepository(session).get_filtered(um_filter)
     page = data.get('page', 0)
     total = len(all_movies)
-    page_movies = all_movies[page * _PAGE_SIZE : (page + 1) * _PAGE_SIZE]
+    page_movies = all_movies[page * PAGE_SIZE : (page + 1) * PAGE_SIZE]
 
     filters_text = _build_active_filters_text(data)
     title = ALL_MOVIES_LIST_TITLE
     if filters_text:
         title = f'{title}\n{filters_text}'
     if total:
-        total_pages = max(1, (total + _PAGE_SIZE - 1) // _PAGE_SIZE)
+        total_pages = max(1, (total + PAGE_SIZE - 1) // PAGE_SIZE)
         title = f'{title}\nСтр. {page + 1} / {total_pages} · {total} фильмов'
 
     if not page_movies:
@@ -141,7 +147,7 @@ async def _show_list(message: Message, session: AsyncSession, db_user: User, dat
 
 
 async def _show_filter(
-    message: Message, session: AsyncSession, db_user: User, data: dict
+    message: Message, session: AsyncSession, db_user: User, data: FilterData
 ) -> None:
     categories = await CategoryRepository(session).get_by_user_processed(db_user.id)
     await safe_edit(
@@ -185,7 +191,7 @@ async def all_movies_page(
     if not isinstance(callback.message, Message):
         return
     await state.update_data(page=callback_data.page)
-    data = await state.get_data()
+    data: FilterData = await state.get_data()  # type: ignore[assignment]
     await _show_list(callback.message, session, db_user, data)
 
 
@@ -202,7 +208,7 @@ async def all_movies_open_filter(
     if not isinstance(callback.message, Message):
         return
     await state.set_state(AllMoviesStates.filter_menu)
-    data = await state.get_data()
+    data: FilterData = await state.get_data()  # type: ignore[assignment]
     await _show_filter(callback.message, session, db_user, data)
 
 
@@ -215,7 +221,7 @@ async def all_movies_close_filter(
         return
     await state.update_data(page=0, filter_msg_id=None)
     await state.set_state(AllMoviesStates.browsing)
-    data = await state.get_data()
+    data: FilterData = await state.get_data()  # type: ignore[assignment]
     await _show_list(callback.message, session, db_user, data)
 
 
@@ -235,7 +241,7 @@ async def toggle_status(
     await callback.answer()
     if not isinstance(callback.message, Message):
         return
-    data = await state.get_data()
+    data: FilterData = await state.get_data()  # type: ignore[assignment]
     statuses: list[str] = list(data.get('statuses', []))
     value = callback_data.value
     if value in statuses:
@@ -243,7 +249,7 @@ async def toggle_status(
     else:
         statuses.append(value)
     await state.update_data(statuses=statuses)
-    data = await state.get_data()
+    data: FilterData = await state.get_data()  # type: ignore[assignment]
     await _show_filter(callback.message, session, db_user, data)
 
 
@@ -258,7 +264,7 @@ async def toggle_media_type(
     await callback.answer()
     if not isinstance(callback.message, Message):
         return
-    data = await state.get_data()
+    data: FilterData = await state.get_data()  # type: ignore[assignment]
     media_types: list[str] = list(data.get('media_types', []))
     value = callback_data.value
     if value in media_types:
@@ -266,7 +272,7 @@ async def toggle_media_type(
     else:
         media_types.append(value)
     await state.update_data(media_types=media_types)
-    data = await state.get_data()
+    data: FilterData = await state.get_data()  # type: ignore[assignment]
     await _show_filter(callback.message, session, db_user, data)
 
 
@@ -281,7 +287,7 @@ async def toggle_category(
     await callback.answer()
     if not isinstance(callback.message, Message):
         return
-    data = await state.get_data()
+    data: FilterData = await state.get_data()  # type: ignore[assignment]
     category_ids: list[int] = list(data.get('category_ids', []))
     cat_id = callback_data.id
     if cat_id in category_ids:
@@ -289,7 +295,7 @@ async def toggle_category(
     else:
         category_ids.append(cat_id)
     await state.update_data(category_ids=category_ids)
-    data = await state.get_data()
+    data: FilterData = await state.get_data()  # type: ignore[assignment]
     await _show_filter(callback.message, session, db_user, data)
 
 
@@ -305,7 +311,7 @@ async def toggle_sort(
     if not isinstance(callback.message, Message):
         return
     await state.update_data(sort_by=callback_data.value)
-    data = await state.get_data()
+    data: FilterData = await state.get_data()  # type: ignore[assignment]
     await _show_filter(callback.message, session, db_user, data)
 
 
@@ -346,7 +352,7 @@ async def field_clear(
         return
     await state.update_data(**{callback_data.field: None})
     await state.set_state(AllMoviesStates.filter_menu)
-    data = await state.get_data()
+    data: FilterData = await state.get_data()  # type: ignore[assignment]
     await _show_filter(callback.message, session, db_user, data)
 
 
@@ -361,7 +367,7 @@ async def cancel_input(
     if not isinstance(callback.message, Message):
         return
     await state.set_state(AllMoviesStates.filter_menu)
-    data = await state.get_data()
+    data: FilterData = await state.get_data()  # type: ignore[assignment]
     await _show_filter(callback.message, session, db_user, data)
 
 
@@ -393,15 +399,15 @@ async def _handle_range_input(
     db_user: User,
     field: str,
     raw: str,
-    parser,
+    parser: Callable[[str], int | float | None],
 ) -> None:
     value = parser(raw)
-    data = await state.get_data()
+    data: FilterData = await state.get_data()  # type: ignore[assignment]
     filter_msg_id = data.get('filter_msg_id')
 
-    await state.update_data(**{field: value, 'filter_msg_id': None})
+    await state.update_data(**{field: value, 'filter_msg_id': None})  # type: ignore[arg-type]
     await state.set_state(AllMoviesStates.filter_menu)
-    data = await state.get_data()
+    data = await state.get_data()  # type: ignore[assignment]
 
     if filter_msg_id is not None:
         try:
@@ -500,5 +506,5 @@ async def noop(callback: CallbackQuery) -> None:
 async def back_to_all_movies(
     message: Message, session: AsyncSession, state: FSMContext, db_user: User
 ) -> None:
-    data = await state.get_data()
+    data: FilterData = await state.get_data()  # type: ignore[assignment]
     await _show_list(message, session, db_user, data)
