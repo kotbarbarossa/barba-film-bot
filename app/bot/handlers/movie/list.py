@@ -88,6 +88,7 @@ def _format_card(movie: Movie) -> str:
         lines.append(f'\n{movie.description}')
 
     if hasattr(movie, 'persons') and movie.persons:
+        lines.append('')
         directors = [mp.person.name for mp in movie.persons if mp.role_type == RoleType.DIRECTOR]
         if directors:
             lines.append(f'🎬 Режиссёр: {", ".join(directors)}')

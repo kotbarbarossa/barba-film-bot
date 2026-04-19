@@ -27,9 +27,15 @@ async def show_card(
             await message.delete()
         except TelegramBadRequest:
             pass
-        await message.answer_photo(photo=poster_url, caption=caption, reply_markup=reply_markup)
-    else:
-        await safe_edit(message, text, reply_markup=reply_markup)
+        try:
+            await message.answer_photo(
+                photo=poster_url, caption=caption, reply_markup=reply_markup
+            )
+            return
+        except TelegramBadRequest:
+            await message.answer(text, reply_markup=reply_markup)
+            return
+    await safe_edit(message, text, reply_markup=reply_markup)
 
 
 async def safe_to_text(

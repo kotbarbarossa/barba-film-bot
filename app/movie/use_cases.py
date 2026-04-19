@@ -1,9 +1,13 @@
+import logging
 import re
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.infrastructure import arq_pool
 from app.movie.models import MediaType, Movie, ProcessingStatus
 from app.movie.repository import MovieFilter, MovieRepository, UserMovieRepository
+
+logger = logging.getLogger(__name__)
 
 
 def _is_cyrillic(text: str) -> bool:
@@ -62,7 +66,7 @@ class AddMovieToUserUseCase:
                 media_type=media_type,
                 user_query=user_query,
             )
-            # TODO: запустить фоновую задачу обработки фильма (ChatGPT API)
+            await arq_pool.get().enqueue_job('process_movie', movie_id=movie.id)
 
         existing_link = await self.user_movie_repo.get_by_user_and_movie(user_id, movie.id)
         if existing_link is None:
