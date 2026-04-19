@@ -5,8 +5,6 @@ from app.core.config import settings
 from app.core.sentry import init_sentry
 from app.core.settings import Environment
 from app.infrastructure.database.lifespan import lifespan
-
-init_sentry('api')
 from app.movie.router import (
     categories_router,
     movie_persons_router,
@@ -17,6 +15,8 @@ from app.movie.router import (
 from app.user.router import router as user_router
 
 API_PREFIX = '/api/v1'
+
+init_sentry('api')
 
 
 def create_app() -> FastAPI:
@@ -29,6 +29,13 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+
+@app.get('/health')
+async def health() -> dict[str, str]:
+    return {'status': 'ok'}
+
+
 app.include_router(user_router, prefix=API_PREFIX)
 app.include_router(movies_router, prefix=API_PREFIX)
 app.include_router(movie_persons_router, prefix=API_PREFIX)
