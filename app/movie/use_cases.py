@@ -72,7 +72,7 @@ class AddMovieToUserUseCase:
                     arq_pool.get().enqueue_job('process_movie', movie_id=movie.id),
                     timeout=5.0,
                 )
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 logger.error('enqueue_job timed out for movie_id=%d', movie.id)
             except Exception:
                 logger.exception('enqueue_job failed for movie_id=%d', movie.id)
