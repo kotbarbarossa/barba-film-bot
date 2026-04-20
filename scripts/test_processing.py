@@ -11,7 +11,9 @@ from app.movie.processing_use_case import ProcessMovieUseCase
 logging.basicConfig(level=logging.INFO, format='%(levelname)s %(name)s: %(message)s')
 
 
-def make_movie(id_: int, title_ru: str | None, title_original: str | None) -> types.SimpleNamespace:
+def make_movie(
+    id_: int, title_ru: str | None, title_original: str | None
+) -> types.SimpleNamespace:
     m = types.SimpleNamespace()
     m.id = id_
     m.title_ru = title_ru
