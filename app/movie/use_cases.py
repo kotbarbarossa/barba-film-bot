@@ -69,7 +69,11 @@ class AddMovieToUserUseCase:
             )
             try:
                 await asyncio.wait_for(
-                    arq_pool.get().enqueue_job('process_movie', movie_id=movie.id),
+                    arq_pool.get().enqueue_job(
+                        'process_movie',
+                        movie_id=movie.id,
+                        _job_id=f'process_movie:{movie.id}',
+                    ),
                     timeout=5.0,
                 )
             except TimeoutError:

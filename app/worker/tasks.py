@@ -19,3 +19,23 @@ async def process_movie(_ctx: dict[str, Any], *, movie_id: int) -> None:
         if movie is None:
             raise Retry(defer=timedelta(seconds=3))
         await ProcessMovieUseCase(session).execute(movie_id)
+
+
+async def recover_pending_movies(ctx: dict[str, Any]) -> None:
+    """Re-enqueue PENDING movies that were never picked up or exhausted all retries."""
+    session = session_manager.get_session()
+    async with session.begin():
+        movies = await MovieRepository(session).get_stale_pending(older_than_minutes=10)
+
+    if not movies:
+        return
+
+    logger.info('recover_pending_movies: found %d stale PENDING movies', len(movies))
+    redis = ctx['redis']
+    for movie in movies:
+        await redis.enqueue_job(
+            'process_movie',
+            movie_id=movie.id,
+            _job_id=f'process_movie:{movie.id}',
+        )
+        logger.info('recover_pending_movies: re-enqueued movie_id=%d', movie.id)

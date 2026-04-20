@@ -55,6 +55,16 @@ class UserMovieFilter:
 class MovieRepository(BaseRepository[Movie]):
     model = Movie
 
+    async def get_stale_pending(self, *, older_than_minutes: int = 10) -> list[Movie]:
+        from datetime import UTC, datetime, timedelta
+
+        cutoff = datetime.now(UTC) - timedelta(minutes=older_than_minutes)
+        stmt = select(Movie).where(
+            Movie.processing_status == ProcessingStatus.PENDING,
+            Movie.created_at < cutoff,
+        )
+        return list((await self.session.execute(stmt)).scalars().all())
+
     async def get_filtered(self, filters: MovieFilter) -> list[Movie]:
         stmt = select(Movie)
         if filters.media_type is not None:
