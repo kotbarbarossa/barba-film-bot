@@ -1,18 +1,14 @@
 import asyncio
 import logging
-import re
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastructure import arq_pool
 from app.movie.models import MediaType, Movie, ProcessingStatus
 from app.movie.repository import MovieFilter, MovieRepository, UserMovieRepository
+from app.utils.text import is_cyrillic
 
 logger = logging.getLogger(__name__)
-
-
-def _is_cyrillic(text: str) -> bool:
-    return bool(re.search(r'[а-яёА-ЯЁ]', text))
 
 
 class CreateMovieUseCase:
@@ -54,8 +50,8 @@ class AddMovieToUserUseCase:
         Returns (movie, found_existing) where found_existing=True means
         the movie was matched in the database (no new entry created).
         """
-        title_ru = title if _is_cyrillic(title) else None
-        title_original = title if not _is_cyrillic(title) else None
+        title_ru = title if is_cyrillic(title) else None
+        title_original = title if not is_cyrillic(title) else None
 
         movie = await self._find_existing(title, media_type)
         found_existing = movie is not None
@@ -69,7 +65,11 @@ class AddMovieToUserUseCase:
             )
             try:
                 await asyncio.wait_for(
-                    arq_pool.get().enqueue_job('process_movie', movie_id=movie.id),
+                    arq_pool.get().enqueue_job(
+                        'process_movie',
+                        movie_id=movie.id,
+                        _job_id=f'process_movie:{movie.id}',
+                    ),
                     timeout=5.0,
                 )
             except TimeoutError:

@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 
+from sqlalchemy import delete as sa_delete
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -54,6 +55,16 @@ class UserMovieFilter:
 
 class MovieRepository(BaseRepository[Movie]):
     model = Movie
+
+    async def get_stale_pending(self, *, older_than_minutes: int = 10) -> list[Movie]:
+        from datetime import UTC, datetime, timedelta
+
+        cutoff = datetime.now(UTC) - timedelta(minutes=older_than_minutes)
+        stmt = select(Movie).where(
+            Movie.processing_status == ProcessingStatus.PENDING,
+            Movie.created_at < cutoff,
+        )
+        return list((await self.session.execute(stmt)).scalars().all())
 
     async def get_filtered(self, filters: MovieFilter) -> list[Movie]:
         stmt = select(Movie)
@@ -252,6 +263,12 @@ class MoviePersonRepository:
 
     async def delete(self, entry: MoviePerson) -> None:
         await self.session.delete(entry)
+        await self.session.flush()
+
+    async def delete_all_by_movie(self, movie_id: int) -> None:
+        await self.session.execute(
+            sa_delete(MoviePerson).where(MoviePerson.movie_id == movie_id)
+        )
         await self.session.flush()
 
 
