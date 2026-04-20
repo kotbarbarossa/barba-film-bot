@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.infrastructure import arq_pool
 from app.infrastructure.database.dependencies import get_session
-from app.movie.models import MediaType, ProcessingStatus, RoleType, WatchStatus
+from app.movie.models import MediaType, RoleType, WatchStatus
 from app.movie.repository import (
     CategoryFilter,
     CategoryRepository,
@@ -43,21 +42,6 @@ user_movies_router = APIRouter(prefix='/users/{user_id}/movies', tags=['user-mov
 
 
 # --- Movies ---
-
-
-@movies_router.post('/process-pending', response_model=dict[str, int])
-async def process_pending_movies(session: AsyncSession = Depends(get_session)) -> dict[str, int]:
-    movies = await MovieRepository(session).get_filtered(
-        MovieFilter(processing_status=ProcessingStatus.PENDING)
-    )
-    pool = arq_pool.get()
-    for movie in movies:
-        await pool.enqueue_job(
-            'process_movie',
-            movie_id=movie.id,
-            _job_id=f'process_movie:{movie.id}',
-        )
-    return {'enqueued': len(movies)}
 
 
 @movies_router.get('/', response_model=list[MovieListResponse])

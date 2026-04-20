@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 
+from sqlalchemy import delete as sa_delete
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -262,6 +263,12 @@ class MoviePersonRepository:
 
     async def delete(self, entry: MoviePerson) -> None:
         await self.session.delete(entry)
+        await self.session.flush()
+
+    async def delete_all_by_movie(self, movie_id: int) -> None:
+        await self.session.execute(
+            sa_delete(MoviePerson).where(MoviePerson.movie_id == movie_id)
+        )
         await self.session.flush()
 
 
