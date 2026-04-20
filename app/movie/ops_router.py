@@ -18,11 +18,7 @@ async def reprocess_pending(session: AsyncSession = Depends(get_session)) -> dic
     )
     pool = arq_pool.get()
     for movie in movies:
-        await pool.enqueue_job(
-            'process_movie',
-            movie_id=movie.id,
-            _job_id=f'process_movie:{movie.id}',
-        )
+        await pool.enqueue_job('process_movie', movie_id=movie.id)
     return {'enqueued': len(movies)}
 
 

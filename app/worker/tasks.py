@@ -33,9 +33,5 @@ async def recover_pending_movies(ctx: dict[str, Any]) -> None:
     logger.info('recover_pending_movies: found %d stale PENDING movies', len(movies))
     redis = ctx['redis']
     for movie in movies:
-        await redis.enqueue_job(
-            'process_movie',
-            movie_id=movie.id,
-            _job_id=f'process_movie:{movie.id}',
-        )
+        await redis.enqueue_job('process_movie', movie_id=movie.id)
         logger.info('recover_pending_movies: re-enqueued movie_id=%d', movie.id)
