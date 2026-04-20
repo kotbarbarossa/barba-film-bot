@@ -3,8 +3,8 @@ from decimal import Decimal
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.clients.groq import MovieData, PersonData, fetch_movie_data
-from app.clients.tmdb import fetch_poster_url
+from app.clients.groq import MovieData, PersonData, fetch_movie_data, fetch_movie_data_enriched
+from app.clients.tmdb import search_movie
 from app.core.config import settings
 from app.movie.models import Category, Movie, Person, ProcessingStatus
 from app.movie.repository import (
@@ -42,12 +42,7 @@ class ProcessMovieUseCase:
             logger.warning('process_movie: movie %d has no media_type, skipping', movie_id)
             return
 
-        data = await fetch_movie_data(
-            title=movie.title_ru or movie.title_original or '',
-            media_type=movie.media_type,
-            user_query=movie.user_query,
-            api_key=settings.groq_api_key,
-        )
+        data = await self._fetch_movie_data(movie)
 
         if data is None:
             await self.movie_repo.update(
@@ -56,14 +51,6 @@ class ProcessMovieUseCase:
             logger.info('Movie %d marked as UNRECOGNIZED', movie_id)
             return
 
-        if data.title_original:
-            data.poster_url, data.tmdb_id = await fetch_poster_url(
-                title_original=data.title_original,
-                media_type=data.media_type,
-                year=data.year,
-                api_key=settings.tmdb_api_key,
-            )
-
         existing = await self._find_existing(data)
         if existing is not None:
             await self._reroute_to_existing(movie, existing)
@@ -71,6 +58,65 @@ class ProcessMovieUseCase:
         else:
             await self._fill_movie(movie, data)
             logger.info('Movie %d processed successfully', movie_id)
+
+    async def _fetch_movie_data(self, movie: Movie) -> MovieData | None:
+        """
+        Try TMDB search first. If found — enrich via Groq (ratings, genres, persons).
+        If not found — fall back to Groq full flow + TMDB for poster.
+        """
+        query = movie.title_ru or movie.title_original or ''
+
+        tmdb = await search_movie(
+            query=query,
+            media_type=movie.media_type,  # type: ignore[arg-type]
+            api_key=settings.tmdb_api_key,
+        )
+
+        if tmdb is not None and tmdb.title_original:
+            logger.info('Movie %d found in TMDB: %r', movie.id, tmdb.title_original)
+            data = await fetch_movie_data_enriched(
+                title_original=tmdb.title_original,
+                title_ru=tmdb.title_ru,
+                year=tmdb.year,
+                overview=tmdb.overview,
+                media_type=movie.media_type,  # type: ignore[arg-type]
+                api_key=settings.groq_api_key,
+            )
+            if data is not None:
+                data.poster_url = tmdb.poster_url
+                data.tmdb_id = tmdb.tmdb_id
+                data.tmdb_rating = tmdb.tmdb_rating
+                return data
+            # Groq enrich failed — fall through to full Groq flow
+            logger.warning('Movie %d: Groq enrich failed, falling back to full flow', movie.id)
+
+        # Full Groq flow
+        data = await fetch_movie_data(
+            title=query,
+            media_type=movie.media_type,  # type: ignore[arg-type]
+            user_query=movie.user_query,
+            api_key=settings.groq_api_key,
+        )
+        if data is None:
+            return None
+
+        # Get poster from TMDB: reuse existing result or search by Groq's title_original
+        tmdb_for_poster = tmdb or (
+            await search_movie(
+                query=data.title_original,
+                media_type=data.media_type,
+                api_key=settings.tmdb_api_key,
+            )
+            if data.title_original
+            else None
+        )
+        if tmdb_for_poster is not None:
+            data.poster_url = tmdb_for_poster.poster_url
+            data.tmdb_id = tmdb_for_poster.tmdb_id
+            if data.tmdb_rating is None:
+                data.tmdb_rating = tmdb_for_poster.tmdb_rating
+
+        return data
 
     async def _find_existing(self, data: MovieData) -> Movie | None:
         for title in filter(None, [data.title_original, data.title_ru]):
