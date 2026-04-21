@@ -1,8 +1,92 @@
-# barba-film-bot
+# 🎬 Kino Kopilka — @kino_kopilka_bot
 
-A Telegram bot for tracking movies. Users add films to their personal list, browse by genre/decade/status, rate and share them. Movie metadata is fetched asynchronously via Groq (LLM) and TMDB.
+Personal Telegram bot for tracking movies and TV series. Add titles to your list, browse by genre or decade, rate what you've watched, and let the bot enrich metadata automatically via Groq + TMDB.
+
+**Stack:** FastAPI · aiogram 3 · SQLAlchemy 2.0 async · asyncpg · PostgreSQL · Redis · ARQ · Groq · TMDB · Sentry · Docker · GitLab CI/CD · AWS EC2
+
+**[Open in Telegram →](https://t.me/kino_kopilka_bot)**
+
+---
+
+## Features
+
+### Adding a film
+Three-step FSM dialog: enter the title → select type (film / series) → optionally add a note for better search. The bot detects the language (Cyrillic / Latin) and saves it as `title_ru` or `title_original`. Metadata is fetched in the background.
+
+### Browsing
+- **Random** — surprise pick from your list
+- **By genre** — filter by category
+- **By decade** — e.g. "90s", "2010s"
+- **Recently added** — last titles you saved
+- **Recently watched** — last titles you marked as watched
+
+### Film card
+Poster, description, year, ratings (IMDb / Kinopoisk / TMDB), country, duration, age rating, cast. Mark as watched, rate 1–10, share with a friend.
+
+### My films
+Full list with pagination and multi-filter: status (watched / unwatched) · type (film / series) · genre · sort order. Each filter toggled inline without leaving the screen.
+
+---
+
+## Screenshots
+
+<table><tr>
+  <th>Start page</th>
+  <th>Main menu</th>
+  <th>Film card</th>
+  <th>My films with filters</th>
+</tr><tr>
+  <td><img src="docs/screenshots/start_page.jpeg" height="380"/></td>
+  <td><img src="docs/screenshots/main_menu.jpeg" height="380"/></td>
+  <td><img src="docs/screenshots/film_card.jpeg" height="380"/></td>
+  <td><img src="docs/screenshots/films_with_filters.jpeg" height="380"/></td>
+</tr></table>
+
+### Adding a film dialog
+
+<table><tr>
+  <td><img src="docs/screenshots/add_movie_1.jpeg" width="380"/></td>
+  <td><img src="docs/screenshots/add_movie_2.jpeg" width="380"/></td>
+  <td><img src="docs/screenshots/add_movie_3.jpeg" width="380"/></td>
+  <td><img src="docs/screenshots/add_movie_4.jpeg" width="380"/></td>
+</tr></table>
+
+---
 
 ## Architecture
+
+```mermaid
+flowchart LR
+  subgraph Clients
+    TG[Telegram user]
+  end
+
+  subgraph AWS_EC2["AWS EC2 · docker-compose"]
+    BOT[aiogram bot]
+    API[FastAPI REST]
+    WORKER[ARQ worker]
+    PG[(PostgreSQL)]
+    RED[(Redis · FSM + queue)]
+  end
+
+  subgraph External
+    GROQ[Groq API]
+    TMDB[TMDB API]
+    SENTRY[Sentry]
+  end
+
+  TG <--> BOT
+  BOT --> PG
+  BOT --> RED
+  API --> PG
+  RED --> WORKER
+  WORKER --> PG
+  WORKER --> GROQ
+  WORKER --> TMDB
+  BOT -.error.-> SENTRY
+  API -.error.-> SENTRY
+  WORKER -.error.-> SENTRY
+```
 
 Three long-running processes share one codebase:
 
@@ -10,25 +94,49 @@ Three long-running processes share one codebase:
 |---------|------------|-------------|
 | `bot` | `app/bot/main.py` | Telegram bot (aiogram 3, polling) |
 | `api` | `app/api/main.py` | FastAPI REST API |
-| `worker` | `app/worker/main.py` | ARQ background worker (movie processing) |
+| `worker` | `app/worker/main.py` | ARQ background worker (metadata enrichment) |
 
 **Storage:** PostgreSQL (main DB) · Redis (FSM storage + ARQ queue)
 
+---
+
+## Key Design Decisions
+
+**Layered architecture** — `Repository` (DB access) → `UseCase` (business logic) → `Router/Handler` (transport). Repositories return SQLAlchemy models; use-cases translate to and from Pydantic schemas. The transport layer never imports the ORM.
+
+**Generic `BaseRepository[Model]`** — with `__init_subclass__` validation that forces every subclass to declare its SQLAlchemy model at class-definition time. Mirrors the Django CBV pattern for SQLAlchemy 2.0 async.
+
+**Async all the way down** — `SQLAlchemy 2.0 async` + `asyncpg` for the DB, `aiogram 3` for Telegram polling, `httpx.AsyncClient` for external APIs. No `run_in_executor`, no blocking `requests` calls.
+
+**FSM safety via `StateFilter`** — every handler inside a dialog is guarded by `StateFilter`, so a stale keyboard from a previous session can't trigger mid-dialog logic after the FSM has moved on.
+
+**Telegram photo-message quirk** — Telegram doesn't allow `edit_message_text` on photo messages (only `edit_caption`). The film-card flow does `delete + send_new` instead of `edit`, so pagination and filter toggles work identically on plain-text and photo messages.
+
+**ARQ for metadata enrichment** — adding a film returns immediately; Groq + TMDB lookups (~1–3s of external calls) run as an ARQ job so the bot UX is never blocked on third-party APIs.
+
+**Per-service Sentry tagging** — each process (`bot`, `api`, `worker`) sets its own `app` tag on Sentry init, so errors are filterable per component on the dashboard.
+
+**Add-film deduplication** — before creating a new row the bot does an exact-title lookup across the already-enriched catalog, so the same film added by two different users is reused rather than re-enriched.
+
+---
+
 ## Tech Stack
 
-- Python 3.13, [uv](https://docs.astral.sh/uv/)
-- FastAPI + uvicorn
-- aiogram 3.x
-- SQLAlchemy 2.0 async + asyncpg
-- Alembic
-- ARQ (async job queue)
-- Pydantic v2 + pydantic-settings
-- Sentry (error monitoring)
-- Ruff (linter/formatter)
+**Runtime & tooling:** Python 3.13, [uv](https://docs.astral.sh/uv/), [just](https://github.com/casey/just), Ruff
+
+**Web & bot:** FastAPI, uvicorn, aiogram 3.x
+
+**Data & async:** SQLAlchemy 2.0 async, asyncpg, Alembic, Redis, ARQ, Pydantic v2, pydantic-settings
+
+**External APIs:** Groq (LLM metadata enrichment), TMDB (posters & ratings)
+
+**Observability & DevOps:** Sentry, Docker Compose, GitLab CI/CD, AWS EC2
+
+---
 
 ## Environment Variables
 
-Copy the table below into a `.env` file at the project root and fill in the values.
+Copy into a `.env` file at the project root.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -48,18 +156,17 @@ Copy the table below into a `.env` file at the project root and fill in the valu
 | `TMDB_API_KEY` | — | TMDB API key |
 | `SENTRY_DSN` | `""` | Sentry DSN (leave empty to disable) |
 
+---
+
 ## Local Development
 
 **Requirements:** Python 3.13, [uv](https://docs.astral.sh/uv/), [just](https://github.com/casey/just), PostgreSQL, Redis.
 
 ```bash
-# Install dependencies
 uv sync
-
-# Apply migrations
 just db-upgrade
 
-# Run services (each in a separate terminal)
+# Run each in a separate terminal
 just api
 just bot
 just worker
@@ -79,49 +186,43 @@ just format       # ruff format
 just test         # pytest
 ```
 
-## Production (Docker)
+---
 
-All services are built from a single `Dockerfile`. `docker-compose.yml` runs postgres, redis, a one-off `migrate` container, and the three app services.
+## Production (Docker + AWS EC2)
+
+The project runs on **AWS EC2 t3.micro** with an Elastic IP. All services are built from a single `Dockerfile` and orchestrated via `docker-compose.yml`.
 
 ```bash
 # Build image locally (for testing)
 docker build -t barba-film-bot:latest .
 
-# Start everything (image must be available as APP_IMAGE or built locally)
+# Start everything
 APP_IMAGE=barba-film-bot:latest docker compose up -d
 ```
 
 Migrations run automatically via the `migrate` service before `api`, `bot`, and `worker` start.
 
+---
+
 ## CI/CD (GitLab → AWS EC2)
 
-The pipeline defined in `.gitlab-ci.yml` has three stages:
+Three stages on push to `main`:
 
-1. **lint** — `ruff check` (runs on `main`, `dev`, and MRs)
-2. **build** — builds the Docker image and pushes it to the GitLab Container Registry (runs on `main`)
-3. **deploy** — copies `docker-compose.yml` to the server and restarts services via SSH (runs on `main`)
+1. **lint** — `ruff check`
+2. **build** — Docker image → GitLab Container Registry
+3. **deploy** — copy `docker-compose.yml` to EC2, restart services via SSH
 
 ### Required GitLab CI/CD variables
-
-Set these in **Settings → CI/CD → Variables** (mark sensitive ones as _Protected_ and _Masked_):
 
 | Variable | Description |
 |----------|-------------|
 | `SSH_PRIVATE_KEY` | EC2 SSH private key (PEM format) |
 | `DEPLOY_HOST` | EC2 public IP or hostname |
-| `DEPLOY_USER` | SSH user (`ubuntu` for Ubuntu AMIs, `ec2-user` for Amazon Linux) |
-| `DEPLOY_DIR` | Absolute path to the project directory on the server (e.g. `/home/ubuntu/barba-film-bot`) |
+| `DEPLOY_USER` | SSH user (`ubuntu` / `ec2-user`) |
+| `DEPLOY_DIR` | Absolute path on the server |
 
-### First-time server setup
+---
 
-```bash
-# On the EC2 instance
-mkdir -p ~/barba-film-bot
-cd ~/barba-film-bot
+## License
 
-# Create .env with production values
-cp /path/to/.env.template .env
-nano .env
-```
-
-After the first successful pipeline run the server will have the latest image running.
+[MIT](LICENSE)
