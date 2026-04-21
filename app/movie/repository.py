@@ -266,9 +266,7 @@ class MoviePersonRepository:
         await self.session.flush()
 
     async def delete_all_by_movie(self, movie_id: int) -> None:
-        await self.session.execute(
-            sa_delete(MoviePerson).where(MoviePerson.movie_id == movie_id)
-        )
+        await self.session.execute(sa_delete(MoviePerson).where(MoviePerson.movie_id == movie_id))
         await self.session.flush()
 
 
