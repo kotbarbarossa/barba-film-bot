@@ -22,7 +22,7 @@ async def process_movie(_ctx: dict[str, Any], *, movie_id: int) -> None:
                 raise Retry(defer=timedelta(seconds=3))
             await ProcessMovieUseCase(session).execute(movie_id)
     except GroqRateLimitError:
-        logger.warning('Movie %d: Groq rate limit — movie stays PENDING, recover cron will retry', movie_id)
+        logger.warning('Movie %d: Groq 429 — stays PENDING, recover cron will retry', movie_id)
 
 
 async def recover_pending_movies(ctx: dict[str, Any]) -> None:

@@ -214,7 +214,7 @@ class ProcessMovieUseCase:
         for person_data in data.persons:
             if person_data.name is None:
                 logger.error(
-                    'Movie %d: Groq returned person without name (role=%s, original_name=%r) — skipping',
+                    'Movie %d: Groq person without name (role=%s, original=%r) — skipping',
                     movie_id,
                     person_data.role,
                     person_data.original_name,

@@ -19,8 +19,8 @@ def init_sentry(app_name: AppName) -> None:
     integrations: list[Integration] = [
         SqlalchemyIntegration(),
         LoggingIntegration(
-            level=logging.INFO,  # INFO и выше идут как breadcrumbs
-            event_level=logging.ERROR,  # ERROR и выше создают event в Sentry
+            level=logging.INFO,  # INFO -> breadcrumbs
+            event_level=logging.ERROR,  # ERROR -> event Sentry
         ),
     ]
 
