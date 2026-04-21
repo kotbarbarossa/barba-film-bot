@@ -25,6 +25,7 @@ async def reprocess_pending(session: AsyncSession = Depends(get_session)) -> dic
 class ReprocessRequest(BaseModel):
     title: str
     media_type: MediaType
+    user_query: str | None = None
 
 
 @ops_router.post('/{movie_id}/reprocess', response_model=dict[str, int | str])
@@ -38,6 +39,7 @@ async def reprocess_movie(
             movie_id=movie_id,
             title=body.title,
             media_type=body.media_type,
+            user_query=body.user_query,
         )
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e

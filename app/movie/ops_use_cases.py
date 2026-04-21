@@ -31,7 +31,9 @@ class ReprocessMovieUseCase:
         self.movie_repo = MovieRepository(session)
         self.movie_person_repo = MoviePersonRepository(session)
 
-    async def execute(self, *, movie_id: int, title: str, media_type: MediaType) -> None:
+    async def execute(
+        self, *, movie_id: int, title: str, media_type: MediaType, user_query: str | None = None
+    ) -> None:
         movie = await self.movie_repo.get(movie_id)
         if movie is None:
             raise ValueError(f'Movie {movie_id} not found')
@@ -47,6 +49,7 @@ class ReprocessMovieUseCase:
                 'title_original': title_original,
                 'media_type': media_type,
                 'processing_status': ProcessingStatus.PENDING,
+                'user_query': user_query,
             },
         )
 
