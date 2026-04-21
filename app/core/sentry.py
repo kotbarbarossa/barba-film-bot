@@ -2,6 +2,8 @@ import logging
 from typing import Literal
 
 import sentry_sdk
+from sentry_sdk.integrations import Integration
+from sentry_sdk.integrations.arq import ArqIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
@@ -14,13 +16,16 @@ def init_sentry(app_name: AppName) -> None:
     if not settings.sentry_dsn:
         return
 
-    integrations = [
+    integrations: list[Integration] = [
         SqlalchemyIntegration(),
         LoggingIntegration(
-            level=logging.INFO,       # INFO и выше идут как breadcrumbs
+            level=logging.INFO,  # INFO и выше идут как breadcrumbs
             event_level=logging.ERROR,  # ERROR и выше создают event в Sentry
         ),
     ]
+
+    if app_name == 'worker':
+        integrations.append(ArqIntegration())
 
     if app_name == 'api':
         from sentry_sdk.integrations.fastapi import FastApiIntegration

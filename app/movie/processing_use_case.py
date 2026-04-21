@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.clients.groq import MovieData, PersonData, fetch_movie_data, fetch_movie_data_enriched
 from app.clients.tmdb import search_movie
 from app.core.config import settings
-from app.movie.models import Category, Movie, Person, ProcessingStatus
+from app.movie.models import Category, MediaType, Movie, Person, ProcessingStatus
 from app.movie.repository import (
     CategoryRepository,
     MovieFilter,
@@ -17,6 +17,69 @@ from app.movie.repository import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+class PreviewMovieUseCase:
+    async def execute(
+        self,
+        *,
+        title: str,
+        media_type: MediaType,
+        user_query: str | None = None,
+    ) -> MovieData | None:
+        if not user_query:
+            # No context — trust TMDB's first result, enrich via Groq
+            tmdb = await search_movie(
+                query=title,
+                media_type=media_type,
+                api_key=settings.tmdb_api_key,
+            )
+            if tmdb is not None and tmdb.title_original:
+                logger.info('Preview: found in TMDB: %r', tmdb.title_original)
+                data = await fetch_movie_data_enriched(
+                    title_original=tmdb.title_original,
+                    title_ru=tmdb.title_ru,
+                    year=tmdb.year,
+                    overview=tmdb.overview,
+                    media_type=media_type,
+                    api_key=settings.groq_api_key,
+                )
+                if data is not None:
+                    data.poster_url = tmdb.poster_url
+                    data.tmdb_id = tmdb.tmdb_id
+                    data.tmdb_rating = tmdb.tmdb_rating
+                    return data
+                logger.warning('Preview: Groq enrich failed, falling back to full flow')
+        else:
+            tmdb = None
+
+        # user_query present (Groq resolves correct movie from context)
+        # or TMDB-first failed — fall back to Groq full flow
+        data = await fetch_movie_data(
+            title=title,
+            media_type=media_type,
+            user_query=user_query,
+            api_key=settings.groq_api_key,
+        )
+        if data is None:
+            return None
+
+        tmdb_for_poster = tmdb or (
+            await search_movie(
+                query=data.title_original,
+                media_type=data.media_type,
+                api_key=settings.tmdb_api_key,
+            )
+            if data.title_original
+            else None
+        )
+        if tmdb_for_poster is not None:
+            data.poster_url = tmdb_for_poster.poster_url
+            data.tmdb_id = tmdb_for_poster.tmdb_id
+            if data.tmdb_rating is None:
+                data.tmdb_rating = tmdb_for_poster.tmdb_rating
+
+        return data
 
 
 class ProcessMovieUseCase:
@@ -60,63 +123,13 @@ class ProcessMovieUseCase:
             logger.info('Movie %d processed successfully', movie_id)
 
     async def _fetch_movie_data(self, movie: Movie) -> MovieData | None:
-        """
-        Try TMDB search first. If found — enrich via Groq (ratings, genres, persons).
-        If not found — fall back to Groq full flow + TMDB for poster.
-        """
+        assert movie.media_type is not None
         query = movie.title_ru or movie.title_original or ''
-
-        tmdb = await search_movie(
-            query=query,
-            media_type=movie.media_type,  # type: ignore[arg-type]
-            api_key=settings.tmdb_api_key,
-        )
-
-        if tmdb is not None and tmdb.title_original:
-            logger.info('Movie %d found in TMDB: %r', movie.id, tmdb.title_original)
-            data = await fetch_movie_data_enriched(
-                title_original=tmdb.title_original,
-                title_ru=tmdb.title_ru,
-                year=tmdb.year,
-                overview=tmdb.overview,
-                media_type=movie.media_type,  # type: ignore[arg-type]
-                api_key=settings.groq_api_key,
-            )
-            if data is not None:
-                data.poster_url = tmdb.poster_url
-                data.tmdb_id = tmdb.tmdb_id
-                data.tmdb_rating = tmdb.tmdb_rating
-                return data
-            # Groq enrich failed — fall through to full Groq flow
-            logger.warning('Movie %d: Groq enrich failed, falling back to full flow', movie.id)
-
-        # Full Groq flow
-        data = await fetch_movie_data(
+        return await PreviewMovieUseCase().execute(
             title=query,
-            media_type=movie.media_type,  # type: ignore[arg-type]
+            media_type=movie.media_type,
             user_query=movie.user_query,
-            api_key=settings.groq_api_key,
         )
-        if data is None:
-            return None
-
-        # Get poster from TMDB: reuse existing result or search by Groq's title_original
-        tmdb_for_poster = tmdb or (
-            await search_movie(
-                query=data.title_original,
-                media_type=data.media_type,
-                api_key=settings.tmdb_api_key,
-            )
-            if data.title_original
-            else None
-        )
-        if tmdb_for_poster is not None:
-            data.poster_url = tmdb_for_poster.poster_url
-            data.tmdb_id = tmdb_for_poster.tmdb_id
-            if data.tmdb_rating is None:
-                data.tmdb_rating = tmdb_for_poster.tmdb_rating
-
-        return data
 
     async def _find_existing(self, data: MovieData) -> Movie | None:
         for title in filter(None, [data.title_original, data.title_ru]):
@@ -139,7 +152,7 @@ class ProcessMovieUseCase:
 
     async def _fill_movie(self, movie: Movie, data: MovieData) -> None:
         categories = await self._get_or_create_categories(data)
-        persons_with_roles = await self._get_or_create_persons(data)
+        persons_with_roles = await self._get_or_create_persons(data, movie.id)
 
         await self.movie_repo.update(
             movie,
@@ -194,9 +207,19 @@ class ProcessMovieUseCase:
             result.append(category)
         return result
 
-    async def _get_or_create_persons(self, data: MovieData) -> list[tuple[Person, PersonData]]:
+    async def _get_or_create_persons(
+        self, data: MovieData, movie_id: int
+    ) -> list[tuple[Person, PersonData]]:
         result: list[tuple[Person, PersonData]] = []
         for person_data in data.persons:
+            if person_data.name is None:
+                logger.error(
+                    'Movie %d: Groq returned person without name (role=%s, original_name=%r) — skipping',
+                    movie_id,
+                    person_data.role,
+                    person_data.original_name,
+                )
+                continue
             person = await self.person_repo.get_by_name(person_data.name)
             if person is None:
                 person = await self.person_repo.create(
