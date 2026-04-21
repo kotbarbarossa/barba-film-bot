@@ -2,7 +2,6 @@ stages:
   - lint
   - build
   - deploy
-  - tag
 
 variables:
   IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
@@ -74,21 +73,3 @@ deploy:
     - if: $CI_COMMIT_BRANCH == "main"
   environment:
     name: production
-
-# ──────────────────────────────────────────────
-# Tag release from pyproject.toml version
-# ──────────────────────────────────────────────
-tag:
-  stage: tag
-  image: python:3.13-slim
-  before_script:
-    - pip install uv --quiet
-  script:
-    - VERSION=$(uv run python -c "from app.core.version import VERSION; print(VERSION)")
-    - git config user.email "ci@gitlab.com"
-    - git config user.name "GitLab CI"
-    - git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
-    - git tag "v${VERSION}" || echo "Tag v${VERSION} already exists, skipping"
-    - git push origin "v${VERSION}" || true
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
