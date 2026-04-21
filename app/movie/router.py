@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastructure.database.dependencies import get_session
-from app.movie.models import MediaType, RoleType, WatchStatus
+from app.movie.models import MediaType, ProcessingStatus, RoleType, WatchStatus
+from app.movie.processing_use_case import PreviewMovieUseCase
 from app.movie.repository import (
     CategoryFilter,
     CategoryRepository,
@@ -22,6 +23,8 @@ from app.movie.schemas import (
     MovieDetailResponse,
     MovieListResponse,
     MoviePersonCreate,
+    MoviePreviewGet,
+    MoviePreviewResponse,
     MovieUpdate,
     PersonCreate,
     PersonInMovieResponse,
@@ -44,6 +47,15 @@ user_movies_router = APIRouter(prefix='/users/{user_id}/movies', tags=['user-mov
 # --- Movies ---
 
 
+@movies_router.post('/preview', response_model=MoviePreviewResponse | None)
+async def preview_movie(data: MoviePreviewGet):
+    return await PreviewMovieUseCase().execute(
+        title=data.title,
+        media_type=data.media_type,
+        user_query=data.user_query,
+    )
+
+
 @movies_router.get('/', response_model=list[MovieListResponse])
 async def list_movies(
     media_type: MediaType | None = Query(default=None),
@@ -51,6 +63,7 @@ async def list_movies(
     year_to: int | None = Query(default=None),
     category_id: int | None = Query(default=None),
     search: str | None = Query(default=None),
+    processing_status: ProcessingStatus | None = Query(default=None),
     session: AsyncSession = Depends(get_session),
 ):
     repo = MovieRepository(session)
@@ -61,6 +74,7 @@ async def list_movies(
             year_to=year_to,
             category_id=category_id,
             search=search,
+            processing_status=processing_status,
         )
     )
 

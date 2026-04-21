@@ -123,6 +123,44 @@ class PersonUpdate(BaseModel):
     country: str | None = None
 
 
+class MoviePreviewGet(BaseModel):
+    title: str
+    media_type: MediaType
+    user_query: str | None = None
+
+
+class MoviePreviewPersonResponse(BaseModel):
+    name: str | None
+    original_name: str | None
+    birth_date: date | None
+    country: str | None
+    role: RoleType
+    character_name: str | None
+
+
+class MoviePreviewCategoryResponse(BaseModel):
+    name: str
+    name_original: str | None
+
+
+class MoviePreviewResponse(BaseModel):
+    title_original: str | None
+    title_ru: str | None
+    description: str | None
+    year: int | None
+    duration_minutes: int | None
+    age_rating: str | None
+    imdb_rating: float | None
+    kinopoisk_rating: float | None
+    tmdb_rating: float | None
+    country: str | None
+    poster_url: str | None
+    tmdb_id: str | None
+    media_type: MediaType
+    categories: list[MoviePreviewCategoryResponse]
+    persons: list[MoviePreviewPersonResponse]
+
+
 class UserMovieCreate(BaseModel):
     movie_id: int
     status: WatchStatus = WatchStatus.WANT

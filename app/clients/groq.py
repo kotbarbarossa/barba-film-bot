@@ -10,6 +10,11 @@ from app.movie.models import MediaType, RoleType
 
 logger = logging.getLogger(__name__)
 
+
+class GroqRateLimitError(Exception):
+    pass
+
+
 _GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
 _MODEL = 'llama-3.3-70b-versatile'
 
@@ -103,7 +108,7 @@ class CategoryData(BaseModel):
 
 
 class PersonData(BaseModel):
-    name: str
+    name: str | None = None
     original_name: str | None = None
     birth_date: date | None = None
     country: str | None = None
@@ -157,6 +162,8 @@ async def _post(payload: dict[str, Any], api_key: str) -> str:
             headers={'Authorization': f'Bearer {api_key}'},
             json=payload,
         )
+        if response.status_code == 429:
+            raise GroqRateLimitError()
         response.raise_for_status()
     return response.json()['choices'][0]['message']['content']  # type: ignore[no-any-return]
 

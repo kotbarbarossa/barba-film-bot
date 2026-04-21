@@ -63,35 +63,44 @@ Rules:
 - country fields must be in Russian (e.g. "США", "Великобритания", "Франция")
 """
 
-_RULES_STRICT = _RULES_BASE + """\
+_RULES_STRICT = (
+    _RULES_BASE
+    + """\
 - The provided title may be misspelled, approximate, or an unofficial translation. \
 Identify the correct film and always return the official titles, not the user's input.
 - To find the official Russian title, use your knowledge of Russian Wikipedia and Кинопоиск. \
 Never copy the user's input into "title_ru" — it may be wrong.
 """
+)
 
-_RULES_IDENTIFY = _RULES_STRICT + """\
+_RULES_IDENTIFY = (
+    _RULES_STRICT
+    + """\
 - First identify which film the user is referring to (e.g. "Невероятный мистер лис" → \
 "Fantastic Mr. Fox" by Wes Anderson, 2009), then look up its official Russian release title \
 on Кинопоиск or Russian Wikipedia (ru.wikipedia.org). \
 Only after identifying the film, fill in "title_ru" with the correct official name.
 """
+)
 
 _PROMPTS: dict[str, str] = {
     'base': (
         'You are a movie database assistant. '
         'Given a movie title and type, return structured JSON data.\n\n'
-        + _JSON_SCHEMA + _RULES_BASE
+        + _JSON_SCHEMA
+        + _RULES_BASE
     ),
     'strict': (
         'You are a movie database assistant. '
         'Given a movie title and type, return structured JSON data.\n\n'
-        + _JSON_SCHEMA + _RULES_STRICT
+        + _JSON_SCHEMA
+        + _RULES_STRICT
     ),
     'identify': (
         'You are a movie database assistant. '
         'Given a movie title and type, return structured JSON data.\n\n'
-        + _JSON_SCHEMA + _RULES_IDENTIFY
+        + _JSON_SCHEMA
+        + _RULES_IDENTIFY
     ),
 }
 
