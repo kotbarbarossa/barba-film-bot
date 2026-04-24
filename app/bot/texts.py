@@ -16,6 +16,12 @@ MAIN_MENU = 'КиноКопилка — личный список фильмов
 MOVIE_ADD_TITLE_PROMPT = 'Введи точное название фильма или сериала:'
 MOVIE_ADD_TITLE_EMPTY = 'Название не может быть пустым. Попробуй ещё раз:'
 MOVIE_ADD_MEDIA_TYPE_PROMPT = '<b>{title}</b>\n\nВыбери тип:'
+MOVIE_ADD_YEAR_PROMPT = (
+    '<b>{title}</b> · {media_type}\n\n'
+    'Знаешь год выхода? Пришли его для точного поиска.\n'
+    '<i>Например: 2008</i>'
+)
+MOVIE_ADD_YEAR_INVALID = 'Некорректный год. Введи 4-значный год (например 2008) или пропусти:'
 MOVIE_ADD_DETAILS_PROMPT = (
     '<b>{title}</b> · {media_type}\n\n'
     'Если нужно уточнение — добавь детали.\n'
@@ -66,6 +72,7 @@ BTN_MOVIE_LIST = 'Мои фильмы'
 BTN_MOVIE_ADD = 'Добавить фильм'
 BTN_FILM = '🎬 Фильм'
 BTN_SERIES = '📺 Сериал'
+BTN_SKIP_YEAR = 'Не знаю → продолжить'
 BTN_SKIP = 'Пропустить →'
 BTN_BACK = '← Назад'
 BTN_MOVIE_RANDOM = '🎲 Наугад'
