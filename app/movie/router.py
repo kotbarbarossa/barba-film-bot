@@ -53,6 +53,7 @@ async def preview_movie(data: MoviePreviewGet):
         title=data.title,
         media_type=data.media_type,
         user_query=data.user_query,
+        year=data.year,
     )
 
 

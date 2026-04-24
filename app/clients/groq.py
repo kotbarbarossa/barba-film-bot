@@ -174,8 +174,11 @@ async def fetch_movie_data(
     media_type: MediaType,
     user_query: str | None,
     api_key: str,
+    year: int | None = None,
 ) -> MovieData | None:
     user_message = f'Movie: "{title}" (type: {media_type.value})'
+    if year:
+        user_message += f', year: {year}'
     if user_query:
         user_message += f'\nAdditional context: {user_query}'
 

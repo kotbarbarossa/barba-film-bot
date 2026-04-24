@@ -49,3 +49,13 @@ class ShareCallback(CallbackData, prefix='ms'):
 
 class AddToListCallback(CallbackData, prefix='mal'):
     movie_id: int
+
+
+class DeleteFromListCallback(CallbackData, prefix='mdl'):
+    movie_id: int
+    source: MovieCardSource
+
+
+class ConfirmDeleteCallback(CallbackData, prefix='mdc'):
+    movie_id: int
+    source: MovieCardSource

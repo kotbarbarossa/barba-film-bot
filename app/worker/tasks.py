@@ -13,14 +13,14 @@ from app.movie.repository import MovieRepository
 logger = logging.getLogger(__name__)
 
 
-async def process_movie(_ctx: dict[str, Any], *, movie_id: int) -> None:
+async def process_movie(_ctx: dict[str, Any], *, movie_id: int, year: int | None = None) -> None:
     session = session_manager.get_session()
     try:
         async with session.begin():
             movie = await MovieRepository(session).get(movie_id)
             if movie is None:
                 raise Retry(defer=timedelta(seconds=3))
-            await ProcessMovieUseCase(session).execute(movie_id)
+            await ProcessMovieUseCase(session).execute(movie_id, year)
     except GroqRateLimitError:
         logger.warning('Movie %d: Groq 429 — stays PENDING, recover cron will retry', movie_id)
 

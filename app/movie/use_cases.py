@@ -45,6 +45,7 @@ class AddMovieToUserUseCase:
         title: str,
         media_type: MediaType,
         user_query: str | None,
+        year: int | None = None,
     ) -> tuple[Movie, bool]:
         """
         Returns (movie, found_existing) where found_existing=True means
@@ -53,7 +54,7 @@ class AddMovieToUserUseCase:
         title_ru = title if is_cyrillic(title) else None
         title_original = title if not is_cyrillic(title) else None
 
-        movie = await self._find_existing(title, media_type)
+        movie = await self._find_existing(title, media_type, year)
         found_existing = movie is not None
 
         if movie is None:
@@ -68,6 +69,7 @@ class AddMovieToUserUseCase:
                     arq_pool.get().enqueue_job(
                         'process_movie',
                         movie_id=movie.id,
+                        year=year,
                         _job_id=f'process_movie:{movie.id}',
                     ),
                     timeout=5.0,
@@ -83,12 +85,16 @@ class AddMovieToUserUseCase:
 
         return movie, found_existing
 
-    async def _find_existing(self, title: str, media_type: MediaType) -> Movie | None:
+    async def _find_existing(
+        self, title: str, media_type: MediaType, year: int | None
+    ) -> Movie | None:
         results = await self.movie_repo.get_filtered(
             MovieFilter(
                 search=title,
                 media_type=media_type,
                 processing_status=ProcessingStatus.PROCESSED,
+                year_from=year - 1 if year else None,
+                year_to=year + 1 if year else None,
             )
         )
         return results[0] if len(results) == 1 else None

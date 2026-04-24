@@ -1,5 +1,6 @@
 import logging
 from dataclasses import dataclass
+from typing import Any
 
 import httpx
 
@@ -22,13 +23,23 @@ class TmdbMovieInfo:
     tmdb_rating: float | None
 
 
+def _result_year(result: dict[str, Any], media_type: MediaType) -> int | None:
+    raw: str = (
+        result.get('first_air_date') or ''
+        if media_type == MediaType.SERIES
+        else result.get('release_date') or ''
+    )
+    return int(raw[:4]) if raw else None
+
+
 async def search_movie(
     *,
     query: str,
     media_type: MediaType,
     api_key: str,
+    year: int | None = None,
 ) -> TmdbMovieInfo | None:
-    """Search TMDB with ru-RU locale. Returns None if not found or on error."""
+    """Search TMDB with ru-RU locale. If year given, filters results to year ±1."""
     endpoint = 'tv' if media_type == MediaType.SERIES else 'movie'
     params: dict[str, str] = {
         'api_key': api_key,
@@ -44,16 +55,21 @@ async def search_movie(
         results = response.json().get('results', [])
         if not results:
             return None
+
+        if year is not None:
+            year_range = range(year - 1, year + 2)
+            results = [r for r in results if _result_year(r, media_type) in year_range]
+            if not results:
+                return None
+
         first = results[0]
 
         if media_type == MediaType.SERIES:
             title_ru = first.get('name') or None
             title_original = first.get('original_name') or None
-            raw_date: str = first.get('first_air_date') or ''
         else:
             title_ru = first.get('title') or None
             title_original = first.get('original_title') or None
-            raw_date = first.get('release_date') or ''
 
         poster_path: str | None = first.get('poster_path')
         vote_average: float | None = first.get('vote_average')
@@ -62,7 +78,7 @@ async def search_movie(
             title_ru=title_ru,
             title_original=title_original,
             overview=first.get('overview') or None,
-            year=int(raw_date[:4]) if raw_date else None,
+            year=_result_year(first, media_type),
             poster_url=f'{_POSTER_BASE_URL}{poster_path}' if poster_path else None,
             tmdb_id=str(first['id']) if first.get('id') else None,
             tmdb_rating=float(vote_average) if vote_average else None,

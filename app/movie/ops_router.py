@@ -26,6 +26,7 @@ class ReprocessRequest(BaseModel):
     title: str
     media_type: MediaType
     user_query: str | None = None
+    year: int | None = None
 
 
 @ops_router.post('/{movie_id}/reprocess', response_model=dict[str, int | str])
@@ -40,6 +41,7 @@ async def reprocess_movie(
             title=body.title,
             media_type=body.media_type,
             user_query=body.user_query,
+            year=body.year,
         )
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
