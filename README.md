@@ -1,5 +1,11 @@
 # 🎬 Kino Kopilka — @kino_kopilka_bot
 
+[![GitLab pipeline](https://gitlab.com/ultra_kot/bots/barba-film-bot/badges/main/pipeline.svg)](https://gitlab.com/ultra_kot/bots/barba-film-bot/-/pipelines)
+[![GitHub CI](https://github.com/kotbarbarossa/barba-film-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/kotbarbarossa/barba-film-bot/actions/workflows/ci.yml)
+[![Live bot](https://img.shields.io/badge/telegram-@kino_kopilka_bot-blue?logo=telegram)](https://t.me/kino_kopilka_bot)
+[![Python](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Personal Telegram bot for tracking movies and TV series. Add titles to your list, browse by genre or decade, rate what you've watched, and let the bot enrich metadata automatically via Groq + TMDB.
 
 **Stack:** FastAPI · aiogram 3 · SQLAlchemy 2.0 async · asyncpg · PostgreSQL · Redis · ARQ · Groq · TMDB · Sentry · Docker · GitLab CI/CD · AWS EC2
@@ -204,13 +210,17 @@ Migrations run automatically via the `migrate` service before `api`, `bot`, and 
 
 ---
 
-## CI/CD (GitLab → AWS EC2)
+## CI/CD
 
-Three stages on push to `main`:
+**Primary pipeline — GitLab CI.** Three stages on every push to `main`:
 
 1. **lint** — `ruff check`
 2. **build** — Docker image → GitLab Container Registry
-3. **deploy** — copy `docker-compose.yml` to EC2, restart services via SSH
+3. **deploy** — copy `docker-compose.yml` to AWS EC2, restart services via SSH
+
+Full config lives in `.gitlab-ci.yml`.
+
+**GitHub mirror — GitHub Actions.** A simpler `.github/workflows/ci.yml` runs `ruff check`, `ruff format --check`, and `pytest` on every push to the GitHub mirror. No deploy from GitHub — it's a read-only mirror of the GitLab repo.
 
 ### Required GitLab CI/CD variables
 
