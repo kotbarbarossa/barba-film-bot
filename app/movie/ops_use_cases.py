@@ -32,7 +32,13 @@ class ReprocessMovieUseCase:
         self.movie_person_repo = MoviePersonRepository(session)
 
     async def execute(
-        self, *, movie_id: int, title: str, media_type: MediaType, user_query: str | None = None
+        self,
+        *,
+        movie_id: int,
+        title: str,
+        media_type: MediaType,
+        user_query: str | None = None,
+        year: int | None = None,
     ) -> None:
         movie = await self.movie_repo.get(movie_id)
         if movie is None:
@@ -61,5 +67,5 @@ class ReprocessMovieUseCase:
         # Clear persons
         await self.movie_person_repo.delete_all_by_movie(movie_id)
 
-        await arq_pool.get().enqueue_job('process_movie', movie_id=movie_id)
+        await arq_pool.get().enqueue_job('process_movie', movie_id=movie_id, year=year)
         logger.info('Movie %d reset and re-enqueued for processing', movie_id)

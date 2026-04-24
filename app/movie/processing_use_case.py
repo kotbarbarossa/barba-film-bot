@@ -26,12 +26,14 @@ class PreviewMovieUseCase:
         title: str,
         media_type: MediaType,
         user_query: str | None = None,
+        year: int | None = None,
     ) -> MovieData | None:
         if not user_query:
-            # No context — trust TMDB's first result, enrich via Groq
+            # TMDB first (with year ±1 filter if provided)
             tmdb = await search_movie(
                 query=title,
                 media_type=media_type,
+                year=year,
                 api_key=settings.tmdb_api_key,
             )
             if tmdb is not None and tmdb.title_original:
@@ -53,12 +55,13 @@ class PreviewMovieUseCase:
         else:
             tmdb = None
 
-        # user_query present (Groq resolves correct movie from context)
-        # or TMDB-first failed — fall back to Groq full flow
+        # user_query present → Groq resolves from context (year as hint)
+        # or TMDB-first failed → Groq full flow
         data = await fetch_movie_data(
             title=title,
             media_type=media_type,
             user_query=user_query,
+            year=year,
             api_key=settings.groq_api_key,
         )
         if data is None:
@@ -91,7 +94,7 @@ class ProcessMovieUseCase:
         self.movie_person_repo = MoviePersonRepository(session)
         self.user_movie_repo = UserMovieRepository(session)
 
-    async def execute(self, movie_id: int) -> None:
+    async def execute(self, movie_id: int, year: int | None = None) -> None:
         movie = await self.movie_repo.get(movie_id)
         if movie is None or movie.processing_status != ProcessingStatus.PENDING:
             logger.warning(
@@ -105,7 +108,7 @@ class ProcessMovieUseCase:
             logger.warning('process_movie: movie %d has no media_type, skipping', movie_id)
             return
 
-        data = await self._fetch_movie_data(movie)
+        data = await self._fetch_movie_data(movie, year)
 
         if data is None:
             await self.movie_repo.update(
@@ -122,19 +125,25 @@ class ProcessMovieUseCase:
             await self._fill_movie(movie, data)
             logger.info('Movie %d processed successfully', movie_id)
 
-    async def _fetch_movie_data(self, movie: Movie) -> MovieData | None:
+    async def _fetch_movie_data(self, movie: Movie, year: int | None) -> MovieData | None:
         assert movie.media_type is not None
         query = movie.title_ru or movie.title_original or ''
         return await PreviewMovieUseCase().execute(
             title=query,
             media_type=movie.media_type,
             user_query=movie.user_query,
+            year=year,
         )
 
     async def _find_existing(self, data: MovieData) -> Movie | None:
         for title in filter(None, [data.title_original, data.title_ru]):
             results = await self.movie_repo.get_filtered(
-                MovieFilter(search=title, processing_status=ProcessingStatus.PROCESSED)
+                MovieFilter(
+                    search=title,
+                    processing_status=ProcessingStatus.PROCESSED,
+                    year_from=data.year - 1 if data.year else None,
+                    year_to=data.year + 1 if data.year else None,
+                )
             )
             if results:
                 return results[0]

@@ -127,6 +127,7 @@ class MoviePreviewGet(BaseModel):
     title: str
     media_type: MediaType
     user_query: str | None = None
+    year: int | None = None
 
 
 class MoviePreviewPersonResponse(BaseModel):
