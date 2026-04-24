@@ -53,6 +53,11 @@ MOVIE_SHARE_TEXT = (
 )
 MOVIE_ADD_TO_LIST_SUCCESS = '✅ Фильм добавлен в твой список!'
 MOVIE_ALREADY_IN_LIST = 'Этот фильм уже есть в твоём списке.'
+MOVIE_DELETE_CONFIRM = (
+    'Фильм будет удалён из вашего списка фильмов, а также будут удалены ваш статус просмотра, '
+    'рейтинг и прочие данные, связанные с этим фильмом.\n\nУдалить?'
+)
+MOVIE_DELETE_SUCCESS = '🗑 Фильм удалён из вашего списка.'
 
 # --- All movies ---
 
@@ -83,5 +88,7 @@ BTN_MOVIE_RECENT = '✅ Недавно просмотренные'
 BTN_MOVIE_ALL = '📋 Все мои фильмы'
 BTN_WATCHED = '🍿 Посмотрел'
 BTN_SHARE = '🔗 Поделиться'
+BTN_DELETE_FROM_LIST = '🗑 Удалить из списка'
+BTN_DELETE_CONFIRM = '🗑 Удалить'
 BTN_ADD_TO_LIST = '➕ Добавить в список просмотра'
 BTN_MAIN_MENU = '🏠 На главную'

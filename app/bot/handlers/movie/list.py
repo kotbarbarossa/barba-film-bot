@@ -6,6 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.bot.callbacks.movie_list import (
     BackFromCardCallback,
     CategoryCallback,
+    ConfirmDeleteCallback,
+    DeleteFromListCallback,
     MovieCardCallback,
     MovieCardSource,
     PeriodCallback,
@@ -16,6 +18,8 @@ from app.bot.callbacks.movie_list import (
 from app.bot.callbacks.navigation import NavAction, NavigationCallback
 from app.bot.handlers.movie.all_movies import back_to_all_movies
 from app.bot.keyboards.movie_list import (
+    back_from_source_keyboard,
+    delete_confirm_keyboard,
     genre_list_keyboard,
     movie_buttons_keyboard,
     movie_card_keyboard,
@@ -26,6 +30,8 @@ from app.bot.keyboards.movie_list import (
 )
 from app.bot.states.browse import BrowseStates
 from app.bot.texts import (
+    MOVIE_DELETE_CONFIRM,
+    MOVIE_DELETE_SUCCESS,
     MOVIE_LIST_GENRE_MOVIES,
     MOVIE_LIST_GENRES,
     MOVIE_LIST_MENU,
@@ -469,6 +475,50 @@ async def rating_received(
         callback.message,
         MOVIE_RATING_SAVED,
         reply_markup=share_message_keyboard(callback_data.movie_id, callback_data.source),
+    )
+
+
+# --- Delete from list ---
+
+
+@router.callback_query(DeleteFromListCallback.filter())
+async def delete_from_list_handler(
+    callback: CallbackQuery,
+    callback_data: DeleteFromListCallback,
+) -> None:
+    await callback.answer()
+    if not isinstance(callback.message, Message):
+        return
+
+    await safe_to_text(
+        callback.message,
+        MOVIE_DELETE_CONFIRM,
+        reply_markup=delete_confirm_keyboard(callback_data.movie_id, callback_data.source),
+    )
+
+
+@router.callback_query(ConfirmDeleteCallback.filter())
+async def confirm_delete_handler(
+    callback: CallbackQuery,
+    callback_data: ConfirmDeleteCallback,
+    session: AsyncSession,
+    state: FSMContext,
+    db_user: User,
+) -> None:
+    await callback.answer()
+    if not isinstance(callback.message, Message):
+        return
+
+    um = await UserMovieRepository(session).get_by_user_and_movie(
+        db_user.id, callback_data.movie_id
+    )
+    if um is not None:
+        await UserMovieRepository(session).delete(um)
+
+    await safe_to_text(
+        callback.message,
+        MOVIE_DELETE_SUCCESS,
+        reply_markup=back_from_source_keyboard(callback_data.source),
     )
 
 

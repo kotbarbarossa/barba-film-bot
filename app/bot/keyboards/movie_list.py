@@ -4,6 +4,8 @@ from app.bot.callbacks.movie_list import (
     AddToListCallback,
     BackFromCardCallback,
     CategoryCallback,
+    ConfirmDeleteCallback,
+    DeleteFromListCallback,
     MovieCardCallback,
     MovieCardSource,
     PeriodCallback,
@@ -15,6 +17,8 @@ from app.bot.callbacks.navigation import NavAction, NavigationCallback
 from app.bot.texts import (
     BTN_ADD_TO_LIST,
     BTN_BACK,
+    BTN_DELETE_CONFIRM,
+    BTN_DELETE_FROM_LIST,
     BTN_MAIN_MENU,
     BTN_MOVIE_ALL,
     BTN_MOVIE_BY_GENRE,
@@ -179,12 +183,52 @@ def movie_card_keyboard(
     rows.append(
         [
             InlineKeyboardButton(
+                text=BTN_DELETE_FROM_LIST,
+                callback_data=DeleteFromListCallback(movie_id=movie_id, source=source).pack(),
+            )
+        ]
+    )
+    rows.append(
+        [
+            InlineKeyboardButton(
                 text=BTN_BACK,
                 callback_data=BackFromCardCallback(source=source).pack(),
             )
         ]
     )
     return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def delete_confirm_keyboard(movie_id: int, source: MovieCardSource) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text=BTN_DELETE_CONFIRM,
+                    callback_data=ConfirmDeleteCallback(movie_id=movie_id, source=source).pack(),
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text=BTN_BACK,
+                    callback_data=MovieCardCallback(movie_id=movie_id, source=source).pack(),
+                )
+            ],
+        ]
+    )
+
+
+def back_from_source_keyboard(source: MovieCardSource) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text=BTN_BACK,
+                    callback_data=BackFromCardCallback(source=source).pack(),
+                )
+            ]
+        ]
+    )
 
 
 def share_message_keyboard(movie_id: int, source: MovieCardSource) -> InlineKeyboardMarkup:
