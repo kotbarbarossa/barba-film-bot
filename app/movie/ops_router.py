@@ -2,13 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.auth import require_admin
 from app.infrastructure import arq_pool
 from app.infrastructure.database.dependencies import get_session
 from app.movie.models import MediaType, ProcessingStatus
 from app.movie.ops_use_cases import ReprocessMovieUseCase
 from app.movie.repository import MovieFilter, MovieRepository
 
-ops_router = APIRouter(prefix='/movies', tags=['ops'])
+ops_router = APIRouter(prefix='/movies', tags=['ops'], dependencies=[Depends(require_admin)])
 
 
 @ops_router.post('/reprocess-pending', response_model=dict[str, int])

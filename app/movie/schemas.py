@@ -162,18 +162,20 @@ class MoviePreviewResponse(BaseModel):
     persons: list[MoviePreviewPersonResponse]
 
 
-class UserMovieCreate(BaseModel):
-    movie_id: int
-    status: WatchStatus = WatchStatus.WANT
+class UserMovieAddByTitle(BaseModel):
+    title: str
+    media_type: MediaType
+    user_query: str | None = None
+    year: int | None = None
 
 
 class UserMovieUpdate(BaseModel):
-    status: WatchStatus
-    rating: int | None
-    note: str | None
-    is_favorite: bool
-    rewatch_count: int
-    watched_at: datetime | None
+    status: WatchStatus | None = None
+    rating: int | None = None
+    note: str | None = None
+    is_favorite: bool | None = None
+    rewatch_count: int | None = None
+    watched_at: datetime | None = None
 
 
 class UserMovieBase(BaseModel):

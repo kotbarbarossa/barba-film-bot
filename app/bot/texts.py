@@ -1,6 +1,6 @@
-# --- Start ---
-
 from app.core.version import VERSION
+
+# --- Start ---
 
 WELCOME = (
     'Привет, {name}!\n\n'

@@ -39,6 +39,17 @@ class Settings(BaseSettings):
 
     sentry_dsn: str = ''
 
+    jwt_secret: str = ''
+    jwt_algorithm: str = ''
+    access_token_expire_minutes: int = 1
+    refresh_token_expire_days: int = 1
+
+    bot_secret: str = ''
+    admin_api_key: str = ''
+
+    google_client_id: str = ''
+    apple_bundle_id: str = ''
+
     @property
     def redis_url(self) -> str:
         return f'redis://{self.redis_host}:{self.redis_port}/{self.redis_db}'
