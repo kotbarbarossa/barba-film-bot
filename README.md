@@ -106,6 +106,65 @@ Three long-running processes share one codebase:
 
 ---
 
+## Authentication
+
+The REST API is fully protected by JWT Bearer tokens. The Telegram bot currently authenticates users directly via the database (JWT bot-parity is a planned migration).
+
+### Login providers
+
+| Provider | Endpoint | How it works |
+|----------|----------|-------------|
+| Telegram (bot) | `POST /api/v1/auth/telegram/bot` | Bot sends Telegram user data with `X-Bot-Secret` header |
+| Google | `POST /api/v1/auth/google` | `{id_token}` verified against Google JWKS |
+| Apple | `POST /api/v1/auth/apple` | `{id_token, first_name?, last_name?}` verified against Apple JWKS |
+
+All endpoints return `{access_token, refresh_token, user_id}`.
+
+Google and Apple providers are disabled when the corresponding config variable is empty — the endpoint returns `501 Not Implemented`.
+
+JWKS keys are cached in-memory for 1 hour; verification runs in `asyncio.to_thread` to avoid blocking the event loop.
+
+### Token lifecycle
+
+| Token | Lifetime | Usage |
+|-------|----------|-------|
+| Access token | `ACCESS_TOKEN_EXPIRE_MINUTES` (rec. 15 min) | `Authorization: Bearer <token>` on every request |
+| Refresh token | `REFRESH_TOKEN_EXPIRE_DAYS` (rec. 30 days) | `POST /api/v1/auth/refresh` → new token pair |
+
+Both tokens are HS256 JWTs signed with `JWT_SECRET`. The payload includes `sub` (user id) and `type` (`access` / `refresh`) — the type claim prevents using a refresh token as an access token and vice versa.
+
+### Roles
+
+| Role | How to get it | What it can access |
+|------|--------------|-------------------|
+| Regular user | Any login provider | Own data only — ownership violations return 403 |
+| Admin | `PATCH /api/v1/users/{id}/admin` | Full catalog write access + all users' data |
+
+Admin role is granted via `PATCH /api/v1/users/{id}/admin` with the `X-Admin-Key` header (static secret, no JWT required). Admin users still authenticate via Bearer JWT — `is_admin=true` in the DB unlocks elevated routes.
+
+### Route protection at a glance
+
+| Route group | Regular user | Admin |
+|------------|-------------|-------|
+| `GET /health` | public | public |
+| `POST /api/v1/auth/*` | public | public |
+| `GET /api/v1/movies/`, `/persons/`, `/categories/` | ✓ Bearer JWT | ✓ |
+| `POST/PUT/DELETE /api/v1/movies/`, `/persons/`, `/categories/` | — | ✓ Bearer JWT (`is_admin`) |
+| `GET/PUT /api/v1/users/{id}` | ✓ own user only | ✓ any user |
+| `GET/POST/PUT/DELETE /api/v1/users/{id}/movies/` | ✓ own data only | ✓ any user |
+| `POST /api/v1/movies/reprocess*` | — | ✓ Bearer JWT (`is_admin`) |
+
+### Rate limiting
+
+Auth endpoints are rate-limited per IP (slowapi):
+
+| Endpoint | Limit |
+|----------|-------|
+| `/auth/telegram/bot`, `/auth/refresh` | 20 req / min |
+| `/auth/google`, `/auth/apple` | 10 req / min |
+
+---
+
 ## Key Design Decisions
 
 **Layered architecture** — `Repository` (DB access) → `UseCase` (business logic) → `Router/Handler` (transport). Repositories return SQLAlchemy models; use-cases translate to and from Pydantic schemas. The transport layer never imports the ORM.
@@ -161,6 +220,14 @@ Copy into a `.env` file at the project root.
 | `GROQ_API_KEY` | — | Groq API key |
 | `TMDB_API_KEY` | — | TMDB API key |
 | `SENTRY_DSN` | `""` | Sentry DSN (leave empty to disable) |
+| `JWT_SECRET` | — | Secret key for signing JWT tokens (generate a long random string) |
+| `JWT_ALGORITHM` | `HS256` | JWT signing algorithm |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `15` | Access token lifetime in minutes |
+| `REFRESH_TOKEN_EXPIRE_DAYS` | `30` | Refresh token lifetime in days |
+| `BOT_SECRET` | — | Shared secret between the bot and API (`X-Bot-Secret` header) |
+| `ADMIN_API_KEY` | — | Static key for granting admin role (`X-Admin-Key` header) |
+| `GOOGLE_CLIENT_ID` | `""` | Google OAuth client ID (leave empty to disable Google auth) |
+| `APPLE_BUNDLE_ID` | `""` | Apple app bundle ID (leave empty to disable Apple auth) |
 
 ---
 
