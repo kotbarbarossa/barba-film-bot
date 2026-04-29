@@ -1,7 +1,12 @@
 import uvicorn
 from fastapi import FastAPI
+from fastapi.requests import Request
+from fastapi.responses import JSONResponse
+from slowapi.errors import RateLimitExceeded
 
+from app.auth.router import router as auth_router
 from app.core.config import settings
+from app.core.limiter import limiter
 from app.core.sentry import init_sentry
 from app.core.settings import Environment
 from app.infrastructure.database.lifespan import lifespan
@@ -20,11 +25,17 @@ API_PREFIX = '/api/v1'
 init_sentry('api')
 
 
+async def _on_rate_limit_exceeded(request: Request, exc: Exception) -> JSONResponse:
+    return JSONResponse(status_code=429, content={'detail': 'Too many requests'})
+
+
 def create_app() -> FastAPI:
     app = FastAPI(
         title='Movie Bot API',
         lifespan=lifespan,
     )
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _on_rate_limit_exceeded)
 
     return app
 
@@ -37,6 +48,7 @@ async def health() -> dict[str, str]:
     return {'status': 'ok'}
 
 
+app.include_router(auth_router, prefix=API_PREFIX)
 app.include_router(ops_router, prefix=API_PREFIX)
 app.include_router(user_router, prefix=API_PREFIX)
 app.include_router(movies_router, prefix=API_PREFIX)
