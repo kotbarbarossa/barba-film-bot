@@ -18,7 +18,8 @@ async def get_global_trending(session: AsyncSession) -> GlobalTrendingResponse:
 
     result = await _compute_global_trending(session)
 
-    await redis.set(_CACHE_KEY, result.model_dump_json(), ex=_CACHE_TTL)
+    if result.entries:
+        await redis.set(_CACHE_KEY, result.model_dump_json(), ex=_CACHE_TTL)
     return result
 
 

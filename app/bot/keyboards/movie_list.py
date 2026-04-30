@@ -11,6 +11,7 @@ from app.bot.callbacks.movie_list import (
     PeriodCallback,
     RatingCallback,
     ShareCallback,
+    ShowRatingCallback,
     WatchedCallback,
 )
 from app.bot.callbacks.navigation import NavAction, NavigationCallback
@@ -26,6 +27,7 @@ from app.bot.texts import (
     BTN_MOVIE_RANDOM,
     BTN_MOVIE_RECENT,
     BTN_MOVIE_RECENT_ADDED,
+    BTN_RATE,
     BTN_SHARE,
     BTN_WATCHED,
 )
@@ -160,7 +162,10 @@ def rating_keyboard(movie_id: int, source: MovieCardSource) -> InlineKeyboardMar
 
 
 def movie_card_keyboard(
-    movie_id: int, source: MovieCardSource, show_watched: bool = True
+    movie_id: int,
+    source: MovieCardSource,
+    show_watched: bool = True,
+    show_rate: bool = False,
 ) -> InlineKeyboardMarkup:
     rows: list[list[InlineKeyboardButton]] = []
     if show_watched:
@@ -169,6 +174,15 @@ def movie_card_keyboard(
                 InlineKeyboardButton(
                     text=BTN_WATCHED,
                     callback_data=WatchedCallback(movie_id=movie_id, source=source).pack(),
+                )
+            ]
+        )
+    elif show_rate:
+        rows.append(
+            [
+                InlineKeyboardButton(
+                    text=BTN_RATE,
+                    callback_data=ShowRatingCallback(movie_id=movie_id, source=source).pack(),
                 )
             ]
         )

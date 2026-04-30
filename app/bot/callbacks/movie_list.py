@@ -20,6 +20,7 @@ class MovieCardSource(StrEnum):
     recent = 'w'
     added = 'a'
     all = 'l'
+    trending = 't'
 
 
 class MovieCardCallback(CallbackData, prefix='mc'):
@@ -49,6 +50,12 @@ class ShareCallback(CallbackData, prefix='ms'):
 
 class AddToListCallback(CallbackData, prefix='mal'):
     movie_id: int
+    source: MovieCardSource | None = None
+
+
+class ShowRatingCallback(CallbackData, prefix='msr'):
+    movie_id: int
+    source: MovieCardSource
 
 
 class DeleteFromListCallback(CallbackData, prefix='mdl'):

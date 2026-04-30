@@ -13,10 +13,12 @@ from app.bot.callbacks.movie_list import (
     PeriodCallback,
     RatingCallback,
     ShareCallback,
+    ShowRatingCallback,
     WatchedCallback,
 )
 from app.bot.callbacks.navigation import NavAction, NavigationCallback
 from app.bot.handlers.movie.all_movies import back_to_all_movies
+from app.bot.keyboards.charts import trending_movies_keyboard
 from app.bot.keyboards.movie_list import (
     back_from_source_keyboard,
     delete_confirm_keyboard,
@@ -30,6 +32,8 @@ from app.bot.keyboards.movie_list import (
 )
 from app.bot.states.browse import BrowseStates
 from app.bot.texts import (
+    CHARTS_GLOBAL_TRENDING_ALLTIME,
+    CHARTS_GLOBAL_TRENDING_TITLE,
     MOVIE_DELETE_CONFIRM,
     MOVIE_DELETE_SUCCESS,
     MOVIE_LIST_GENRE_MOVIES,
@@ -43,11 +47,13 @@ from app.bot.texts import (
     MOVIE_LIST_RECENT_ADDED_EMPTY,
     MOVIE_LIST_RECENT_EMPTY,
     MOVIE_RANDOM_EMPTY,
+    MOVIE_RATE_PROMPT,
     MOVIE_RATING_SAVED,
     MOVIE_SHARE_TEXT,
     MOVIE_WATCHED_SUCCESS,
 )
 from app.bot.utils import format_movie_card, safe_edit, safe_to_text, show_card
+from app.discovery.service import get_global_trending
 from app.movie.models import ProcessingStatus, WatchStatus
 from app.movie.repository import (
     CategoryRepository,
@@ -90,13 +96,15 @@ async def nav_movie_random(callback: CallbackQuery, session: AsyncSession, db_us
         return
 
     text = format_movie_card(um.movie, um)
+    is_watched = um.status == WatchStatus.WATCHED
     await show_card(
         callback.message,
         text,
         reply_markup=movie_card_keyboard(
             um.movie_id,
             MovieCardSource.random,
-            show_watched=um.status != WatchStatus.WATCHED,
+            show_watched=not is_watched,
+            show_rate=is_watched and um.rating is None,
         ),
         poster_url=um.movie.poster_url,
     )
@@ -316,12 +324,16 @@ async def show_movie_card(
         return
 
     source = callback_data.source
-    show_watched = source != MovieCardSource.recent and um.status != WatchStatus.WATCHED
+    is_watched = um.status == WatchStatus.WATCHED
+    show_watched = source != MovieCardSource.recent and not is_watched
+    show_rate = is_watched and um.rating is None
     text = format_movie_card(um.movie, um)
     await show_card(
         callback.message,
         text,
-        reply_markup=movie_card_keyboard(um.movie_id, source, show_watched=show_watched),
+        reply_markup=movie_card_keyboard(
+            um.movie_id, source, show_watched=show_watched, show_rate=show_rate
+        ),
         poster_url=um.movie.poster_url,
     )
 
@@ -431,6 +443,17 @@ async def back_from_card(
     elif source == MovieCardSource.all:
         await back_to_all_movies(callback.message, session, state, db_user)
 
+    elif source == MovieCardSource.trending:
+        data = await get_global_trending(session)
+        title = (
+            CHARTS_GLOBAL_TRENDING_TITLE if data.is_trending else CHARTS_GLOBAL_TRENDING_ALLTIME
+        )
+        await safe_to_text(
+            callback.message,
+            f'<b>{title}</b>',
+            reply_markup=trending_movies_keyboard(data.entries),
+        )
+
 
 # --- Watched ---
 
@@ -450,6 +473,21 @@ async def watched_handler(
     await safe_to_text(
         callback.message,
         MOVIE_WATCHED_SUCCESS,
+        reply_markup=rating_keyboard(callback_data.movie_id, callback_data.source),
+    )
+
+
+@router.callback_query(ShowRatingCallback.filter())
+async def show_rating_handler(
+    callback: CallbackQuery,
+    callback_data: ShowRatingCallback,
+) -> None:
+    await callback.answer()
+    if not isinstance(callback.message, Message):
+        return
+    await safe_to_text(
+        callback.message,
+        MOVIE_RATE_PROMPT,
         reply_markup=rating_keyboard(callback_data.movie_id, callback_data.source),
     )
 
