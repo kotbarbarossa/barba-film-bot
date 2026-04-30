@@ -442,7 +442,7 @@ async def back_from_card(
         await back_to_all_movies(callback.message, session, state, db_user)
 
     elif source == MovieCardSource.chart:
-        await safe_edit(callback.message, CHARTS_MENU, reply_markup=charts_menu_keyboard())
+        await safe_to_text(callback.message, CHARTS_MENU, reply_markup=charts_menu_keyboard())
 
 
 # --- Watched ---
