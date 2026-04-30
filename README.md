@@ -32,6 +32,19 @@ Poster, description, year, ratings (IMDb / Kinopoisk / TMDB), country, duration,
 ### My films
 Full list with pagination and multi-filter: status (watched / unwatched) · type (film / series) · genre · sort order. Each filter toggled inline without leaving the screen.
 
+### Charts
+Community-wide leaderboards built from aggregated user activity. All charts are the same for every user (not personalised) and cached so they load instantly.
+
+| Chart | How it ranks |
+|-------|-------------|
+| 🔥 **Hot ten** | Films actively watched and highly rated right now. Recent activity weighs more than old — the chart stays fresh on its own. |
+| ⭐ **Top rated** | Highest average user ratings over a recent window. The more people who rated, the more reliable the result. |
+| 🎯 **Want to watch** | Films most often added to watchlists recently. Pure collective interest — no ratings required. |
+| 🍿 **Top watched** | Films watched most in the recent period. Rewatches count too — watching something twice says more than a rating. |
+| 🎭 **Controversial** | Films with the widest spread of opinions. Some love it, some hate it — judge for yourself. Requires a minimum number of ratings to filter out noise. |
+| ⚡ **Watch immediately** | Films people add and watch without putting off. High impulse interest — something about them grabs attention right away. |
+| 📦 **Graveyard** | Films that have been sitting in many people's watchlists for a long time and still haven't been watched. Maybe it's finally time. |
+
 ---
 
 ## Screenshots
@@ -149,6 +162,7 @@ Admin role is granted via `PATCH /api/v1/users/{id}/admin` with the `X-Admin-Key
 | `GET /health` | public | public |
 | `POST /api/v1/auth/*` | public | public |
 | `GET /api/v1/movies/`, `/persons/`, `/categories/` | ✓ Bearer JWT | ✓ |
+| `GET /api/v1/discovery/*` | ✓ Bearer JWT | ✓ |
 | `POST/PUT/DELETE /api/v1/movies/`, `/persons/`, `/categories/` | — | ✓ Bearer JWT (`is_admin`) |
 | `GET/PUT /api/v1/users/{id}` | ✓ own user only | ✓ any user |
 | `GET/POST/PUT/DELETE /api/v1/users/{id}/movies/` | ✓ own data only | ✓ any user |

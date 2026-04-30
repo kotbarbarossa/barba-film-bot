@@ -6,9 +6,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.bot.callbacks.movie_list import AddToListCallback
 from app.bot.callbacks.navigation import NavAction, NavigationCallback
 from app.bot.keyboards.main_menu import main_menu_keyboard
-from app.bot.keyboards.movie_list import add_to_list_keyboard, to_main_keyboard
+from app.bot.keyboards.movie_list import (
+    add_to_list_keyboard,
+    movie_card_keyboard,
+    to_main_keyboard,
+)
 from app.bot.texts import MAIN_MENU, MOVIE_ADD_TO_LIST_SUCCESS, MOVIE_ALREADY_IN_LIST, WELCOME
 from app.bot.utils import format_movie_card, safe_to_text, show_card
+from app.movie.models import WatchStatus
 from app.movie.repository import MovieRepository, UserMovieRepository
 from app.user.models import User
 
@@ -35,7 +40,7 @@ async def start_handler(
                     db_user.id, movie_id
                 )
                 keyboard = to_main_keyboard() if already_added else add_to_list_keyboard(movie_id)
-                text = format_movie_card(movie)
+                text = format_movie_card(movie, already_added)
                 await show_card(message, text, reply_markup=keyboard, poster_url=movie.poster_url)
                 return
 
@@ -65,6 +70,25 @@ async def add_to_list_handler(
         return
 
     await repo.create(user_id=db_user.id, movie_id=callback_data.movie_id)
+
+    source = callback_data.source
+    if source is not None:
+        movie = await MovieRepository(session).get_detail(callback_data.movie_id)
+        um = await repo.get_by_user_and_movie(db_user.id, callback_data.movie_id)
+        if movie is not None and um is not None:
+            is_watched = um.status == WatchStatus.WATCHED
+            text = format_movie_card(movie, um)
+            keyboard = movie_card_keyboard(
+                callback_data.movie_id,
+                source,
+                show_watched=not is_watched,
+                show_rate=is_watched and um.rating is None,
+            )
+            await show_card(
+                callback.message, text, reply_markup=keyboard, poster_url=movie.poster_url
+            )
+            return
+
     await safe_to_text(
         callback.message,
         MOVIE_ADD_TO_LIST_SUCCESS,
