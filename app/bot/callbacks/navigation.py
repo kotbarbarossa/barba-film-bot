@@ -13,6 +13,8 @@ class NavAction(StrEnum):
     movie_recent_added = 'movie_recent_added'
     movie_recent = 'movie_recent'
     movie_all = 'movie_all'
+    charts = 'charts'
+    charts_global_trending = 'charts_global_trending'
 
 
 class NavigationCallback(CallbackData, prefix='nav'):
