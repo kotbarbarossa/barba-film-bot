@@ -14,6 +14,10 @@ class ChartEntry(BaseModel):
     score: float
 
 
+class ChartResponse(BaseModel):
+    entries: list[ChartEntry]
+
+
 class GlobalTrendingResponse(BaseModel):
     entries: list[ChartEntry]
     is_trending: bool  # True = 60-day window, False = all-time fallback

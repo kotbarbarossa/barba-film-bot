@@ -78,6 +78,12 @@ BTN_MOVIE_LIST = 'Мои фильмы'
 BTN_MOVIE_ADD = 'Добавить фильм'
 BTN_CHARTS = '🔥 Чарты'
 BTN_CHARTS_GLOBAL_TRENDING = '🔥 Горячая десятка'
+BTN_CHARTS_TOP_RATED = '⭐ Топ10 рейтинг'
+BTN_CHARTS_TOP_WANT = '🎯 Топ10 в хочу посмотреть'
+BTN_CHARTS_TOP_WATCHED = '🍿 Топ10 просмотренных'
+BTN_CHARTS_TOP_CONTROVERSIAL = '🎭 Топ10 спорных'
+BTN_CHARTS_TOP_QUICK = '⚡ Топ10 смотрят сразу'
+BTN_CHARTS_TOP_POSTPONED = '📦 Кладбище фильмов'
 BTN_FILM = '🎬 Фильм'
 BTN_SERIES = '📺 Сериал'
 BTN_SKIP_YEAR = 'Не знаю → продолжить'
@@ -100,6 +106,48 @@ BTN_MAIN_MENU = '🏠 На главную'
 # --- Charts ---
 
 CHARTS_MENU = 'Чарты КиноКопилки:'
+CHARTS_EMPTY = 'Пока нет данных для чарта.'
+
 CHARTS_GLOBAL_TRENDING_TITLE = '🔥 Горячая десятка'
 CHARTS_GLOBAL_TRENDING_ALLTIME = '⭐ Лучшие фильмы по оценкам'
-CHARTS_EMPTY = 'Пока нет данных для чарта.'
+CHARTS_GLOBAL_TRENDING_DESC = (
+    'Фильмы которые активно смотрят и высоко оценивают прямо сейчас. '
+    'Свежие просмотры влияют на место в рейтинге сильнее чем старые.'
+)
+
+CHARTS_TOP_RATED_TITLE = '⭐ Топ10 рейтинг'
+CHARTS_TOP_RATED_ALLTIME = '⭐ Топ10 рейтинг всех времён'
+CHARTS_TOP_RATED_DESC = (
+    'Фильмы с наивысшими средними оценками пользователей. '
+    'Чем больше людей оценило — тем надёжнее результат.'
+)
+
+CHARTS_TOP_WANT_TITLE = '🎯 Топ10 в хочу посмотреть'
+CHARTS_TOP_WANT_DESC = (
+    'Фильмы которые чаще всего добавляли в список за последний месяц. '
+    'Народный интерес в чистом виде.'
+)
+
+CHARTS_TOP_WATCHED_TITLE = '🍿 Топ10 просмотренных'
+CHARTS_TOP_WATCHED_DESC = (
+    'Фильмы которые больше всего смотрели за последний месяц. '
+    'Пересмотры тоже считаются — повторный просмотр говорит сам за себя.'
+)
+
+CHARTS_TOP_CONTROVERSIAL_TITLE = '🎭 Топ10 спорных'
+CHARTS_TOP_CONTROVERSIAL_DESC = (
+    'Фильмы с самым большим разбросом оценок. '
+    'Одни в восторге, другие в недоумении — реши сам кто прав.'
+)
+
+CHARTS_TOP_QUICK_TITLE = '⚡ Топ10 смотрят сразу'
+CHARTS_TOP_QUICK_DESC = (
+    'Фильмы которые добавляют в список и сразу же смотрят — не откладывая. '
+    'Значит что-то в них цепляет с первого взгляда.'
+)
+
+CHARTS_TOP_POSTPONED_TITLE = '📦 Кладбище фильмов'
+CHARTS_TOP_POSTPONED_DESC = (
+    'Фильмы которые давно лежат в хотелках у многих и всё никак не смотрятся. '
+    'Может наконец пора?'
+)

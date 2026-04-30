@@ -21,6 +21,7 @@ class MovieCardSource(StrEnum):
     added = 'a'
     all = 'l'
     trending = 't'
+    chart = 'c'
 
 
 class MovieCardCallback(CallbackData, prefix='mc'):

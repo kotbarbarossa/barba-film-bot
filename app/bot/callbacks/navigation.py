@@ -15,6 +15,12 @@ class NavAction(StrEnum):
     movie_all = 'movie_all'
     charts = 'charts'
     charts_global_trending = 'charts_global_trending'
+    charts_top_rated = 'charts_top_rated'
+    charts_top_want = 'charts_top_want'
+    charts_top_watched = 'charts_top_watched'
+    charts_top_controversial = 'charts_top_controversial'
+    charts_top_quick = 'charts_top_quick'
+    charts_top_postponed = 'charts_top_postponed'
 
 
 class NavigationCallback(CallbackData, prefix='nav'):

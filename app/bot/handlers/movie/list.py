@@ -18,7 +18,7 @@ from app.bot.callbacks.movie_list import (
 )
 from app.bot.callbacks.navigation import NavAction, NavigationCallback
 from app.bot.handlers.movie.all_movies import back_to_all_movies
-from app.bot.keyboards.charts import trending_movies_keyboard
+from app.bot.keyboards.charts import charts_menu_keyboard
 from app.bot.keyboards.movie_list import (
     back_from_source_keyboard,
     delete_confirm_keyboard,
@@ -32,8 +32,7 @@ from app.bot.keyboards.movie_list import (
 )
 from app.bot.states.browse import BrowseStates
 from app.bot.texts import (
-    CHARTS_GLOBAL_TRENDING_ALLTIME,
-    CHARTS_GLOBAL_TRENDING_TITLE,
+    CHARTS_MENU,
     MOVIE_DELETE_CONFIRM,
     MOVIE_DELETE_SUCCESS,
     MOVIE_LIST_GENRE_MOVIES,
@@ -53,7 +52,6 @@ from app.bot.texts import (
     MOVIE_WATCHED_SUCCESS,
 )
 from app.bot.utils import format_movie_card, safe_edit, safe_to_text, show_card
-from app.discovery.service import get_global_trending
 from app.movie.models import ProcessingStatus, WatchStatus
 from app.movie.repository import (
     CategoryRepository,
@@ -443,16 +441,8 @@ async def back_from_card(
     elif source == MovieCardSource.all:
         await back_to_all_movies(callback.message, session, state, db_user)
 
-    elif source == MovieCardSource.trending:
-        data = await get_global_trending(session)
-        title = (
-            CHARTS_GLOBAL_TRENDING_TITLE if data.is_trending else CHARTS_GLOBAL_TRENDING_ALLTIME
-        )
-        await safe_to_text(
-            callback.message,
-            f'<b>{title}</b>',
-            reply_markup=trending_movies_keyboard(data.entries),
-        )
+    elif source == MovieCardSource.chart:
+        await safe_edit(callback.message, CHARTS_MENU, reply_markup=charts_menu_keyboard())
 
 
 # --- Watched ---
