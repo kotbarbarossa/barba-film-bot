@@ -46,6 +46,7 @@ class Settings(BaseSettings):
 
     bot_secret: str = ''
     admin_api_key: str = ''
+    admin_chat_id: int = 0
 
     google_client_id: str = ''
     apple_bundle_id: str = ''
