@@ -8,6 +8,7 @@ from aiogram.fsm.storage.redis import RedisStorage
 
 from app.bot.error_handler import router as error_router
 from app.bot.handlers.charts import router as charts_router
+from app.bot.handlers.feedback import router as feedback_router
 from app.bot.handlers.movie import add_router as movie_add_router
 from app.bot.handlers.movie import all_movies_router
 from app.bot.handlers.movie import list_router as movie_list_router
@@ -38,6 +39,7 @@ async def main() -> None:
     dp.update.outer_middleware(DatabaseMiddleware())
     dp.include_router(error_router)
     dp.include_router(start_router)
+    dp.include_router(feedback_router)
     dp.include_router(charts_router)
     dp.include_router(all_movies_router)
     dp.include_router(movie_list_router)
