@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "КиноКопилка",
+    "slug": "kinokopilka",
+    "scheme": "kinokopilka",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#faf7f2"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.barbarossa.kinokopilka"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#faf7f2"
+      },
+      "package": "com.barbarossa.kinokopilka"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ],
+    "newArchEnabled": true,
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID"
+      },
+      "apiUrl": "http://localhost:8000/api/v1",
+      "googleClientId": "YOUR_GOOGLE_CLIENT_ID",
+      "googleClientIdAndroid": "YOUR_GOOGLE_CLIENT_ID_ANDROID"
+    }
+  }
+}

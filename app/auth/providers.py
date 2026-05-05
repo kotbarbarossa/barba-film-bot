@@ -46,14 +46,15 @@ async def verify_google_token(id_token: str, client_id: str) -> OAuthUserInfo:
     )
 
 
-async def verify_apple_token(id_token: str, bundle_id: str) -> OAuthUserInfo:
+async def verify_apple_token(id_token: str, bundle_id: str, extra_audiences: list[str] | None = None) -> OAuthUserInfo:
+    audiences = [bundle_id] + (extra_audiences or [])
     try:
         signing_key = await asyncio.to_thread(_apple_jwks.get_signing_key_from_jwt, id_token)
         payload: dict[str, Any] = jwt.decode(
             id_token,
             signing_key.key,
             algorithms=['RS256'],
-            audience=bundle_id,
+            audience=audiences,
             issuer='https://appleid.apple.com',
         )
     except jwt.PyJWTError as e:

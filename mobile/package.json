@@ -1,0 +1,42 @@
+{
+  "name": "kinokopilka",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "private": true,
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts,.tsx"
+  },
+  "dependencies": {
+    "@expo-google-fonts/caveat": "^0.3.0",
+    "@expo-google-fonts/kalam": "^0.3.0",
+    "@expo/vector-icons": "~15.1.0",
+    "@tanstack/react-query": "^5.62.0",
+    "axios": "^1.7.0",
+    "expo": "^55.0.19",
+    "expo-apple-authentication": "~55.0.0",
+    "expo-auth-session": "~55.0.0",
+    "expo-constants": "~55.0.0",
+    "expo-crypto": "~55.0.0",
+    "expo-font": "~55.0.0",
+    "expo-router": "~55.0.0",
+    "expo-secure-store": "~55.0.0",
+    "expo-splash-screen": "~55.0.0",
+    "expo-status-bar": "~55.0.0",
+    "expo-web-browser": "~55.0.0",
+    "react": "19.2.5",
+    "react-native": "0.83.6",
+    "react-native-safe-area-context": "~5.6.2",
+    "react-native-screens": "~4.23.0",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.0",
+    "@types/react": "~19.2.0",
+    "babel-plugin-module-resolver": "^5.0.0",
+    "typescript": "^5.3.0"
+  }
+}

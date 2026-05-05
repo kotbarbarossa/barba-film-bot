@@ -94,8 +94,9 @@ async def apple_auth(
     data: OAuthRequest,
     session: AsyncSession = Depends(get_session),
 ) -> TokenResponse:
+    extra = ['host.exp.Exponent'] if settings.environment != 'prod' else []
     try:
-        info = await verify_apple_token(data.id_token, settings.apple_bundle_id)
+        info = await verify_apple_token(data.id_token, settings.apple_bundle_id, extra)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e)) from e
 
