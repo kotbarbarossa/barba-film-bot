@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "КиноКопилка",
-    "slug": "kinokopilka",
-    "scheme": "kinokopilka",
+    "name": "Flickbook",
+    "slug": "flickbook",
+    "scheme": "flickbook",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -14,14 +14,14 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.barbarossa.kinokopilka"
+      "bundleIdentifier": "com.barbarossa.flickbook"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#faf7f2"
       },
-      "package": "com.barbarossa.kinokopilka"
+      "package": "com.barbarossa.flickbook"
     },
     "web": {
       "bundler": "metro",
@@ -36,12 +36,14 @@
       "typedRoutes": true
     },
     "extra": {
-      "eas": {
-        "projectId": "YOUR_EAS_PROJECT_ID"
-      },
       "apiUrl": "http://localhost:8000/api/v1",
       "googleClientId": "YOUR_GOOGLE_CLIENT_ID",
-      "googleClientIdAndroid": "YOUR_GOOGLE_CLIENT_ID_ANDROID"
-    }
+      "googleClientIdAndroid": "YOUR_GOOGLE_CLIENT_ID_ANDROID",
+      "router": {},
+      "eas": {
+        "projectId": "b689c20e-6bd6-4744-b9e7-e3d3d91559db"
+      }
+    },
+    "owner": "ultrakot"
   }
 }
