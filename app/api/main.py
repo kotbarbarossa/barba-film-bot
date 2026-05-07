@@ -9,7 +9,7 @@ from app.core.config import settings
 from app.core.limiter import limiter
 from app.core.sentry import init_sentry
 from app.core.settings import Environment
-from app.discovery.router import discovery_router
+from app.discovery.router import discovery_router, public_discovery_router
 from app.infrastructure.database.lifespan import lifespan
 from app.movie.ops_router import ops_router
 from app.movie.router import (
@@ -50,6 +50,7 @@ async def health() -> dict[str, str]:
 
 
 app.include_router(auth_router, prefix=API_PREFIX)
+app.include_router(public_discovery_router, prefix=API_PREFIX)
 app.include_router(discovery_router, prefix=API_PREFIX)
 app.include_router(ops_router, prefix=API_PREFIX)
 app.include_router(user_router, prefix=API_PREFIX)

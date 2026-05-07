@@ -1,4 +1,4 @@
-# 🎬 Kino Kopilka — @kino_kopilka_bot
+# 🎬 Flickbook / Kino Kopilka
 
 [![GitLab pipeline](https://gitlab.com/ultra_kot/bots/barba-film-bot/badges/main/pipeline.svg)](https://gitlab.com/ultra_kot/bots/barba-film-bot/-/pipelines)
 [![GitHub CI](https://github.com/kotbarbarossa/barba-film-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/kotbarbarossa/barba-film-bot/actions/workflows/ci.yml)
@@ -6,9 +6,11 @@
 [![Python](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Personal Telegram bot for tracking movies and TV series. Add titles to your list, browse by genre or decade, rate what you've watched, and let the bot enrich metadata automatically via Groq + TMDB.
+A movie and TV series tracker with two clients sharing one backend: a **Telegram bot** (@kino_kopilka_bot) and a **mobile app** (Flickbook, iOS/Android).
 
-**Stack:** FastAPI · aiogram 3 · SQLAlchemy 2.0 async · asyncpg · PostgreSQL · Redis · ARQ · Groq · TMDB · Sentry · Docker · GitLab CI/CD · AWS EC2
+**Backend stack:** FastAPI · aiogram 3 · SQLAlchemy 2.0 async · asyncpg · PostgreSQL · Redis · ARQ · Groq · TMDB · Sentry · Docker · GitLab CI/CD · AWS EC2
+
+**Mobile stack:** React Native · Expo SDK 55 · expo-router · TanStack Query · Zustand · EAS
 
 **[Open in Telegram →](https://t.me/kino_kopilka_bot)**
 
@@ -72,12 +74,80 @@ Community-wide leaderboards built from aggregated user activity. All charts are 
 
 ---
 
+## Mobile App (Flickbook)
+
+A native iOS/Android app built with React Native + Expo that mirrors the Telegram bot's functionality with a full UI.
+
+### Features
+
+- **Auth** — Sign in with Google (iOS & Android) or Sign in with Apple (iOS only)
+- **My films** — full list with filters: status, genre, media type, year range, rating, sort
+- **Film detail** — poster, metadata, ratings, mark watched, rate 1–10, share
+- **Add film** — search by title, select from TMDB results
+- **Discovery charts** — same 7 community charts as the bot (Hot ten, Top rated, etc.)
+- **Dark / light theme** — follows system preference
+
+### Tech Stack
+
+| Layer | Choice |
+|-------|--------|
+| Framework | React Native 0.83 + Expo SDK 55 |
+| Navigation | expo-router (file-based) |
+| State | Zustand v5 (auth tokens → SecureStore) |
+| Data fetching | TanStack Query v5 |
+| Auth | expo-auth-session (Google), expo-apple-authentication (Apple) |
+| Fonts | Caveat · Kalam · JetBrains Mono (Google Fonts) |
+| Build & deploy | EAS (Expo Application Services) |
+
+### Running locally
+
+Requires Node.js, npm, and [Expo Go](https://expo.dev/go) (SDK 55) on your phone.
+
+```bash
+cd mobile
+npm install
+npx expo start --lan   # phone and laptop on the same Wi-Fi
+```
+
+For Google / Apple OAuth to work you need a native build (not Expo Go):
+
+```bash
+npx expo run:ios    # requires Xcode
+npx expo run:android  # requires Android Studio
+```
+
+### Building with EAS
+
+```bash
+npm install -g eas-cli
+eas login
+
+cd mobile
+eas build --profile development --platform ios      # dev build
+eas build --profile preview --platform android      # APK for testers
+eas build --profile production --platform all       # App Store / Play Store
+```
+
+### Mobile environment variables
+
+The mobile app reads config from the root `.env` via `app.config.js`:
+
+| Variable | Description |
+|----------|-------------|
+| `API_URL` | Backend base URL, e.g. `http://54.243.213.247:8000/api/v1` |
+| `GOOGLE_CLIENT_ID` | Google OAuth iOS client ID |
+| `GOOGLE_CLIENT_ID_ANDROID` | Google OAuth Android client ID |
+| `GOOGLE_CLIENT_ID_WEB` | Google OAuth Web client ID (used by Expo dev builds) |
+
+---
+
 ## Architecture
 
 ```mermaid
 flowchart LR
   subgraph Clients
     TG[Telegram user]
+    MOB[Mobile app\niOS / Android]
   end
 
   subgraph AWS_EC2["AWS EC2 · docker-compose"]
@@ -92,9 +162,12 @@ flowchart LR
     GROQ[Groq API]
     TMDB[TMDB API]
     SENTRY[Sentry]
+    GOOG[Google OAuth]
+    APPLE[Apple OAuth]
   end
 
   TG <--> BOT
+  MOB <--> API
   BOT --> PG
   BOT --> RED
   API --> PG
@@ -102,6 +175,8 @@ flowchart LR
   WORKER --> PG
   WORKER --> GROQ
   WORKER --> TMDB
+  MOB -.auth.-> GOOG
+  MOB -.auth.-> APPLE
   BOT -.error.-> SENTRY
   API -.error.-> SENTRY
   WORKER -.error.-> SENTRY
@@ -161,6 +236,7 @@ Admin role is granted via `PATCH /api/v1/users/{id}/admin` with the `X-Admin-Key
 |------------|-------------|-------|
 | `GET /health` | public | public |
 | `POST /api/v1/auth/*` | public | public |
+| `GET /api/v1/discovery/recent-posters` | public | public |
 | `GET /api/v1/movies/`, `/persons/`, `/categories/` | ✓ Bearer JWT | ✓ |
 | `GET /api/v1/discovery/*` | ✓ Bearer JWT | ✓ |
 | `POST/PUT/DELETE /api/v1/movies/`, `/persons/`, `/categories/` | — | ✓ Bearer JWT (`is_admin`) |
@@ -240,7 +316,9 @@ Copy into a `.env` file at the project root.
 | `REFRESH_TOKEN_EXPIRE_DAYS` | `30` | Refresh token lifetime in days |
 | `BOT_SECRET` | — | Shared secret between the bot and API (`X-Bot-Secret` header) |
 | `ADMIN_API_KEY` | — | Static key for granting admin role (`X-Admin-Key` header) |
-| `GOOGLE_CLIENT_ID` | `""` | Google OAuth client ID (leave empty to disable Google auth) |
+| `GOOGLE_CLIENT_ID` | `""` | Google OAuth iOS client ID (leave empty to disable Google auth) |
+| `GOOGLE_CLIENT_ID_ANDROID` | `""` | Google OAuth Android client ID |
+| `GOOGLE_CLIENT_ID_WEB` | `""` | Google OAuth Web client ID (for Expo dev builds) |
 | `APPLE_BUNDLE_ID` | `""` | Apple app bundle ID (leave empty to disable Apple auth) |
 
 ---

@@ -22,3 +22,15 @@ class GlobalTrendingResponse(BaseModel):
     entries: list[ChartEntry]
     is_trending: bool  # True = 60-day window, False = all-time fallback
     min_count_used: int  # 1/2/3 for trending, 0 for all-time
+
+
+class PublicPosterEntry(BaseModel):
+    id: int
+    title_ru: str | None
+    title_original: str | None
+    year: int | None
+    poster_url: str
+
+
+class PublicPostersResponse(BaseModel):
+    entries: list[PublicPosterEntry]
