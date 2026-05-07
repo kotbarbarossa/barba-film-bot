@@ -34,7 +34,7 @@ module.exports = {
     bundler: 'metro',
     output: 'static',
   },
-  plugins: ['expo-router', 'expo-secure-store'],
+  plugins: ['expo-router', 'expo-secure-store', 'expo-apple-authentication'],
   newArchEnabled: true,
   experiments: {
     typedRoutes: true,

@@ -42,16 +42,18 @@ async def recent_posters(
         .limit(20)
     )
     movies = list((await session.execute(stmt)).scalars().all())
-    return PublicPostersResponse(entries=[
-        PublicPosterEntry(
-            id=m.id,
-            title_ru=m.title_ru,
-            title_original=m.title_original,
-            year=m.year,
-            poster_url=m.poster_url,  # type: ignore[arg-type]
-        )
-        for m in movies
-    ])
+    return PublicPostersResponse(
+        entries=[
+            PublicPosterEntry(
+                id=m.id,
+                title_ru=m.title_ru,
+                title_original=m.title_original,
+                year=m.year,
+                poster_url=m.poster_url,  # type: ignore[arg-type]
+            )
+            for m in movies
+        ]
+    )
 
 
 @discovery_router.get('/global-trending', response_model=GlobalTrendingResponse)

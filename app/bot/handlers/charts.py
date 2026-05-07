@@ -101,7 +101,8 @@ async def show_top_rated(callback: CallbackQuery, session: AsyncSession) -> None
 @router.callback_query(NavigationCallback.filter(F.action == NavAction.charts_top_want))
 async def show_top_want(callback: CallbackQuery, session: AsyncSession) -> None:
     await _show_simple_chart(
-        callback, session,
+        callback,
+        session,
         getter=get_top_want,
         title=CHARTS_TOP_WANT_TITLE,
         desc=CHARTS_TOP_WANT_DESC,
@@ -112,7 +113,8 @@ async def show_top_want(callback: CallbackQuery, session: AsyncSession) -> None:
 @router.callback_query(NavigationCallback.filter(F.action == NavAction.charts_top_watched))
 async def show_top_watched(callback: CallbackQuery, session: AsyncSession) -> None:
     await _show_simple_chart(
-        callback, session,
+        callback,
+        session,
         getter=get_top_watched,
         title=CHARTS_TOP_WATCHED_TITLE,
         desc=CHARTS_TOP_WATCHED_DESC,
@@ -123,7 +125,8 @@ async def show_top_watched(callback: CallbackQuery, session: AsyncSession) -> No
 @router.callback_query(NavigationCallback.filter(F.action == NavAction.charts_top_controversial))
 async def show_top_controversial(callback: CallbackQuery, session: AsyncSession) -> None:
     await _show_simple_chart(
-        callback, session,
+        callback,
+        session,
         getter=get_top_controversial,
         title=CHARTS_TOP_CONTROVERSIAL_TITLE,
         desc=CHARTS_TOP_CONTROVERSIAL_DESC,
@@ -134,7 +137,8 @@ async def show_top_controversial(callback: CallbackQuery, session: AsyncSession)
 @router.callback_query(NavigationCallback.filter(F.action == NavAction.charts_top_quick))
 async def show_top_quick(callback: CallbackQuery, session: AsyncSession) -> None:
     await _show_simple_chart(
-        callback, session,
+        callback,
+        session,
         getter=get_top_quick,
         title=CHARTS_TOP_QUICK_TITLE,
         desc=CHARTS_TOP_QUICK_DESC,
@@ -145,7 +149,8 @@ async def show_top_quick(callback: CallbackQuery, session: AsyncSession) -> None
 @router.callback_query(NavigationCallback.filter(F.action == NavAction.charts_top_postponed))
 async def show_top_postponed(callback: CallbackQuery, session: AsyncSession) -> None:
     await _show_simple_chart(
-        callback, session,
+        callback,
+        session,
         getter=get_top_postponed,
         title=CHARTS_TOP_POSTPONED_TITLE,
         desc=CHARTS_TOP_POSTPONED_DESC,

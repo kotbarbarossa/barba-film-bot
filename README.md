@@ -16,25 +16,27 @@ A movie and TV series tracker with two clients sharing one backend: a **Telegram
 
 ---
 
-## Features
+## Telegram Bot (@kino_kopilka_bot)
 
-### Adding a film
+### Features
+
+#### Adding a film
 Three-step FSM dialog: enter the title → select type (film / series) → optionally add a note for better search. The bot detects the language (Cyrillic / Latin) and saves it as `title_ru` or `title_original`. Metadata is fetched in the background.
 
-### Browsing
+#### Browsing
 - **Random** — surprise pick from your list
 - **By genre** — filter by category
 - **By decade** — e.g. "90s", "2010s"
 - **Recently added** — last titles you saved
 - **Recently watched** — last titles you marked as watched
 
-### Film card
+#### Film card
 Poster, description, year, ratings (IMDb / Kinopoisk / TMDB), country, duration, age rating, cast. Mark as watched, rate 1–10, share with a friend.
 
-### My films
+#### My films
 Full list with pagination and multi-filter: status (watched / unwatched) · type (film / series) · genre · sort order. Each filter toggled inline without leaving the screen.
 
-### Charts
+#### Charts
 Community-wide leaderboards built from aggregated user activity. All charts are the same for every user (not personalised) and cached so they load instantly.
 
 | Chart | How it ranks |
@@ -47,9 +49,7 @@ Community-wide leaderboards built from aggregated user activity. All charts are 
 | ⚡ **Watch immediately** | Films people add and watch without putting off. High impulse interest — something about them grabs attention right away. |
 | 📦 **Graveyard** | Films that have been sitting in many people's watchlists for a long time and still haven't been watched. Maybe it's finally time. |
 
----
-
-## Screenshots
+### Screenshots
 
 <table><tr>
   <th>Start page</th>
@@ -57,19 +57,17 @@ Community-wide leaderboards built from aggregated user activity. All charts are 
   <th>Film card</th>
   <th>My films with filters</th>
 </tr><tr>
-  <td><img src="docs/screenshots/start_page.jpeg" height="380"/></td>
-  <td><img src="docs/screenshots/main_menu.jpeg" height="380"/></td>
-  <td><img src="docs/screenshots/film_card.jpeg" height="380"/></td>
-  <td><img src="docs/screenshots/films_with_filters.jpeg" height="380"/></td>
+  <td><img src="docs/screenshots/start_page.jpeg" width="180"/></td>
+  <td><img src="docs/screenshots/main_menu.jpeg" width="180"/></td>
+  <td><img src="docs/screenshots/film_card.jpeg" width="180"/></td>
+  <td><img src="docs/screenshots/films_with_filters.jpeg" width="180"/></td>
 </tr></table>
 
-### Adding a film dialog
-
 <table><tr>
-  <td><img src="docs/screenshots/add_movie_1.jpeg" width="380"/></td>
-  <td><img src="docs/screenshots/add_movie_2.jpeg" width="380"/></td>
-  <td><img src="docs/screenshots/add_movie_3.jpeg" width="380"/></td>
-  <td><img src="docs/screenshots/add_movie_4.jpeg" width="380"/></td>
+  <td><img src="docs/screenshots/add_movie_1.jpeg" width="180"/></td>
+  <td><img src="docs/screenshots/add_movie_2.jpeg" width="180"/></td>
+  <td><img src="docs/screenshots/add_movie_3.jpeg" width="180"/></td>
+  <td><img src="docs/screenshots/add_movie_4.jpeg" width="180"/></td>
 </tr></table>
 
 ---
@@ -77,6 +75,32 @@ Community-wide leaderboards built from aggregated user activity. All charts are 
 ## Mobile App (Flickbook)
 
 A native iOS/Android app built with React Native + Expo that mirrors the Telegram bot's functionality with a full UI.
+
+### Screenshots
+
+<table><tr>
+  <th>Auth</th>
+  <th>Home</th>
+  <th>My Films</th>
+  <th>Filters</th>
+</tr><tr>
+  <td><img src="docs/screenshots/app_auth.png" width="180"/></td>
+  <td><img src="docs/screenshots/app_main.png" width="180"/></td>
+  <td><img src="docs/screenshots/app_films.png" width="180"/></td>
+  <td><img src="docs/screenshots/app_filters.png" width="180"/></td>
+</tr></table>
+
+<table><tr>
+  <th>Movie detail</th>
+  <th>Search</th>
+  <th>Add film</th>
+  <th>Charts</th>
+</tr><tr>
+  <td><img src="docs/screenshots/app_movie.png" width="180"/></td>
+  <td><img src="docs/screenshots/app_search.png" width="180"/></td>
+  <td><img src="docs/screenshots/app_add.png" width="180"/></td>
+  <td><img src="docs/screenshots/app_charts_list.png" width="180"/></td>
+</tr></table>
 
 ### Features
 

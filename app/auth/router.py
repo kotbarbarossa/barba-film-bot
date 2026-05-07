@@ -76,11 +76,13 @@ async def google_auth(
 ) -> TokenResponse:
     try:
         client_ids = [
-            c for c in [
+            c
+            for c in [
                 settings.google_client_id,
                 settings.google_client_id_android,
                 settings.google_client_id_web,
-            ] if c
+            ]
+            if c
         ]
         info = await verify_google_token(data.id_token, client_ids)
     except ValueError as e:
