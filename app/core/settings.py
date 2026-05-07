@@ -49,6 +49,8 @@ class Settings(BaseSettings):
     admin_chat_id: int = 0
 
     google_client_id: str = ''
+    google_client_id_android: str = ''
+    google_client_id_web: str = ''
     apple_bundle_id: str = ''
 
     @property

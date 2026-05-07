@@ -1,8 +1,14 @@
 from fastapi import APIRouter, Depends
+from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user
-from app.discovery.schemas import ChartResponse, GlobalTrendingResponse
+from app.discovery.schemas import (
+    ChartResponse,
+    GlobalTrendingResponse,
+    PublicPosterEntry,
+    PublicPostersResponse,
+)
 from app.discovery.service import (
     get_global_trending,
     get_top_controversial,
@@ -13,12 +19,39 @@ from app.discovery.service import (
     get_top_watched,
 )
 from app.infrastructure.database.dependencies import get_session
+from app.movie.models import Movie, ProcessingStatus
+
+public_discovery_router = APIRouter(prefix='/discovery', tags=['discovery'])
 
 discovery_router = APIRouter(
     prefix='/discovery',
     tags=['discovery'],
     dependencies=[Depends(get_current_user)],
 )
+
+
+@public_discovery_router.get('/recent-posters', response_model=PublicPostersResponse)
+async def recent_posters(
+    session: AsyncSession = Depends(get_session),
+) -> PublicPostersResponse:
+    stmt = (
+        select(Movie)
+        .where(Movie.poster_url.isnot(None))
+        .where(Movie.processing_status == ProcessingStatus.PROCESSED)
+        .order_by(desc(Movie.created_at))
+        .limit(20)
+    )
+    movies = list((await session.execute(stmt)).scalars().all())
+    return PublicPostersResponse(entries=[
+        PublicPosterEntry(
+            id=m.id,
+            title_ru=m.title_ru,
+            title_original=m.title_original,
+            year=m.year,
+            poster_url=m.poster_url,  # type: ignore[arg-type]
+        )
+        for m in movies
+    ])
 
 
 @discovery_router.get('/global-trending', response_model=GlobalTrendingResponse)

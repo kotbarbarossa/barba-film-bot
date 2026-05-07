@@ -77,7 +77,7 @@ async def preview_movie(data: MoviePreviewGet):
 
 
 @movies_router.get(
-    '/', response_model=list[MovieListResponse], dependencies=[Depends(get_current_user)]
+    '', response_model=list[MovieListResponse], dependencies=[Depends(get_current_user)]
 )
 async def list_movies(
     media_type: MediaType | None = Query(default=None),
@@ -102,7 +102,7 @@ async def list_movies(
 
 
 @movies_router.post(
-    '/',
+    '',
     response_model=MovieListResponse,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_admin)],
@@ -180,7 +180,7 @@ async def delete_movie(
 
 
 @movie_persons_router.post(
-    '/', response_model=PersonInMovieResponse, status_code=status.HTTP_201_CREATED
+    '', response_model=PersonInMovieResponse, status_code=status.HTTP_201_CREATED
 )
 async def assign_person_to_movie(
     movie_id: int,
@@ -217,7 +217,7 @@ async def remove_person_from_movie(
 
 
 @persons_router.get(
-    '/', response_model=list[PersonResponse], dependencies=[Depends(get_current_user)]
+    '', response_model=list[PersonResponse], dependencies=[Depends(get_current_user)]
 )
 async def list_persons(
     search: str | None = Query(default=None),
@@ -228,7 +228,7 @@ async def list_persons(
 
 
 @persons_router.post(
-    '/',
+    '',
     response_model=PersonResponse,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_admin)],
@@ -292,7 +292,7 @@ async def delete_person(
 
 
 @categories_router.get(
-    '/', response_model=list[CategoryResponse], dependencies=[Depends(get_current_user)]
+    '', response_model=list[CategoryResponse], dependencies=[Depends(get_current_user)]
 )
 async def list_categories(
     search: str | None = Query(default=None),
@@ -303,7 +303,7 @@ async def list_categories(
 
 
 @categories_router.post(
-    '/',
+    '',
     response_model=CategoryResponse,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_admin)],
@@ -366,7 +366,7 @@ async def delete_category(
 # --- User movies ---
 
 
-@user_movies_router.get('/', response_model=list[UserMovieListResponse])
+@user_movies_router.get('', response_model=list[UserMovieListResponse])
 async def list_user_movies(
     user_id: int,
     current_user: User = Depends(get_current_user),
@@ -394,7 +394,7 @@ async def list_user_movies(
 
 
 @user_movies_router.post(
-    '/', response_model=UserMovieDetailResponse, status_code=status.HTTP_201_CREATED
+    '', response_model=UserMovieDetailResponse, status_code=status.HTTP_201_CREATED
 )
 async def add_user_movie(
     user_id: int,
