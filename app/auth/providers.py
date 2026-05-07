@@ -25,14 +25,14 @@ class OAuthUserInfo:
     username: str | None
 
 
-async def verify_google_token(id_token: str, client_id: str) -> OAuthUserInfo:
+async def verify_google_token(id_token: str, client_ids: list[str]) -> OAuthUserInfo:
     try:
         signing_key = await asyncio.to_thread(_google_jwks.get_signing_key_from_jwt, id_token)
         payload: dict[str, Any] = jwt.decode(
             id_token,
             signing_key.key,
             algorithms=['RS256'],
-            audience=client_id,
+            audience=client_ids,
             issuer=['accounts.google.com', 'https://accounts.google.com'],
         )
     except jwt.PyJWTError as e:

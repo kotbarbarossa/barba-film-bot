@@ -75,7 +75,8 @@ async def google_auth(
     session: AsyncSession = Depends(get_session),
 ) -> TokenResponse:
     try:
-        info = await verify_google_token(data.id_token, settings.google_client_id)
+        client_ids = [c for c in [settings.google_client_id, settings.google_client_id_android, settings.google_client_id_web] if c]
+        info = await verify_google_token(data.id_token, client_ids)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e)) from e
 

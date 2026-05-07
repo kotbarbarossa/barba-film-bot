@@ -16,7 +16,7 @@ import { H, Body, Mono, ArtNote } from '@/components/Text';
 import { Button } from '@/components/Button';
 import { Poster } from '@/components/Poster';
 import { loginWithApple, loginWithGoogle } from '@/api/auth';
-import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_ID_ANDROID, API_URL } from '@/constants/env';
+import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_ID_ANDROID, GOOGLE_CLIENT_ID_WEB, API_URL } from '@/constants/env';
 import { useAuthStore } from '@/store/auth.store';
 interface PublicPosterEntry {
   id: number;
@@ -97,6 +97,7 @@ export function AuthScreen({ variant }: { variant?: Variant }) {
   const [, googleResponse, promptGoogleAsync] = Google.useAuthRequest({
     iosClientId: GOOGLE_CLIENT_ID,
     androidClientId: GOOGLE_CLIENT_ID_ANDROID,
+    webClientId: GOOGLE_CLIENT_ID_WEB,
   });
 
   useEffect(() => {
