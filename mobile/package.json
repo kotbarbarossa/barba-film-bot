@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@expo-google-fonts/caveat": "^0.3.0",
+    "@expo-google-fonts/jetbrains-mono": "^0.4.1",
     "@expo-google-fonts/kalam": "^0.3.0",
     "@expo/vector-icons": "~15.1.0",
     "@tanstack/react-query": "^5.62.0",

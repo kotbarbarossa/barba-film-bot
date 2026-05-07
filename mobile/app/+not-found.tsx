@@ -1,17 +1,17 @@
 import { Link, Stack } from 'expo-router';
 import { View } from 'react-native';
-
-import { Body, Heading } from '@/components/ui/Typography';
-import { colors } from '@/constants/theme';
+import { useTheme } from '@/theme';
+import { H, Body } from '@/components/Text';
 
 export default function NotFound() {
+  const { theme } = useTheme();
   return (
     <>
       <Stack.Screen options={{ title: 'Страница не найдена' }} />
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.paper, gap: 16, padding: 24 }}>
-        <Heading>Страница не найдена</Heading>
-        <Link href="/(app)">
-          <Body style={{ color: colors.orange }}>Вернуться на главную</Body>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.paper, gap: 16, padding: 24 }}>
+        <H size="lg">Страница не найдена</H>
+        <Link href="/">
+          <Body color={theme.accentOrange}>Вернуться на главную</Body>
         </Link>
       </View>
     </>

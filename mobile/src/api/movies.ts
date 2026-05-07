@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 import type {
   CategoryResponse,
+  MovieDetailResponse,
   UserMovieAddByTitle,
   UserMovieDetailResponse,
   UserMovieFilters,
@@ -22,6 +23,11 @@ export async function getMyMovies(
       category_id: filters.category_id,
     },
   });
+  return data;
+}
+
+export async function getMovie(movieId: number): Promise<MovieDetailResponse> {
+  const { data } = await apiClient.get<MovieDetailResponse>(`/movies/${movieId}`);
   return data;
 }
 

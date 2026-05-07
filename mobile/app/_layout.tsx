@@ -1,12 +1,14 @@
-import { Caveat_600SemiBold } from '@expo-google-fonts/caveat';
+import { Caveat_400Regular, Caveat_700Bold } from '@expo-google-fonts/caveat';
+import { JetBrainsMono_400Regular } from '@expo-google-fonts/jetbrains-mono';
 import { Kalam_400Regular, Kalam_700Bold } from '@expo-google-fonts/kalam';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
-import { Slot, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { ThemeProvider } from '@/theme';
 import { useAuthStore } from '@/store/auth.store';
 
 SplashScreen.preventAutoHideAsync();
@@ -15,9 +17,11 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Caveat_600SemiBold,
-    Kalam_400Regular,
-    Kalam_700Bold,
+    'Caveat':         Caveat_400Regular,
+    'Caveat-Bold':    Caveat_700Bold,
+    'Kalam':          Kalam_400Regular,
+    'Kalam-Bold':     Kalam_700Bold,
+    'JetBrainsMono':  JetBrainsMono_400Regular,
   });
 
   const { loadFromStorage, isReady, accessToken } = useAuthStore();
@@ -32,21 +36,35 @@ export default function RootLayout() {
     if (!isReady || !fontsLoaded) return;
     SplashScreen.hideAsync();
 
-    const inAuthGroup = segments[0] === '(auth)';
-    if (!accessToken && !inAuthGroup) {
-      router.replace('/(auth)');
-    } else if (accessToken && inAuthGroup) {
-      router.replace('/(app)');
+    const inAuth = (segments[0] as string) === 'auth';
+    if (!accessToken && !inAuth) {
+      router.replace('/auth' as any);
+    } else if (accessToken && inAuth) {
+      router.replace('/');
     }
   }, [isReady, fontsLoaded, accessToken, segments]);
 
   if (!isReady || !fontsLoaded) return null;
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <SafeAreaProvider>
-        <Slot />
-      </SafeAreaProvider>
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <SafeAreaProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="auth" />
+            <Stack.Screen name="add" />
+            <Stack.Screen name="filters"          options={{ presentation: 'modal' }} />
+            <Stack.Screen name="rate"             options={{ presentation: 'modal' }} />
+            <Stack.Screen name="share"            options={{ presentation: 'modal' }} />
+            <Stack.Screen name="charts/[id]" />
+            <Stack.Screen name="movie/[id]" />
+            <Stack.Screen name="movie-from-chart/[id]" />
+            <Stack.Screen name="empty/movies" />
+            <Stack.Screen name="empty/filter" />
+          </Stack>
+        </SafeAreaProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
