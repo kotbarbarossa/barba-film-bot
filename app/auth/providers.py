@@ -46,7 +46,9 @@ async def verify_google_token(id_token: str, client_ids: list[str]) -> OAuthUser
     )
 
 
-async def verify_apple_token(id_token: str, bundle_id: str, extra_audiences: list[str] | None = None) -> OAuthUserInfo:
+async def verify_apple_token(
+    id_token: str, bundle_id: str, extra_audiences: list[str] | None = None
+) -> OAuthUserInfo:
     audiences = [bundle_id] + (extra_audiences or [])
     try:
         signing_key = await asyncio.to_thread(_apple_jwks.get_signing_key_from_jwt, id_token)
