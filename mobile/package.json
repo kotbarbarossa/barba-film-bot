@@ -26,6 +26,7 @@
     "expo-crypto": "~55.0.0",
     "expo-dev-client": "~55.0.32",
     "expo-font": "~55.0.0",
+    "expo-navigation-bar": "~55.0.12",
     "expo-router": "~55.0.0",
     "expo-secure-store": "~55.0.0",
     "expo-splash-screen": "~55.0.0",

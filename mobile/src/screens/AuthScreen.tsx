@@ -108,7 +108,7 @@ export function AuthScreen({ variant }: { variant?: Variant }) {
       router.replace('/');
     } catch (e: any) {
       if (e.code !== statusCodes.SIGN_IN_CANCELLED) {
-        Alert.alert('Ошибка', `API: ${API_URL}\ncode: ${e.code}\n${e.message}`);
+        Alert.alert('Ошибка', 'Не удалось войти через Google. Попробуй ещё раз.');
       }
     } finally {
       setLoadingGoogle(false);
