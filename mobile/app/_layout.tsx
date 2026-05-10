@@ -34,7 +34,6 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (!isReady || !fontsLoaded) return;
-    SplashScreen.hideAsync();
 
     const inAuth = (segments[0] as string) === 'auth';
     if (!accessToken && !inAuth) {
@@ -44,7 +43,16 @@ export default function RootLayout() {
     }
   }, [isReady, fontsLoaded, accessToken, segments]);
 
-  if (!isReady || !fontsLoaded) return null;
+  const inAuth = (segments[0] as string) === 'auth';
+  const needsRedirect =
+    isReady && fontsLoaded && ((!accessToken && !inAuth) || (!!accessToken && inAuth));
+  const canShow = isReady && fontsLoaded && !needsRedirect;
+
+  useEffect(() => {
+    if (canShow) SplashScreen.hideAsync();
+  }, [canShow]);
+
+  if (!canShow) return null;
 
   return (
     <ThemeProvider>
