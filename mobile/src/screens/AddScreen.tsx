@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, StyleSheet, TextInput, Pressable, Text, Alert } from 'react-native';
+import { View, ScrollView, StyleSheet, TextInput, Pressable, Text, Alert, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
@@ -16,6 +16,15 @@ export function AddScreen() {
   const [type, setType] = React.useState<'film' | 'series'>('film');
 
   const { mutateAsync, isPending } = useAddMovie();
+  const toastOpacity = React.useRef(new Animated.Value(0)).current;
+
+  const showToastAndRedirect = () => {
+    Animated.sequence([
+      Animated.timing(toastOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
+      Animated.delay(1800),
+      Animated.timing(toastOpacity, { toValue: 0, duration: 200, useNativeDriver: true }),
+    ]).start(() => router.replace('/movies' as any));
+  };
 
   const handleSubmit = async () => {
     if (!title.trim()) {
@@ -29,7 +38,11 @@ export function AddScreen() {
         year: year ? parseInt(year, 10) : undefined,
         user_query: hint.trim() || undefined,
       });
-      router.replace({ pathname: '/movie/[id]', params: { id: String(result.movie.id) } } as any);
+      if (result.movie.processing_status === 'pending') {
+        showToastAndRedirect();
+      } else {
+        router.replace({ pathname: '/movie/[id]', params: { id: String(result.movie.id) } } as any);
+      }
     } catch {
       Alert.alert('Ошибка', 'Не удалось найти фильм. Попробуй уточнить название.');
     }
@@ -114,6 +127,16 @@ export function AddScreen() {
         </View>
       </ScrollView>
 
+      <Animated.View
+        style={[styles.toast, { backgroundColor: theme.accentYellow, borderColor: theme.ink, opacity: toastOpacity }]}
+        pointerEvents="none"
+      >
+        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 20, color: theme.ink }}>✓ Добавлено в обработку</Text>
+        <Text style={{ fontFamily: 'Kalam', fontSize: 13, color: theme.inkSoft }}>
+          Данные о фильме скоро появятся в списке
+        </Text>
+      </Animated.View>
+
       <View style={{ padding: 12 }}>
         <Button
           title={isPending ? 'Ищу…' : 'Найти и добавить'}
@@ -128,6 +151,17 @@ export function AddScreen() {
 }
 
 const styles = StyleSheet.create({
+  toast: {
+    position: 'absolute',
+    bottom: 80,
+    left: 16,
+    right: 16,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    gap: 2,
+    zIndex: 10,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

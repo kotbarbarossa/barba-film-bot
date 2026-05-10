@@ -24,6 +24,15 @@ export function useMovie(movieId: number) {
     queryKey: movieKeys.detail(userId!, movieId),
     queryFn: () => getMyMovie(userId!, movieId),
     enabled: userId != null && movieId > 0,
-    staleTime: 1000 * 60 * 5,
+    staleTime: (query) =>
+      (query.state.data as { movie?: { processing_status?: string } } | undefined)
+        ?.movie?.processing_status === 'pending'
+        ? 0
+        : 1000 * 60 * 5,
+    refetchInterval: (query) =>
+      (query.state.data as { movie?: { processing_status?: string } } | undefined)
+        ?.movie?.processing_status === 'pending'
+        ? 8000
+        : false,
   });
 }

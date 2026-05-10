@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
-import { Poster } from '@/components/Poster';
+import { Poster, PosterProcessing, PosterUnrecognized } from '@/components/Poster';
 import { Chip } from '@/components/Chip';
 import { StatusPill } from '@/components/StatusPill';
 import { StarRow } from '@/components/StarRow';
@@ -67,12 +67,18 @@ export function MoviesScreen() {
       }
       style={[styles.item, { borderBottomColor: theme.shade2 }]}
     >
-      <Poster
-        width={44}
-        aspectRatio={2 / 3}
-        posterUrl={item.movie.poster_url}
-        label={(item.movie.title_ru ?? '?').slice(0, 4)}
-      />
+      {item.movie.processing_status === 'pending' ? (
+        <PosterProcessing width={44} aspectRatio={2 / 3} />
+      ) : item.movie.processing_status === 'unrecognized' ? (
+        <PosterUnrecognized width={44} aspectRatio={2 / 3} />
+      ) : (
+        <Poster
+          width={44}
+          aspectRatio={2 / 3}
+          posterUrl={item.movie.poster_url}
+          label={(item.movie.title_ru ?? '?').slice(0, 4)}
+        />
+      )}
       <View style={{ flex: 1 }}>
         <Body weight="bold" size={13}>
           {item.movie.title_ru ?? item.movie.title_original}

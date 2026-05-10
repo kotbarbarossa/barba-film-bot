@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { View, ScrollView, StyleSheet, Pressable, Text } from 'react-native';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
-import { Poster } from '@/components/Poster';
+import { Poster, PosterProcessing, PosterUnrecognized } from '@/components/Poster';
 import { H, Body, Mono, ArtNote } from '@/components/Text';
 import { useRouter } from 'expo-router';
 import { useMyMovies } from '@/hooks/queries/useMyMovies';
@@ -172,16 +172,25 @@ function PosterShelf({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 18, gap: 8 }}
       >
-        {movies.map(m => (
-          <Pressable key={m.id} onPress={() => onMoviePress(m)}>
-            <Poster
-              width={76}
-              aspectRatio={2 / 3}
-              posterUrl={m.movie.poster_url}
-              label={(m.movie.title_ru ?? m.movie.title_original ?? '?').slice(0, 5)}
-            />
-          </Pressable>
-        ))}
+        {movies.map(m => {
+          const status = m.movie.processing_status;
+          return (
+            <Pressable key={m.id} onPress={() => onMoviePress(m)}>
+              {status === 'pending' ? (
+                <PosterProcessing width={76} aspectRatio={2 / 3} />
+              ) : status === 'unrecognized' ? (
+                <PosterUnrecognized width={76} aspectRatio={2 / 3} />
+              ) : (
+                <Poster
+                  width={76}
+                  aspectRatio={2 / 3}
+                  posterUrl={m.movie.poster_url}
+                  label={(m.movie.title_ru ?? m.movie.title_original ?? '?').slice(0, 5)}
+                />
+              )}
+            </Pressable>
+          );
+        })}
       </ScrollView>
     </View>
   );

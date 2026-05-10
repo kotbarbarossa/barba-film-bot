@@ -45,6 +45,10 @@ export function PosterProcessing(props: Omit<Props, 'label'>) {
   return <Poster {...props} label="⏳ ОБРАБ." />;
 }
 
+export function PosterUnrecognized(props: Omit<Props, 'label'>) {
+  return <Poster {...props} label="✕ НЕ НАЙДЕН" />;
+}
+
 const styles = StyleSheet.create({
   root: {
     borderWidth: 1.5,
