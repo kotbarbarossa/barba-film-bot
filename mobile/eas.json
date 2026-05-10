@@ -8,7 +8,13 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "API_URL": "http://54.243.213.247:8000/api/v1",
+        "GOOGLE_CLIENT_ID": "233401664865-k02934l16fotsskfa82u3fcsj9fm338g.apps.googleusercontent.com",
+        "GOOGLE_CLIENT_ID_ANDROID": "233401664865-tgigv91gmeqgmrdcb8ud8p38lr60mmuh.apps.googleusercontent.com",
+        "GOOGLE_CLIENT_ID_WEB": "233401664865-cf729me75vdvdt1rvf6ilktqmj9m3usb.apps.googleusercontent.com"
+      }
     },
     "production": {}
   },

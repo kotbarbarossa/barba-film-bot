@@ -5,6 +5,7 @@ web-build/
 .env
 .env.local
 *.log
+*.jks
 ios/
 android/
 

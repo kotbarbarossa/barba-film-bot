@@ -1,6 +1,5 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
-import * as Google from 'expo-auth-session/providers/google';
-import * as WebBrowser from 'expo-web-browser';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import React, { useEffect, useRef, useMemo, useState } from 'react';
 import {
   View, ScrollView, StyleSheet, Pressable, Text, TextInput,
@@ -16,7 +15,7 @@ import { H, Body, Mono, ArtNote } from '@/components/Text';
 import { Button } from '@/components/Button';
 import { Poster } from '@/components/Poster';
 import { loginWithApple, loginWithGoogle } from '@/api/auth';
-import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_ID_ANDROID, GOOGLE_CLIENT_ID_WEB, API_URL } from '@/constants/env';
+import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_ID_WEB, API_URL } from '@/constants/env';
 import { useAuthStore } from '@/store/auth.store';
 interface PublicPosterEntry {
   id: number;
@@ -27,7 +26,10 @@ interface PublicPosterEntry {
 }
 interface PublicPostersResponse { entries: PublicPosterEntry[] }
 
-WebBrowser.maybeCompleteAuthSession();
+GoogleSignin.configure({
+  webClientId: GOOGLE_CLIENT_ID_WEB,
+  iosClientId: GOOGLE_CLIENT_ID,
+});
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const COL_COUNT = 3;
@@ -94,27 +96,20 @@ export function AuthScreen({ variant }: { variant?: Variant }) {
     return () => anim.stop();
   }, []);
 
-  const [, googleResponse, promptGoogleAsync] = Google.useAuthRequest({
-    iosClientId: GOOGLE_CLIENT_ID,
-    androidClientId: GOOGLE_CLIENT_ID_ANDROID,
-    webClientId: GOOGLE_CLIENT_ID_WEB,
-  });
-
-  useEffect(() => {
-    if (googleResponse?.type === 'success') {
-      const idToken = googleResponse.authentication?.idToken;
-      if (idToken) handleGoogleToken(idToken);
-    }
-  }, [googleResponse]);
-
-  async function handleGoogleToken(idToken: string) {
+  async function handleGoogle() {
     try {
       setLoadingGoogle(true);
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      const idToken = userInfo.data?.idToken;
+      if (!idToken) throw new Error('No idToken');
       const tokens = await loginWithGoogle(idToken);
       await signIn({ accessToken: tokens.access_token, refreshToken: tokens.refresh_token, userId: tokens.user_id });
       router.replace('/');
-    } catch {
-      Alert.alert('Ошибка', 'Не удалось войти через Google. Попробуй ещё раз.');
+    } catch (e: any) {
+      if (e.code !== statusCodes.SIGN_IN_CANCELLED) {
+        Alert.alert('Ошибка', `API: ${API_URL}\ncode: ${e.code}\n${e.message}`);
+      }
     } finally {
       setLoadingGoogle(false);
     }
@@ -214,7 +209,7 @@ export function AuthScreen({ variant }: { variant?: Variant }) {
             title={loadingGoogle ? 'Загрузка…' : 'G  Войти через Google'}
             full
             variant={Platform.OS === 'ios' ? undefined : 'primary'}
-            onPress={() => promptGoogleAsync()}
+            onPress={handleGoogle}
             disabled={loadingGoogle}
           />
         </View>

@@ -29,7 +29,7 @@ export function AddScreen() {
         year: year ? parseInt(year, 10) : undefined,
         user_query: hint.trim() || undefined,
       });
-      router.replace({ pathname: '/movie/[id]', params: { id: String(result.id) } } as any);
+      router.replace({ pathname: '/movie/[id]', params: { id: String(result.movie.id) } } as any);
     } catch {
       Alert.alert('Ошибка', 'Не удалось найти фильм. Попробуй уточнить название.');
     }
