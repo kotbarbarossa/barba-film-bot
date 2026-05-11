@@ -25,10 +25,10 @@ export function TabBar() {
   const isActive = (route: string) =>
     route === '/' ? path === '/' : path.startsWith(route);
 
-  const renderTab = (tab: { key: string; label: string; icon: string; route: string }, shift?: object) => {
+  const renderTab = (tab: { key: string; label: string; icon: string; route: string }) => {
     const active = isActive(tab.route);
     return (
-      <Pressable key={tab.key} onPress={() => router.push(tab.route as any)} style={[styles.tab, shift]}>
+      <Pressable key={tab.key} onPress={() => router.push(tab.route as any)} style={styles.tab}>
         <View style={[
           styles.icon,
           active && { backgroundColor: theme.accentYellow, borderColor: theme.ink, borderWidth: 1.5, borderRadius: 6 },
@@ -53,16 +53,18 @@ export function TabBar() {
       },
     ]}>
       {renderTab(LEFT[0])}
-      {renderTab(LEFT[1], { paddingRight: 20 })}{/* ← сдвиг Фильмы */}
+      {renderTab(LEFT[1])}
       <View style={{ width: 56 }} />
-      {renderTab(RIGHT[0], { paddingLeft: 20 })}{/* ← сдвиг Чарты */}
+      {renderTab(RIGHT[0])}
       {renderTab(RIGHT[1])}
-      <Pressable
-        onPress={() => router.push('/add' as any)}
-        style={[styles.fab, { backgroundColor: theme.accentOrange, borderColor: theme.ink, shadowColor: theme.ink }]}
-      >
-        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 30, color: theme.paper, lineHeight: 32 }}>+</Text>
-      </Pressable>
+      <View pointerEvents="box-none" style={styles.fabWrapper}>
+        <Pressable
+          onPress={() => router.push('/add' as any)}
+          style={[styles.fab, { backgroundColor: theme.accentOrange, borderColor: theme.ink, shadowColor: theme.ink }]}
+        >
+          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 30, color: theme.paper, lineHeight: 32 }}>+</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -88,11 +90,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  fabWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+  },
   fab: {
     position: 'absolute',
-    left: '50%',
     top: -12,
-    transform: [{ translateX: -25 }],
     width: 60,
     height: 60,
     borderRadius: 30,

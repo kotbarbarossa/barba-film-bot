@@ -11,7 +11,7 @@ module.exports = {
   userInterfaceStyle: 'automatic',
   splash: {
     image: './assets/splash.png',
-    resizeMode: 'contain',
+    resizeMode: 'cover',
     backgroundColor: '#faf7f2',
   },
   ios: {
@@ -36,6 +36,11 @@ module.exports = {
   },
   plugins: [
     'expo-router',
+    ['expo-splash-screen', {
+      image: './assets/splash.png',
+      resizeMode: 'cover',
+      backgroundColor: '#faf7f2',
+    }],
     'expo-secure-store',
     'expo-apple-authentication',
     '@react-native-google-signin/google-signin',
