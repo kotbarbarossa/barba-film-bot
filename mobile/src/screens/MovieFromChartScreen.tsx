@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet, Pressable, Text, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
 import { Poster } from '@/components/Poster';
@@ -21,12 +22,17 @@ type Props = {
   score?: string;
   watchCount?: string;
   rank?: string;
-  chartTitle?: string;
+  chartId?: string;
 };
 
-export function MovieFromChartScreen({ movieId, posterUrl, title, year, score, watchCount, rank, chartTitle }: Props) {
+function chartTitleKey(id: string): string {
+  return `charts.${id.replace(/-/g, '_')}_title`;
+}
+
+export function MovieFromChartScreen({ movieId, posterUrl, title, year, score, watchCount, rank, chartId }: Props) {
   const { theme } = useTheme();
   const router = useRouter();
+  const { t } = useTranslation();
   const numericId = parseInt(movieId, 10);
 
   const { data: movieDetail, isLoading: loadingDetail } = usePublicMovie(numericId);
@@ -44,7 +50,7 @@ export function MovieFromChartScreen({ movieId, posterUrl, title, year, score, w
       await addMovie({ title, media_type: 'film', year: year ? parseInt(year, 10) : undefined });
       setAdded(true);
     } catch {
-      Alert.alert('Ошибка', 'Не удалось добавить фильм');
+      Alert.alert(t('chart_movie.error'), t('chart_movie.error_body'));
     }
   };
 
@@ -57,6 +63,8 @@ export function MovieFromChartScreen({ movieId, posterUrl, title, year, score, w
   const displayMovie = movieDetail ?? null;
   const actors = displayMovie?.persons?.filter(p => p.role_type === 'actor').map(p => p.person.name).join(' · ');
   const directors = displayMovie?.persons?.filter(p => p.role_type === 'director').map(p => p.person.name).join(', ');
+
+  const chartTitle = chartId ? t(chartTitleKey(chartId)) : undefined;
 
   return (
     <Phone>
@@ -73,7 +81,7 @@ export function MovieFromChartScreen({ movieId, posterUrl, title, year, score, w
         )}
         <View style={styles.heroTop}>
           <Pressable onPress={() => router.back()}>
-            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: heroTextColor }}>← к чарту</Text>
+            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: heroTextColor }}>{t('chart_movie.back_to_chart')}</Text>
           </Pressable>
         </View>
         {rank && chartTitle ? (
@@ -87,7 +95,7 @@ export function MovieFromChartScreen({ movieId, posterUrl, title, year, score, w
             {year ? <Mono style={{ color: hasImage ? 'rgba(255,255,255,0.8)' : undefined }}>{year}</Mono> : null}
             {displayMovie?.country ? <Mono style={{ color: hasImage ? 'rgba(255,255,255,0.8)' : undefined }}>{displayMovie.country}</Mono> : null}
             {displayMovie?.duration_minutes ? (
-              <Mono style={{ color: hasImage ? 'rgba(255,255,255,0.8)' : undefined }}>{displayMovie.duration_minutes} МИН</Mono>
+              <Mono style={{ color: hasImage ? 'rgba(255,255,255,0.8)' : undefined }}>{displayMovie.duration_minutes} {t('chart_movie.min')}</Mono>
             ) : null}
           </View>
         </View>
@@ -98,11 +106,11 @@ export function MovieFromChartScreen({ movieId, posterUrl, title, year, score, w
         <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
           {score ? (
             <View style={[styles.ratingBox, { backgroundColor: theme.shade, borderColor: theme.line }]}>
-              <Mono size={9}>В ЧАРТЕ</Mono>
+              <Mono size={9}>{t('charts.in_chart')}</Mono>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
                 <StarRow value={parseFloat(score)} size={13} />
                 <Body weight="bold" size={14}>{score}</Body>
-                {watchCount ? <Body color={theme.inkFaint} size={10}>· {watchCount} оц.</Body> : null}
+                {watchCount ? <Body color={theme.inkFaint} size={10}>· {t('charts.ratings_count_short', { count: watchCount })}</Body> : null}
               </View>
             </View>
           ) : null}
@@ -132,7 +140,7 @@ export function MovieFromChartScreen({ movieId, posterUrl, title, year, score, w
         ) : null}
         {displayMovie?.description ? (
           <>
-            <Mono style={{ marginBottom: 4 }}>ОПИСАНИЕ</Mono>
+            <Mono style={{ marginBottom: 4 }}>{t('chart_movie.description')}</Mono>
             <Body color={theme.inkSoft}>{displayMovie.description}</Body>
           </>
         ) : null}
@@ -140,22 +148,22 @@ export function MovieFromChartScreen({ movieId, posterUrl, title, year, score, w
         {/* Cast */}
         {directors ? (
           <View style={{ marginTop: 12 }}>
-            <Body><Mono>режиссёр: </Mono>{directors}</Body>
+            <Body><Mono>{t('chart_movie.director')}</Mono>{directors}</Body>
           </View>
         ) : null}
         {actors ? (
           <View style={{ marginTop: 4 }}>
-            <Body><Mono>в ролях: </Mono>{actors}</Body>
+            <Body><Mono>{t('chart_movie.cast')}</Mono>{actors}</Body>
           </View>
         ) : null}
       </ScrollView>
 
       <View style={[styles.actions, { borderTopColor: theme.line, backgroundColor: theme.paper }]}>
         {isInList ? (
-          <Button title="✓ В списке — открыть мою карточку" full variant="ghost" onPress={handleOpenMyCard} />
+          <Button title={t('chart_movie.in_list')} full variant="ghost" onPress={handleOpenMyCard} />
         ) : (
           <Button
-            title={isPending ? 'Добавляю…' : '+ В Хочу посмотреть'}
+            title={isPending ? t('chart_movie.adding') : t('chart_movie.add_to_watchlist')}
             variant="primary"
             full
             onPress={handleAdd}

@@ -1,26 +1,28 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Pressable, Text, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
 import { Poster } from '@/components/Poster';
 import { StarRow } from '@/components/StarRow';
-import { H, Body, Mono, ArtNote } from '@/components/Text';
+import { H, Body, ArtNote } from '@/components/Text';
 import { Button } from '@/components/Button';
 import { useUpdateMovie } from '@/hooks/mutations/useUpdateMovie';
 
-const QUICK = [
-  { v: 10, label: 'шедевр' },
-  { v: 9,  label: 'отлично' },
-  { v: 8,  label: 'круто' },
-  { v: 7,  label: 'норм' },
-  { v: 5,  label: 'так себе' },
-  { v: 3,  label: 'плохо' },
-];
+const QUICK_KEYS = [
+  { v: 10, key: 'rating.masterpiece' },
+  { v: 9,  key: 'rating.excellent' },
+  { v: 8,  key: 'rating.great' },
+  { v: 7,  key: 'rating.fine' },
+  { v: 5,  key: 'rating.meh' },
+  { v: 3,  key: 'rating.bad' },
+] as const;
 
 export function RatingPromptScreen({ title = '', movieId }: { title?: string; movieId?: string }) {
   const { theme } = useTheme();
   const router = useRouter();
+  const { t } = useTranslation();
   const [value, setValue] = useState(0);
   const numericId = movieId ? parseInt(movieId, 10) : 0;
   const { mutateAsync, isPending } = useUpdateMovie(numericId);
@@ -30,7 +32,7 @@ export function RatingPromptScreen({ title = '', movieId }: { title?: string; mo
       try {
         await mutateAsync({ rating });
       } catch {
-        Alert.alert('Ошибка', 'Не удалось сохранить оценку');
+        Alert.alert(t('rating.error'), t('rating.save_error'));
       }
     }
     router.back();
@@ -45,7 +47,7 @@ export function RatingPromptScreen({ title = '', movieId }: { title?: string; mo
           <Poster width={80} aspectRatio={2 / 3} label="POS" />
         </View>
 
-        <H size="lg" style={{ textAlign: 'center', marginTop: 14 }}>Как тебе фильм?</H>
+        <H size="lg" style={{ textAlign: 'center', marginTop: 14 }}>{t('rating.question')}</H>
         {title ? <Body color={theme.inkSoft} style={{ textAlign: 'center' }}>«{title}»</Body> : null}
 
         <View style={{ alignItems: 'center', marginTop: 22 }}>
@@ -66,26 +68,26 @@ export function RatingPromptScreen({ title = '', movieId }: { title?: string; mo
         </View>
 
         <View style={[styles.chipsWrap, { marginTop: 14 }]}>
-          {QUICK.map(q => (
+          {QUICK_KEYS.map(q => (
             <Pressable
               key={q.v}
               onPress={() => setValue(q.v)}
               style={[styles.quickChip, { borderColor: theme.line, backgroundColor: value === q.v ? theme.accentYellow : 'transparent' }]}
             >
               <Body weight="bold" size={11} color={value === q.v ? theme.onYellow : theme.ink}>{q.v}</Body>
-              <Body size={11} color={value === q.v ? theme.onYellow : theme.inkSoft}>{q.label}</Body>
+              <Body size={11} color={value === q.v ? theme.onYellow : theme.inkSoft}>{t(q.key)}</Body>
             </Pressable>
           ))}
         </View>
 
         <ArtNote style={{ textAlign: 'center', marginTop: 16 }}>
-          можно оставить «без оценки» — сохраним факт просмотра
+          {t('rating.skip_hint')}
         </ArtNote>
 
         <View style={{ flexDirection: 'row', gap: 8, marginTop: 16 }}>
-          <Button title="без оценки" style={{ flex: 1 }} onPress={() => handleSave(null)} disabled={isPending} />
+          <Button title={t('rating.no_rating')} style={{ flex: 1 }} onPress={() => handleSave(null)} disabled={isPending} />
           <Button
-            title={isPending ? '…' : '✓ Сохранить'}
+            title={isPending ? '…' : t('rating.save')}
             variant="primary"
             style={{ flex: 1.4 }}
             onPress={() => handleSave(value > 0 ? value : null)}

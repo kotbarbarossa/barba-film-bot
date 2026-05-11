@@ -1,16 +1,24 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Chip } from '@/components/Chip';
 
 type Status = 'want' | 'watching' | 'watched' | 'dropped';
 
-const MAP: Record<Status, { label: string; tone: 'yellow' | 'blue' | 'orange' | undefined }> = {
-  want:     { label: 'Хочу',         tone: 'yellow' },
-  watching: { label: 'Смотрю',       tone: 'blue' },
-  watched:  { label: 'Просмотрено',  tone: 'orange' },
-  dropped:  { label: 'Исключён',     tone: undefined },
+const TONE: Record<Status, 'yellow' | 'blue' | 'orange' | undefined> = {
+  want:     'yellow',
+  watching: 'blue',
+  watched:  'orange',
+  dropped:  undefined,
+};
+
+const KEY: Record<Status, string> = {
+  want:     'status.want',
+  watching: 'status.watching',
+  watched:  'status.watched',
+  dropped:  'status.dropped',
 };
 
 export function StatusPill({ status }: { status: Status }) {
-  const m = MAP[status] ?? MAP.want;
-  return <Chip label={m.label} tone={m.tone} />;
+  const { t } = useTranslation();
+  return <Chip label={t(KEY[status])} tone={TONE[status]} />;
 }

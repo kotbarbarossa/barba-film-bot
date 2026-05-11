@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, ScrollView, StyleSheet, Pressable, Text } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
 import { Poster, PosterPending, PosterMissing } from '@/components/Poster';
@@ -11,6 +12,7 @@ import type { UserMovieListResponse } from '@/types/api';
 export function HomeScreen() {
   const { theme } = useTheme();
   const router = useRouter();
+  const { t } = useTranslation();
   const { data: movies = [] } = useMyMovies();
 
   const movieCount = movies.length;
@@ -36,25 +38,25 @@ export function HomeScreen() {
     return (
       <Phone>
         <View style={[styles.row, { paddingHorizontal: 18, paddingTop: 14, paddingBottom: 6 }]}>
-          <H size="lg">Кинокопилка</H>
+          <H size="lg">{t('home.title')}</H>
         </View>
         <View style={{ flex: 1, padding: 24, alignItems: 'center', justifyContent: 'center', gap: 16 }}>
           <View style={[styles.emptyIllu, { borderColor: theme.line, backgroundColor: theme.accentYellow }]}>
             <Text style={{ fontSize: 52 }}>🎬</Text>
           </View>
-          <H size="xl" style={{ textAlign: 'center' }}>Копилка пуста</H>
+          <H size="xl" style={{ textAlign: 'center' }}>{t('home.empty_title')}</H>
           <Body color={theme.inkSoft} style={{ textAlign: 'center', maxWidth: 260 }}>
-            Добавь первый фильм — и здесь появятся твои полки, статистика и кнопка «Наугад»
+            {t('home.empty_body')}
           </Body>
           <View style={{ marginTop: 8, gap: 8, alignItems: 'center' }}>
             <Pressable
               onPress={() => router.push('/add' as any)}
               style={[styles.addBtn, { backgroundColor: theme.accentOrange, borderColor: theme.ink, shadowColor: theme.line }]}
             >
-              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 18, color: theme.paper }}>+ Добавить фильм</Text>
+              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 18, color: theme.paper }}>{t('home.add_movie')}</Text>
             </Pressable>
             <Pressable onPress={() => router.push('/charts' as any)}>
-              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, color: theme.inkSoft }}>🔥 Посмотреть чарты</Text>
+              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, color: theme.inkSoft }}>{t('home.see_charts')}</Text>
             </Pressable>
           </View>
         </View>
@@ -66,44 +68,44 @@ export function HomeScreen() {
     <Phone>
       <ScrollView contentContainerStyle={{ paddingBottom: 16 }} showsVerticalScrollIndicator={false}>
         <View style={[styles.row, { paddingHorizontal: 18, paddingTop: 14, paddingBottom: 6 }]}>
-          <H size="lg">Кинокопилка</H>
+          <H size="lg">{t('home.title')}</H>
         </View>
 
         <Pressable
           onPress={onRandom}
           style={[styles.dice, { backgroundColor: theme.ink, borderColor: theme.line, shadowColor: theme.line }]}
         >
-          <H size="xl" color={theme.paper} style={{ fontSize: 40 }}>🎲 Наугад</H>
+          <H size="xl" color={theme.paper} style={{ fontSize: 40 }}>{t('home.random')}</H>
           <Body color={theme.paper} size={13} style={{ opacity: 0.85 }}>
-            один из {movieCount} фильмов в твоём списке
+            {t('home.random_sub', { count: movieCount })}
           </Body>
         </Pressable>
 
         <View style={styles.tilesRow}>
           <NavTile
-            title="Все мои"
+            title={t('home.all_mine')}
             emoji="📚"
             tone="orange"
-            sub={`${movieCount} фильмов`}
+            sub={t('home.movies_count_sub', { count: movieCount })}
             onPress={() => router.push('/movies' as any)}
           />
           <NavTile
-            title="Чарты"
+            title={t('home.charts')}
             emoji="🔥"
             tone="yellow"
-            sub="7 подборок"
+            sub={t('home.seven_collections')}
             onPress={() => router.push('/charts' as any)}
           />
         </View>
 
         <PosterShelf
-          title="Недавно добавленные"
+          title={t('home.recently_added')}
           sub={wantCount > 0 ? `${wantCount} →` : ''}
           movies={recentAdded}
           onMoviePress={(m) => router.push({ pathname: '/movie/[id]', params: { id: String(m.movie.id) } } as any)}
         />
         <PosterShelf
-          title="Недавно просмотренные"
+          title={t('home.recently_watched')}
           sub={watchedCount > 0 ? `${watchedCount} →` : ''}
           movies={recentWatched}
           onMoviePress={(m) => router.push({ pathname: '/movie/[id]', params: { id: String(m.movie.id) } } as any)}

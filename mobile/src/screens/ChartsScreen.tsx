@@ -1,33 +1,44 @@
 import React from 'react';
 import { View, ScrollView, StyleSheet, Pressable, Text } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
 import { H, Body, ArtNote } from '@/components/Text';
 
-const CHARTS = [
-  { id: 'global-trending', icon: '🔥', title: 'Горячая десятка',    sub: 'активно смотрят и высоко оценивают прямо сейчас' },
-  { id: 'top-rated',       icon: '⭐', title: 'Топ10 рейтинг',       sub: 'наивысшие средние оценки пользователей' },
-  { id: 'top-want',        icon: '🎯', title: 'Топ10 в хочу',        sub: 'чаще всего добавляли в список недавно' },
-  { id: 'top-watched',     icon: '🍿', title: 'Топ10 просмотрено',   sub: 'больше всего смотрели и пересматривали' },
-  { id: 'top-controversial', icon: '🎭', title: 'Топ10 спорных',    sub: 'максимальный разброс оценок' },
-  { id: 'top-quick',       icon: '⚡', title: 'Топ10 смотрят сразу', sub: 'добавляют и смотрят без откладывания' },
-  { id: 'top-postponed',   icon: '📦', title: 'Кладбище фильмов',    sub: 'лежат в хотелках у многих, никто не смотрит' },
+const CHART_IDS = [
+  { id: 'global-trending', icon: '🔥' },
+  { id: 'top-rated',       icon: '⭐' },
+  { id: 'top-want',        icon: '🎯' },
+  { id: 'top-watched',     icon: '🍿' },
+  { id: 'top-controversial', icon: '🎭' },
+  { id: 'top-quick',       icon: '⚡' },
+  { id: 'top-postponed',   icon: '📦' },
 ] as const;
+
+type ChartId = typeof CHART_IDS[number]['id'];
+
+function chartTitleKey(id: ChartId): string {
+  return `charts.${id.replace(/-/g, '_')}_title`;
+}
+function chartSubKey(id: ChartId): string {
+  return `charts.${id.replace(/-/g, '_')}_sub`;
+}
 
 export function ChartsScreen() {
   const { theme } = useTheme();
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <Phone>
       <View style={{ paddingHorizontal: 18, paddingTop: 12 }}>
-        <H size="xl">🔥 Чарты</H>
-        <ArtNote>общие подборки — одинаковы для всех</ArtNote>
+        <H size="xl">{t('charts.title')}</H>
+        <ArtNote>{t('charts.subtitle')}</ArtNote>
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, gap: 8 }}>
-        {CHARTS.map((c, i) => (
+        {CHART_IDS.map((c, i) => (
           <Pressable
             key={c.id}
             onPress={() => router.push({ pathname: '/charts/[id]', params: { id: c.id } } as any)}
@@ -44,8 +55,8 @@ export function ChartsScreen() {
               <Text style={{ fontSize: 18 }}>{c.icon}</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Body weight="bold" size={14} color={i === 0 ? theme.onYellow : theme.ink}>{c.title}</Body>
-              <Body size={11} color={i === 0 ? theme.onYellow : theme.inkSoft} style={{ marginTop: 2, opacity: i === 0 ? 0.65 : 1 }}>{c.sub}</Body>
+              <Body weight="bold" size={14} color={i === 0 ? theme.onYellow : theme.ink}>{t(chartTitleKey(c.id))}</Body>
+              <Body size={11} color={i === 0 ? theme.onYellow : theme.inkSoft} style={{ marginTop: 2, opacity: i === 0 ? 0.65 : 1 }}>{t(chartSubKey(c.id))}</Body>
             </View>
             <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: i === 0 ? theme.onYellow : theme.inkFaint, opacity: i === 0 ? 0.4 : 1 }}>›</Text>
           </Pressable>

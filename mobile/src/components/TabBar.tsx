@@ -3,16 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { useRouter, usePathname } from 'expo-router';
-
-const LEFT = [
-  { key: 'home',   label: 'Главная', icon: '🏠', route: '/' },
-  { key: 'movies', label: 'Фильмы',  icon: '📚', route: '/movies' },
-] as const;
-
-const RIGHT = [
-  { key: 'charts',  label: 'Чарты',   icon: '🔥', route: '/charts' },
-  { key: 'profile', label: 'Профиль', icon: '👤', route: '/profile' },
-] as const;
+import { useTranslation } from 'react-i18next';
 
 const BAR_HEIGHT = 64;
 
@@ -21,6 +12,14 @@ export function TabBar() {
   const router = useRouter();
   const path = usePathname();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
+
+  const TABS = [
+    { key: 'home',    label: t('tabs.home'),    icon: '🏠', route: '/' },
+    { key: 'movies',  label: t('tabs.movies'),  icon: '📚', route: '/movies' },
+    { key: 'charts',  label: t('tabs.charts'),  icon: '🔥', route: '/charts' },
+    { key: 'profile', label: t('tabs.profile'), icon: '👤', route: '/profile' },
+  ] as const;
 
   const isActive = (route: string) =>
     route === '/' ? path === '/' : path.startsWith(route);
@@ -52,11 +51,11 @@ export function TabBar() {
         paddingBottom: insets.bottom,
       },
     ]}>
-      {renderTab(LEFT[0])}
-      {renderTab(LEFT[1])}
+      {renderTab(TABS[0])}
+      {renderTab(TABS[1])}
       <View style={{ width: 56 }} />
-      {renderTab(RIGHT[0])}
-      {renderTab(RIGHT[1])}
+      {renderTab(TABS[2])}
+      {renderTab(TABS[3])}
       <View pointerEvents="box-none" style={styles.fabWrapper}>
         <Pressable
           onPress={() => router.push('/add' as any)}

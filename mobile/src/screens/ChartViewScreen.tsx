@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, ScrollView, StyleSheet, Pressable, Text, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
 import { Poster } from '@/components/Poster';
@@ -12,19 +13,27 @@ import { useGlobalTrending, useChart } from '@/hooks/queries/useCharts';
 import { useMyMovies } from '@/hooks/queries/useMyMovies';
 import type { ChartSlug } from '@/types/api';
 
-const CHART_META: Record<string, { icon: string; title: string; sub: string }> = {
-  'global-trending': { icon: '🔥', title: 'Горячая десятка',    sub: 'активно смотрят и высоко оценивают прямо сейчас' },
-  'top-rated':       { icon: '⭐', title: 'Топ10 рейтинг',       sub: 'наивысшие средние оценки пользователей' },
-  'top-want':        { icon: '🎯', title: 'Топ10 в хочу',        sub: 'чаще всего добавляли в список недавно' },
-  'top-watched':     { icon: '🍿', title: 'Топ10 просмотрено',   sub: 'больше всего смотрели и пересматривали' },
-  'top-controversial': { icon: '🎭', title: 'Топ10 спорных',    sub: 'максимальный разброс оценок' },
-  'top-quick':       { icon: '⚡', title: 'Топ10 смотрят сразу', sub: 'добавляют и смотрят без откладывания' },
-  'top-postponed':   { icon: '📦', title: 'Кладбище фильмов',    sub: 'лежат в хотелках у многих, никто не смотрит' },
+const CHART_ICONS: Record<string, string> = {
+  'global-trending':  '🔥',
+  'top-rated':        '⭐',
+  'top-want':         '🎯',
+  'top-watched':      '🍿',
+  'top-controversial':'🎭',
+  'top-quick':        '⚡',
+  'top-postponed':    '📦',
 };
+
+function chartTitleKey(id: string): string {
+  return `charts.${id.replace(/-/g, '_')}_title`;
+}
+function chartSubKey(id: string): string {
+  return `charts.${id.replace(/-/g, '_')}_sub`;
+}
 
 export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: string }) {
   const { theme } = useTheme();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const isGlobal = chartId === 'global-trending';
   const trendingQuery = useGlobalTrending();
@@ -37,7 +46,7 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
   const { data: myMovies = [] } = useMyMovies();
   const myMovieIds = new Set(myMovies.map(m => m.movie.id));
 
-  const meta = CHART_META[chartId] ?? { icon: '📊', title: chartId, sub: '' };
+  const icon = CHART_ICONS[chartId] ?? '📊';
 
   if (isLoading) {
     return (
@@ -58,14 +67,14 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
     <Phone>
       <View style={[styles.header, { paddingHorizontal: 16 }]}>
         <Pressable onPress={() => router.back()}>
-          <H size="md" style={{ paddingRight: 6 }}>← чарты</H>
+          <H size="md" style={{ paddingRight: 6 }}>{t('charts.back')}</H>
         </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
         <View style={{ paddingHorizontal: 18, paddingTop: 8 }}>
-          <H size="xl">{meta.icon} {meta.title}</H>
-          <ArtNote>{meta.sub} · обновлено сегодня</ArtNote>
+          <H size="xl">{icon} {t(chartTitleKey(chartId))}</H>
+          <ArtNote>{t(chartSubKey(chartId))} · {t('charts.updated_today')}</ArtNote>
         </View>
 
         <View style={{ paddingHorizontal: 16, paddingTop: 14, gap: 8 }}>
@@ -84,7 +93,7 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
                     score: String(entry.score.toFixed(1)),
                     watchCount: String(entry.watch_count),
                     rank: String(i + 1),
-                    chartTitle: meta.title,
+                    chartId,
                   },
                 } as any)}
                 style={[
@@ -100,7 +109,7 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
                     <StarRow value={entry.score} size={11} />
                     <Body weight="bold" size={11}>{entry.score.toFixed(1)}</Body>
-                    <Body color={theme.inkFaint} size={10}>· {entry.watch_count} оценок</Body>
+                    <Body color={theme.inkFaint} size={10}>· {t('charts.ratings_count_short', { count: entry.watch_count })}</Body>
                   </View>
                 </View>
                 {mine ? (
@@ -122,11 +131,12 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
 export function ChartEmptyScreen() {
   const { theme } = useTheme();
   const router = useRouter();
+  const { t } = useTranslation();
   return (
     <Phone>
       <View style={[styles.header, { paddingHorizontal: 16 }]}>
         <Pressable onPress={() => router.back()}>
-          <H size="md" style={{ paddingRight: 6 }}>← чарты</H>
+          <H size="md" style={{ paddingRight: 6 }}>{t('charts.back')}</H>
         </Pressable>
       </View>
 
@@ -134,13 +144,12 @@ export function ChartEmptyScreen() {
         <View style={[styles.illu, { borderColor: theme.line, backgroundColor: theme.shade }]}>
           <Text style={{ fontSize: 40 }}>📭</Text>
         </View>
-        <H size="lg" style={{ textAlign: 'center' }}>Чарт пока пуст</H>
+        <H size="lg" style={{ textAlign: 'center' }}>{t('charts.empty_title')}</H>
         <Body color={theme.inkSoft} style={{ textAlign: 'center', maxWidth: 260 }}>
-          Нужно больше данных от пользователей. Возвращайся через пару дней —
-          подборка обновится автоматически.
+          {t('charts.empty_body')}
         </Body>
         <View style={{ marginTop: 12 }}>
-          <Button title="← К чартам" onPress={() => router.back()} />
+          <Button title={t('charts.back_to_charts')} onPress={() => router.back()} />
         </View>
       </View>
 

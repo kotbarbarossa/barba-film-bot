@@ -9,11 +9,13 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
 import { H, Body, Mono, ArtNote } from '@/components/Text';
 import { Button } from '@/components/Button';
 import { useAuthStore } from '@/store/auth.store';
+import { useSettingsStore } from '@/store/settings.store';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { useMyMovies } from '@/hooks/queries/useMyMovies';
 import { useUpdateProfile } from '@/hooks/mutations/useUpdateProfile';
@@ -89,10 +91,12 @@ const RU_MONTHS = [
   'ЯНВАРЯ', 'ФЕВРАЛЯ', 'МАРТА', 'АПРЕЛЯ', 'МАЯ', 'ИЮНЯ',
   'ИЮЛЯ', 'АВГУСТА', 'СЕНТЯБРЯ', 'ОКТЯБРЯ', 'НОЯБРЯ', 'ДЕКАБРЯ',
 ];
+const EN_MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
-function formatSince(iso: string) {
+function formatDate(iso: string, lang: string): string {
   const d = new Date(iso);
-  return `С ${d.getDate()} ${RU_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  if (lang === 'en') return `${d.getDate()} ${EN_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  return `${d.getDate()} ${RU_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 function getInitial(first?: string | null, username?: string | null): string {
@@ -101,18 +105,20 @@ function getInitial(first?: string | null, username?: string | null): string {
   return '?';
 }
 
-function getDisplayName(first?: string | null, last?: string | null, username?: string | null): string {
+function getDisplayName(first?: string | null, last?: string | null, username?: string | null, fallback?: string): string {
   if (first && last) return `${first} ${last[0]}.`;
   if (first) return first;
   if (username) return `@${username}`;
-  return 'Пользователь';
+  return fallback ?? 'User';
 }
 
 // ─── main screen ─────────────────────────────────────────────────────────────
 
 export function ProfileScreen() {
+  const { t, i18n } = useTranslation();
   const { theme, mode, setMode } = useTheme();
   const { signOut } = useAuthStore();
+  const { language, setLanguage } = useSettingsStore();
   const [showLogout, setShowLogout] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [editFirst, setEditFirst] = useState('');
@@ -146,15 +152,15 @@ export function ProfileScreen() {
   }), [movies]);
 
   const initial     = getInitial(profile?.first_name, profile?.username);
-  const displayName = getDisplayName(profile?.first_name, profile?.last_name, profile?.username);
+  const displayName = getDisplayName(profile?.first_name, profile?.last_name, profile?.username, t('profile.user_default'));
 
   return (
     <Phone>
       {/* Header */}
       <View style={styles.header}>
-        <H size="lg">Профиль</H>
+        <H size="lg">{t('profile.title')}</H>
         <Pressable hitSlop={8} onPress={openEdit}>
-          <H size="sm" color={theme.accentOrange}>изм.</H>
+          <H size="sm" color={theme.accentOrange}>{t('profile.edit')}</H>
         </Pressable>
       </View>
 
@@ -172,7 +178,7 @@ export function ProfileScreen() {
             <H size="md" style={{ lineHeight: 24 }}>{displayName}</H>
             {profile && (
               <Mono size={10} style={{ marginTop: 4 }}>
-                {profile.username ? `@${profile.username} · ` : ''}{formatSince(profile.created_at)}
+                {profile.username ? `@${profile.username} · ` : ''}{t('profile.since', { date: formatDate(profile.created_at, language) })}
               </Mono>
             )}
           </View>
@@ -180,34 +186,40 @@ export function ProfileScreen() {
 
         {/* Stats */}
         <View style={styles.statsRow}>
-          <StatCell value={stats.watched} label="посмотрел" tone="orange" theme={theme} />
-          <StatCell value={stats.want}    label="хочу"      tone="yellow" theme={theme} />
-          <StatCell value={stats.total}   label="всего"     tone="ink"    theme={theme} />
+          <StatCell value={stats.watched} label={t('profile.watched_label')} tone="orange" theme={theme} />
+          <StatCell value={stats.want}    label={t('profile.want_label')}    tone="yellow" theme={theme} />
+          <StatCell value={stats.total}   label={t('profile.total_label')}   tone="ink"    theme={theme} />
         </View>
 
         {/* Settings */}
-        <GroupCard label="НАСТРОЙКИ" theme={theme}>
+        <GroupCard label={t('profile.settings')} theme={theme}>
           <SettingRow
             icon="◐"
-            title="Тема"
-            value={mode === 'dark' ? 'тёмная' : 'светлая'}
+            title={t('profile.theme')}
+            value={mode === 'dark' ? t('profile.theme_dark') : t('profile.theme_light')}
             onPress={() => setMode(mode === 'dark' ? 'light' : 'dark')}
             theme={theme}
           />
-          <SettingRow icon="🌐" title="Язык" value="русский" theme={theme} />
-          <SettingRow icon="🔔" title="Уведомления" value="вкл." last theme={theme} />
+          <SettingRow
+            icon="🌐"
+            title={t('profile.language')}
+            value={language === 'ru' ? t('profile.language_ru') : t('profile.language_en')}
+            onPress={() => setLanguage(language === 'ru' ? 'en' : 'ru')}
+            theme={theme}
+          />
+          <SettingRow icon="🔔" title={t('profile.notifications')} value={t('profile.notif_on')} last theme={theme} />
         </GroupCard>
 
         {/* About */}
-        <GroupCard label="О ПРИЛОЖЕНИИ" theme={theme}>
-          <SettingRow icon="★" title="Оценить приложение" theme={theme} />
-          <SettingRow icon="§" title="Политика и условия" last theme={theme} />
+        <GroupCard label={t('profile.about')} theme={theme}>
+          <SettingRow icon="★" title={t('profile.rate_app')} theme={theme} />
+          <SettingRow icon="§" title={t('profile.policy')} last theme={theme} />
         </GroupCard>
 
         {/* Sign out */}
         <View style={{ marginBottom: 8 }}>
           <Button
-            title="Выйти из аккаунта"
+            title={t('profile.sign_out')}
             variant="ghost"
             full
             style={{ borderColor: theme.accentOrange }}
@@ -220,10 +232,10 @@ export function ProfileScreen() {
         <View style={styles.footer}>
           <Pressable hitSlop={8}>
             <Body size={11} color={theme.inkFaint} style={{ textDecorationLine: 'underline' }}>
-              удалить аккаунт
+              {t('profile.delete_account')}
             </Body>
           </Pressable>
-          <Mono size={9} style={{ marginTop: 6 }}>КИНОКОПИЛКА · v1.0.0</Mono>
+          <Mono size={9} style={{ marginTop: 6 }}>{t('profile.app_name')} · {t('profile.app_version')}</Mono>
         </View>
       </ScrollView>
 
@@ -242,31 +254,31 @@ export function ProfileScreen() {
               onPress={() => {}}
             >
               <View style={[styles.sheetHandle, { backgroundColor: theme.inkFaint }]} />
-              <H size="md" style={{ marginBottom: 18 }}>Редактировать</H>
+              <H size="md" style={{ marginBottom: 18 }}>{t('profile.edit_title')}</H>
 
-              <Mono size={10} style={{ marginBottom: 4 }}>ИМЯ</Mono>
+              <Mono size={10} style={{ marginBottom: 4 }}>{t('profile.first_name_label')}</Mono>
               <View style={[styles.field, { backgroundColor: theme.shade, borderColor: theme.line }]}>
                 <TextInput
                   value={editFirst}
                   onChangeText={setEditFirst}
-                  placeholder="Имя"
+                  placeholder={t('profile.first_name_placeholder')}
                   placeholderTextColor={theme.inkFaint}
                   style={{ fontFamily: 'Kalam', fontSize: 15, color: theme.ink }}
                 />
               </View>
 
-              <Mono size={10} style={{ marginTop: 12, marginBottom: 4 }}>ФАМИЛИЯ</Mono>
+              <Mono size={10} style={{ marginTop: 12, marginBottom: 4 }}>{t('profile.last_name_label')}</Mono>
               <View style={[styles.field, { backgroundColor: theme.shade, borderColor: theme.line }]}>
                 <TextInput
                   value={editLast}
                   onChangeText={setEditLast}
-                  placeholder="Фамилия"
+                  placeholder={t('profile.last_name_placeholder')}
                   placeholderTextColor={theme.inkFaint}
                   style={{ fontFamily: 'Kalam', fontSize: 15, color: theme.ink }}
                 />
               </View>
 
-              <Mono size={10} style={{ marginTop: 12, marginBottom: 4 }}>ПСЕВДОНИМ</Mono>
+              <Mono size={10} style={{ marginTop: 12, marginBottom: 4 }}>{t('profile.username_label')}</Mono>
               <View style={[styles.field, { backgroundColor: theme.shade, borderColor: theme.line }]}>
                 <TextInput
                   value={editUsername}
@@ -279,7 +291,7 @@ export function ProfileScreen() {
               </View>
 
               <Button
-                title={isSaving ? 'Сохраняем…' : 'Сохранить'}
+                title={isSaving ? t('profile.saving') : t('profile.save')}
                 variant="accent"
                 full
                 disabled={isSaving}
@@ -287,7 +299,7 @@ export function ProfileScreen() {
                 style={{ marginTop: 20, marginBottom: 8 }}
               />
               <Button
-                title="Отмена"
+                title={t('profile.cancel')}
                 variant="ghost"
                 full
                 onPress={() => setShowEdit(false)}
@@ -311,9 +323,9 @@ export function ProfileScreen() {
             onPress={() => {}}
           >
             <View style={[styles.sheetHandle, { backgroundColor: theme.inkFaint }]} />
-            <H size="lg" style={{ textAlign: 'center', lineHeight: 32, marginBottom: 6 }}>Выйти?</H>
+            <H size="lg" style={{ textAlign: 'center', lineHeight: 32, marginBottom: 6 }}>{t('profile.logout_title')}</H>
             <ArtNote style={{ textAlign: 'center' }}>
-              Коллекция останется в облаке —{'\n'}войдёшь снова и она вернётся.
+              {t('profile.logout_body')}
             </ArtNote>
             {profile && (
               <View style={[styles.sheetUser, { backgroundColor: theme.shade, borderColor: theme.line }]}>
@@ -323,20 +335,20 @@ export function ProfileScreen() {
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <Body size={13} weight="bold">{displayName}</Body>
                   <Mono size={10}>
-                    {profile.username ? `@${profile.username} · ` : ''}{stats.total} фильмов
+                    {profile.username ? `@${profile.username} · ` : ''}{t('profile.movies_count', { count: stats.total })}
                   </Mono>
                 </View>
               </View>
             )}
             <Button
-              title="Да, выйти"
+              title={t('profile.logout_confirm')}
               variant="accent"
               full
               onPress={() => { setShowLogout(false); signOut(); }}
               style={{ marginBottom: 8 }}
             />
             <Button
-              title="Отмена"
+              title={t('profile.cancel')}
               variant="ghost"
               full
               onPress={() => setShowLogout(false)}

@@ -1,3 +1,4 @@
+import '@/i18n';
 import { Caveat_400Regular, Caveat_700Bold } from '@expo-google-fonts/caveat';
 import { JetBrainsMono_400Regular } from '@expo-google-fonts/jetbrains-mono';
 import { Kalam_400Regular, Kalam_700Bold } from '@expo-google-fonts/kalam';
@@ -10,6 +11,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ThemeProvider } from '@/theme';
 import { useAuthStore } from '@/store/auth.store';
+import { useSettingsStore } from '@/store/settings.store';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,15 +27,17 @@ export default function RootLayout() {
   });
 
   const { loadFromStorage, isReady, accessToken } = useAuthStore();
+  const { loadSettings, isSettingsReady } = useSettingsStore();
   const router = useRouter();
   const segments = useSegments();
 
   useEffect(() => {
     loadFromStorage();
+    loadSettings();
   }, []);
 
   useEffect(() => {
-    if (!isReady || !fontsLoaded) return;
+    if (!isReady || !isSettingsReady || !fontsLoaded) return;
 
     const inAuth = (segments[0] as string) === 'auth';
     if (!accessToken && !inAuth) {
@@ -41,12 +45,12 @@ export default function RootLayout() {
     } else if (accessToken && inAuth) {
       router.replace('/');
     }
-  }, [isReady, fontsLoaded, accessToken, segments]);
+  }, [isReady, isSettingsReady, fontsLoaded, accessToken, segments]);
 
   const inAuth = (segments[0] as string) === 'auth';
   const needsRedirect =
-    isReady && fontsLoaded && ((!accessToken && !inAuth) || (!!accessToken && inAuth));
-  const canShow = isReady && fontsLoaded && !needsRedirect;
+    isReady && isSettingsReady && fontsLoaded && ((!accessToken && !inAuth) || (!!accessToken && inAuth));
+  const canShow = isReady && isSettingsReady && fontsLoaded && !needsRedirect;
 
   useEffect(() => {
     if (canShow) SplashScreen.hideAsync();

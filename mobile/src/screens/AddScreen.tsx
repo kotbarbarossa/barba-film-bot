@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, ScrollView, StyleSheet, TextInput, Pressable, Text, Alert, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
 import { H, Body, Mono, ArtNote } from '@/components/Text';
@@ -10,6 +11,7 @@ import { useAddMovie } from '@/hooks/mutations/useAddMovie';
 export function AddScreen() {
   const { theme } = useTheme();
   const router = useRouter();
+  const { t } = useTranslation();
   const [title, setTitle] = React.useState('');
   const [year, setYear] = React.useState('');
   const [hint, setHint] = React.useState('');
@@ -30,7 +32,7 @@ export function AddScreen() {
 
   const handleSubmit = async () => {
     if (!title.trim()) {
-      Alert.alert('Укажи название', 'Введи название фильма или сериала');
+      Alert.alert(t('add.alert_title'), t('add.alert_body'));
       return;
     }
     try {
@@ -46,38 +48,35 @@ export function AddScreen() {
         showToastAndRedirect('found');
       }
     } catch {
-      Alert.alert('Ошибка', 'Не удалось найти фильм. Попробуй уточнить название.');
+      Alert.alert(t('add.error'), t('add.error_body'));
     }
   };
 
   const toastBg = toastVariant === 'found' ? theme.accentMint : theme.accentYellow;
   const toastFg = theme.onYellow;
-  const toastTitle = toastVariant === 'found' ? '✓ Фильм найден и добавлен' : '✓ Добавлено в обработку';
-  const toastSub =
-    toastVariant === 'found'
-      ? 'Фильм добавлен в твою коллекцию'
-      : 'Данные о фильме скоро появятся в списке';
+  const toastTitle = toastVariant === 'found' ? t('add.toast_found_title') : t('add.toast_pending_title');
+  const toastSub = toastVariant === 'found' ? t('add.toast_found_sub') : t('add.toast_pending_sub');
 
   return (
     <Phone safeBottom>
       <View style={[styles.header, { paddingHorizontal: 16 }]}>
         <Pressable onPress={() => router.back()}>
-          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink }}>← назад</Text>
+          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink }}>{t('add.back')}</Text>
         </Pressable>
-        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 18, color: theme.accentOrange }}>добавить</Text>
+        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 18, color: theme.accentOrange }}>{t('add.header_action')}</Text>
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 22, paddingTop: 8 }}>
-        <H size="xl">Новый фильм</H>
-        <ArtNote>достаточно названия — остальное можно оставить пустым</ArtNote>
+        <H size="xl">{t('add.title')}</H>
+        <ArtNote>{t('add.subtitle')}</ArtNote>
 
         <View style={{ marginTop: 18 }}>
-          <Mono>НАЗВАНИЕ *</Mono>
+          <Mono>{t('add.name_label')}</Mono>
           <View style={[styles.field, { backgroundColor: theme.shade, borderColor: theme.line }]}>
             <TextInput
               value={title}
               onChangeText={setTitle}
-              placeholder="Название фильма или сериала"
+              placeholder={t('add.name_placeholder')}
               placeholderTextColor={theme.inkFaint}
               style={{ fontFamily: 'Kalam', fontSize: 15, color: theme.ink }}
             />
@@ -85,27 +84,27 @@ export function AddScreen() {
         </View>
 
         <View style={{ marginTop: 14 }}>
-          <Mono>ТИП</Mono>
+          <Mono>{t('add.type_label')}</Mono>
           <View style={[styles.segment, { borderColor: theme.line }]}>
             <Pressable
               onPress={() => setType('film')}
               style={[styles.segmentBtn, type === 'film' && { backgroundColor: theme.ink }]}
             >
-              <Text style={[styles.segmentText, { color: type === 'film' ? theme.paper : theme.ink }]}>🎬 Фильм</Text>
+              <Text style={[styles.segmentText, { color: type === 'film' ? theme.paper : theme.ink }]}>{t('add.film')}</Text>
             </Pressable>
             <Pressable
               onPress={() => setType('series')}
               style={[styles.segmentBtn, type === 'series' && { backgroundColor: theme.ink }]}
             >
-              <Text style={[styles.segmentText, { color: type === 'series' ? theme.paper : theme.ink }]}>📺 Сериал</Text>
+              <Text style={[styles.segmentText, { color: type === 'series' ? theme.paper : theme.ink }]}>{t('add.series')}</Text>
             </Pressable>
           </View>
         </View>
 
         <View style={{ marginTop: 14 }}>
           <View style={styles.labelRow}>
-            <Mono>ГОД</Mono>
-            <Mono color={theme.inkFaint}>необязательно</Mono>
+            <Mono>{t('add.year_label')}</Mono>
+            <Mono color={theme.inkFaint}>{t('add.optional')}</Mono>
           </View>
           <View style={[styles.field, { borderColor: theme.line }]}>
             <TextInput
@@ -121,14 +120,14 @@ export function AddScreen() {
 
         <View style={{ marginTop: 14 }}>
           <View style={styles.labelRow}>
-            <Mono>ПОДСКАЗКА</Mono>
-            <Mono color={theme.inkFaint}>необязательно</Mono>
+            <Mono>{t('add.hint_label')}</Mono>
+            <Mono color={theme.inkFaint}>{t('add.optional')}</Mono>
           </View>
           <View style={[styles.field, { borderColor: theme.line, minHeight: 50 }]}>
             <TextInput
               value={hint}
               onChangeText={setHint}
-              placeholder='«советский мультфильм», «с Де Ниро»…'
+              placeholder={t('add.hint_placeholder')}
               placeholderTextColor={theme.inkFaint}
               multiline
               style={{ fontFamily: 'Kalam', fontSize: 13, color: theme.ink }}
@@ -147,7 +146,7 @@ export function AddScreen() {
 
       <View style={{ padding: 12 }}>
         <Button
-          title={isPending ? 'Ищу…' : 'Найти и добавить'}
+          title={isPending ? t('add.searching') : t('add.submit')}
           variant="primary"
           full
           onPress={handleSubmit}

@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
 import { H, Body, Mono, ArtNote } from '@/components/Text';
 import { Button } from '@/components/Button';
@@ -52,6 +53,7 @@ export function AuthScreen({ variant }: { variant?: Variant }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { t } = useTranslation();
   const signIn = useAuthStore((s) => s.signIn);
 
   const [loadingGoogle, setLoadingGoogle] = useState(false);
@@ -108,7 +110,7 @@ export function AuthScreen({ variant }: { variant?: Variant }) {
       router.replace('/');
     } catch (e: any) {
       if (e.code !== statusCodes.SIGN_IN_CANCELLED) {
-        Alert.alert('Ошибка', 'Не удалось войти через Google. Попробуй ещё раз.');
+        Alert.alert(t('auth.error'), t('auth.google_error'));
       }
     } finally {
       setLoadingGoogle(false);
@@ -134,7 +136,7 @@ export function AuthScreen({ variant }: { variant?: Variant }) {
       router.replace('/');
     } catch (e: any) {
       if (e.code !== 'ERR_CANCELED') {
-        Alert.alert('Ошибка', 'Не удалось войти через Apple. Попробуй ещё раз.');
+        Alert.alert(t('auth.error'), t('auth.apple_error'));
       }
     } finally {
       setLoadingApple(false);
@@ -190,23 +192,25 @@ export function AuthScreen({ variant }: { variant?: Variant }) {
         {/* Handle */}
         <View style={[styles.handle, { backgroundColor: theme.shade2 }]} />
 
-        <H size="xl" style={{ textAlign: 'center', marginBottom: 4 }}>Что посмотрим?</H>
+        <H size="xl" style={{ textAlign: 'center', marginBottom: 4 }}>{t('auth.tagline')}</H>
         <ArtNote style={{ textAlign: 'center', marginBottom: 24 }}>
-          войди, чтобы начать копилку
+          {t('auth.subtitle')}
         </ArtNote>
 
         <View style={{ gap: 10 }}>
           {Platform.OS === 'ios' && (
             <AppleAuthentication.AppleAuthenticationButton
               buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+              buttonStyle={loadingApple
+                ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE_OUTLINE
+                : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
               cornerRadius={12}
               style={{ width: '100%', height: 50 }}
               onPress={handleApple}
             />
           )}
           <Button
-            title={loadingGoogle ? 'Загрузка…' : 'G  Войти через Google'}
+            title={loadingGoogle ? t('auth.loading') : t('auth.google')}
             full
             variant={Platform.OS === 'ios' ? undefined : 'primary'}
             onPress={handleGoogle}
@@ -215,7 +219,7 @@ export function AuthScreen({ variant }: { variant?: Variant }) {
         </View>
 
         <Body color={theme.inkFaint} size={11} style={{ marginTop: 20, textAlign: 'center' }}>
-          Нажимая «войти», ты принимаешь условия использования
+          {t('auth.terms')}
         </Body>
       </View>
     </View>
@@ -225,6 +229,7 @@ export function AuthScreen({ variant }: { variant?: Variant }) {
 function TelegramAuth() {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const [step, setStep] = useState<'phone' | 'code'>('phone');
   const [phone, setPhone] = useState('+7 ');
   const [code, setCode] = useState('');
@@ -237,13 +242,13 @@ function TelegramAuth() {
           <View style={[styles.logo, { borderColor: theme.line, backgroundColor: theme.accentBlue }]}>
             <Text style={{ fontSize: 36 }}>✈</Text>
           </View>
-          <H size="xl" style={{ marginTop: 18 }}>Кинокопилка</H>
-          <ArtNote style={{ marginTop: 4 }}>вход через Telegram</ArtNote>
+          <H size="xl" style={{ marginTop: 18 }}>{t('auth.telegram_app_name')}</H>
+          <ArtNote style={{ marginTop: 4 }}>{t('auth.telegram_subtitle')}</ArtNote>
         </View>
 
         {step === 'phone' ? (
           <View style={{ marginTop: 36 }}>
-            <Mono>НОМЕР ТЕЛЕФОНА</Mono>
+            <Mono>{t('auth.phone_label')}</Mono>
             <View style={[styles.field, { borderColor: theme.line }]}>
               <TextInput
                 value={phone}
@@ -253,15 +258,15 @@ function TelegramAuth() {
               />
             </View>
             <Body color={theme.inkSoft} size={12} style={{ marginTop: 8 }}>
-              Тебе придёт сообщение в Telegram с кодом подтверждения.
+              {t('auth.phone_hint')}
             </Body>
             <View style={{ marginTop: 22 }}>
-              <Button title="Получить код" variant="primary" full onPress={() => setStep('code')} />
+              <Button title={t('auth.get_code')} variant="primary" full onPress={() => setStep('code')} />
             </View>
           </View>
         ) : (
           <View style={{ marginTop: 36 }}>
-            <Mono>КОД ИЗ TELEGRAM</Mono>
+            <Mono>{t('auth.code_label')}</Mono>
             <View style={[styles.field, { borderColor: theme.line }]}>
               <TextInput
                 value={code}
@@ -275,12 +280,12 @@ function TelegramAuth() {
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
               <Pressable onPress={() => setStep('phone')}>
-                <Text style={{ fontFamily: 'Caveat-Bold', color: theme.accentOrange }}>← изменить номер</Text>
+                <Text style={{ fontFamily: 'Caveat-Bold', color: theme.accentOrange }}>{t('auth.change_phone')}</Text>
               </Pressable>
-              <Text style={{ fontFamily: 'Caveat-Bold', color: theme.inkFaint }}>отправить ещё раз (0:42)</Text>
+              <Text style={{ fontFamily: 'Caveat-Bold', color: theme.inkFaint }}>{t('auth.resend')}</Text>
             </View>
             <View style={{ marginTop: 22 }}>
-              <Button title="Войти" variant="primary" full />
+              <Button title={t('auth.sign_in')} variant="primary" full />
             </View>
           </View>
         )}
