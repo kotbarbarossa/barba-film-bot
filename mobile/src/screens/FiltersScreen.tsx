@@ -183,8 +183,8 @@ export function FiltersScreen() {
                     backgroundColor: active ? theme.accentYellow : 'transparent',
                   }]}
                 >
-                  <Body size={14}>{s.label}</Body>
-                  {active && <Mono>✓</Mono>}
+                  <Body size={14} color={active ? theme.onYellow : theme.ink}>{s.label}</Body>
+                  {active && <Mono color={theme.onYellow}>✓</Mono>}
                 </Pressable>
               );
             })}

@@ -44,10 +44,10 @@ export function ChartsScreen() {
               <Text style={{ fontSize: 18 }}>{c.icon}</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Body weight="bold" size={14}>{c.title}</Body>
-              <Body size={11} color={theme.inkSoft} style={{ marginTop: 2 }}>{c.sub}</Body>
+              <Body weight="bold" size={14} color={i === 0 ? theme.onYellow : theme.ink}>{c.title}</Body>
+              <Body size={11} color={i === 0 ? theme.onYellow : theme.inkSoft} style={{ marginTop: 2, opacity: i === 0 ? 0.65 : 1 }}>{c.sub}</Body>
             </View>
-            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.inkFaint }}>›</Text>
+            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: i === 0 ? theme.onYellow : theme.inkFaint, opacity: i === 0 ? 0.4 : 1 }}>›</Text>
           </Pressable>
         ))}
       </ScrollView>

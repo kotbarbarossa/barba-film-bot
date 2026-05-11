@@ -128,7 +128,7 @@ function NavTile({
 }) {
   const { theme } = useTheme();
   const bg = tone === 'orange' ? theme.accentOrange : theme.accentYellow;
-  const fg = tone === 'orange' ? theme.paper : theme.ink;
+  const fg = tone === 'orange' ? theme.paper : theme.onYellow;
   return (
     <Pressable onPress={onPress} style={[styles.tile, { backgroundColor: bg, borderColor: theme.line }]}>
       <Text style={{ fontSize: 24 }}>{emoji}</Text>

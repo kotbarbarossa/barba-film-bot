@@ -11,6 +11,7 @@ export const lightTheme = {
   accentMint: '#8fbc94',
   shade: 'rgba(26, 24, 20, 0.06)',
   shade2: 'rgba(26, 24, 20, 0.12)',
+  onYellow: '#1a1814',
 };
 
 export const darkTheme: typeof lightTheme = {
@@ -26,6 +27,7 @@ export const darkTheme: typeof lightTheme = {
   accentMint: '#8fbc94',
   shade: 'rgba(240, 235, 224, 0.08)',
   shade2: 'rgba(240, 235, 224, 0.14)',
+  onYellow: '#1a1814',
 };
 
 export type Theme = typeof lightTheme;

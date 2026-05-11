@@ -123,6 +123,26 @@ export interface UserMovieFilters {
   category_id?: number;
 }
 
+// --- User profile ---
+
+export type AuthProvider = 'telegram' | 'google' | 'apple';
+
+export interface UserAuthProviderResponse {
+  provider: AuthProvider;
+  created_at: string;
+}
+
+export interface UserDetailResponse {
+  id: number;
+  username: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  is_admin: boolean;
+  created_at: string;
+  updated_at: string;
+  auth_providers: UserAuthProviderResponse[];
+}
+
 // --- Discovery ---
 
 export interface ChartEntry {

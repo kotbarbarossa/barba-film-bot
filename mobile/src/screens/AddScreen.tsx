@@ -51,6 +51,7 @@ export function AddScreen() {
   };
 
   const toastBg = toastVariant === 'found' ? theme.accentMint : theme.accentYellow;
+  const toastFg = theme.onYellow;
   const toastTitle = toastVariant === 'found' ? '✓ Фильм найден и добавлен' : '✓ Добавлено в обработку';
   const toastSub =
     toastVariant === 'found'
@@ -140,8 +141,8 @@ export function AddScreen() {
         style={[styles.toast, { backgroundColor: toastBg, borderColor: theme.ink, opacity: toastOpacity }]}
         pointerEvents="none"
       >
-        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 20, color: theme.ink }}>{toastTitle}</Text>
-        <Text style={{ fontFamily: 'Kalam', fontSize: 13, color: theme.inkSoft }}>{toastSub}</Text>
+        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 20, color: toastFg }}>{toastTitle}</Text>
+        <Text style={{ fontFamily: 'Kalam', fontSize: 13, color: toastFg, opacity: 0.7 }}>{toastSub}</Text>
       </Animated.View>
 
       <View style={{ padding: 12 }}>

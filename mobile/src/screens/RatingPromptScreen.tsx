@@ -72,8 +72,8 @@ export function RatingPromptScreen({ title = '', movieId }: { title?: string; mo
               onPress={() => setValue(q.v)}
               style={[styles.quickChip, { borderColor: theme.line, backgroundColor: value === q.v ? theme.accentYellow : 'transparent' }]}
             >
-              <Body weight="bold" size={11}>{q.v}</Body>
-              <Body size={11} color={theme.inkSoft}>{q.label}</Body>
+              <Body weight="bold" size={11} color={value === q.v ? theme.onYellow : theme.ink}>{q.v}</Body>
+              <Body size={11} color={value === q.v ? theme.onYellow : theme.inkSoft}>{q.label}</Body>
             </Pressable>
           ))}
         </View>

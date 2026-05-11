@@ -86,7 +86,7 @@ export function PosterPending({ width, height, aspectRatio = 2 / 3, compact = fa
             },
           ]}
         >
-          <Text style={[styles.stampText, { color: theme.ink, fontSize: compact ? 6 : 9 }]}>
+          <Text style={[styles.stampText, { color: theme.onYellow, fontSize: compact ? 6 : 9 }]}>
             {compact ? 'ОБРАБ.' : 'в обработке'}
           </Text>
         </View>

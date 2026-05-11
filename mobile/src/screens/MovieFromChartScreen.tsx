@@ -78,7 +78,7 @@ export function MovieFromChartScreen({ movieId, posterUrl, title, year, score, w
         </View>
         {rank && chartTitle ? (
           <View style={[styles.chartBadge, { backgroundColor: theme.accentYellow, borderColor: theme.line }]}>
-            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 12, color: theme.ink }}>#{rank} · {chartTitle}</Text>
+            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 12, color: theme.onYellow }}>#{rank} · {chartTitle}</Text>
           </View>
         ) : null}
         <View style={styles.heroBottom}>
