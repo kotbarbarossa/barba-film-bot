@@ -3,16 +3,17 @@ import { View, ScrollView, StyleSheet, Pressable, Text, ActivityIndicator, Alert
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
-import { Poster } from '@/components/Poster';
+import { Poster, PosterPending, PosterMissing } from '@/components/Poster';
 import { Chip } from '@/components/Chip';
 import { StatusPill } from '@/components/StatusPill';
 import { StarRow } from '@/components/StarRow';
-import { H, Body, Mono } from '@/components/Text';
+import { H, Body, Mono, ArtNote } from '@/components/Text';
 import { Button } from '@/components/Button';
 import { TabBar } from '@/components/TabBar';
 import { useMovie } from '@/hooks/queries/useMovie';
 import { useMarkWatched, useUpdateMovie } from '@/hooks/mutations/useUpdateMovie';
 import { useDeleteMovie } from '@/hooks/mutations/useDeleteMovie';
+import type { UserMovieDetailResponse } from '@/types/api';
 
 export function MovieScreen({ id }: { id: string }) {
   const { theme } = useTheme();
@@ -37,6 +38,36 @@ export function MovieScreen({ id }: { id: string }) {
     );
   }
 
+  const handleDelete = () => {
+    Alert.alert(
+      'Удалить из списка?',
+      `«${movie.title_ru ?? movie.user_query ?? movie.title_original}» будет удалён из твоего списка.`,
+      [
+        { text: 'Отмена', style: 'cancel' },
+        {
+          text: 'Удалить',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteMovie(movieId);
+              router.back();
+            } catch {
+              Alert.alert('Ошибка', 'Не удалось удалить фильм');
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  if (movie.processing_status === 'pending') {
+    return <PendingView item={item} onBack={() => router.back()} onDelete={handleDelete} deleting={deleting} />;
+  }
+
+  if (movie.processing_status === 'unrecognized') {
+    return <MissingView item={item} onBack={() => router.back()} onDelete={handleDelete} deleting={deleting} />;
+  }
+
   const handleMarkWatched = async () => {
     try {
       await markWatched();
@@ -44,24 +75,6 @@ export function MovieScreen({ id }: { id: string }) {
     } catch {
       Alert.alert('Ошибка', 'Не удалось обновить статус');
     }
-  };
-
-  const handleDelete = () => {
-    Alert.alert('Удалить фильм?', `«${movie.title_ru ?? movie.title_original}» будет удалён из твоего списка.`, [
-      { text: 'Отмена', style: 'cancel' },
-      {
-        text: 'Удалить',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteMovie(movieId);
-            router.back();
-          } catch {
-            Alert.alert('Ошибка', 'Не удалось удалить фильм');
-          }
-        },
-      },
-    ]);
   };
 
   const handleShare = () => {
@@ -176,6 +189,149 @@ export function MovieScreen({ id }: { id: string }) {
   );
 }
 
+// ─── Internal: Pending & Missing views ───────────────────────────────────────
+
+type SubViewProps = {
+  item: UserMovieDetailResponse;
+  onBack: () => void;
+  onDelete: () => void;
+  deleting: boolean;
+};
+
+function PendingView({ item, onBack, onDelete, deleting }: SubViewProps) {
+  const { theme } = useTheme();
+  const displayTitle = item.movie.user_query ?? item.movie.title_ru ?? item.movie.title_original ?? '…';
+
+  return (
+    <Phone>
+      <View style={subStyles.header}>
+        <Pressable onPress={onBack}>
+          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink }}>← назад</Text>
+        </Pressable>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={subStyles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
+        <PosterPending
+          width={168}
+          style={{
+            alignSelf: 'center',
+            shadowColor: theme.shade2,
+            shadowOffset: { width: 4, height: 4 },
+            shadowOpacity: 1,
+            shadowRadius: 0,
+            elevation: 4,
+            transform: [{ rotate: '-2deg' }],
+          }}
+        />
+
+        <View style={{ alignItems: 'center', marginTop: 22 }}>
+          <ArtNote color={theme.inkFaint}>ты добавил</ArtNote>
+          <H size="xl" style={{ textAlign: 'center', marginTop: 4 }}>«{displayTitle}»</H>
+        </View>
+
+        <View style={[subStyles.statusBox, { backgroundColor: theme.shade, borderColor: theme.line }]}>
+          <View style={[subStyles.statusIcon, { backgroundColor: theme.accentYellow, borderColor: theme.ink }]}>
+            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 16, lineHeight: 20 }}>⌛</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink, lineHeight: 24 }}>
+              ищем информацию…
+            </Text>
+            <Body color={theme.inkSoft} style={{ marginTop: 4 }}>
+              тянем постер, год, жанры и описание из открытых баз.
+              обычно занимает не больше 10 секунд.
+            </Body>
+            <View style={[subStyles.progress, { backgroundColor: theme.shade2, marginTop: 10 }]}>
+              <View style={[subStyles.progressFill, { backgroundColor: theme.ink }]} />
+            </View>
+          </View>
+        </View>
+
+        <ArtNote color={theme.inkSoft} style={{ textAlign: 'center', marginTop: 18, lineHeight: 18 }}>
+          можно закрыть экран —{'\n'}когда всё подгрузится, фильм появится в ленте
+        </ArtNote>
+      </ScrollView>
+
+      <View style={[subStyles.actionBar, { borderTopColor: theme.line }]}>
+        <View style={{ flex: 1 }} />
+        <Button title="🗑 удалить" onPress={onDelete} disabled={deleting} />
+      </View>
+    </Phone>
+  );
+}
+
+function MissingView({ item, onBack, onDelete, deleting }: SubViewProps) {
+  const { theme } = useTheme();
+  const displayTitle = item.movie.user_query ?? item.movie.title_ru ?? item.movie.title_original ?? '…';
+
+  return (
+    <Phone>
+      <View style={subStyles.header}>
+        <Pressable onPress={onBack}>
+          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink }}>← назад</Text>
+        </Pressable>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={subStyles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
+        <PosterMissing
+          width={168}
+          style={{
+            alignSelf: 'center',
+            shadowColor: theme.shade2,
+            shadowOffset: { width: 4, height: 4 },
+            shadowOpacity: 1,
+            shadowRadius: 0,
+            elevation: 4,
+            transform: [{ rotate: '2deg' }],
+          }}
+        />
+
+        <View style={{ alignItems: 'center', marginTop: 22 }}>
+          <ArtNote color={theme.inkFaint}>ты искал</ArtNote>
+          <H size="xl" style={{ textAlign: 'center', marginTop: 4 }}>«{displayTitle}»</H>
+        </View>
+
+        <View style={[subStyles.statusBox, { backgroundColor: theme.shade, borderColor: theme.line }]}>
+          {/* Circle border + ? as siblings — avoids Android borderRadius text clipping */}
+          <View style={{ width: 28, height: 28, flexShrink: 0 }}>
+            <View style={[subStyles.statusIcon, { backgroundColor: theme.paper2, borderColor: theme.ink }]} />
+            <Text style={{
+              position: 'absolute', top: 0, left: 0, width: 28, height: 28,
+              textAlign: 'center', textAlignVertical: 'center',
+              fontFamily: 'Caveat-Bold', fontSize: 18, color: theme.accentOrange,
+              includeFontPadding: false,
+            }}>?</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink, lineHeight: 24 }}>
+              ничего не нашли
+            </Text>
+            <Body color={theme.inkSoft} style={{ marginTop: 4 }}>
+              ни в одной из баз нет совпадений.
+              скорее всего, опечатка в названии или фильм слишком редкий.
+            </Body>
+          </View>
+        </View>
+
+        <ArtNote color={theme.inkSoft} style={{ textAlign: 'center', marginTop: 18, lineHeight: 18 }}>
+          проверь название — возможно стоит{'\n'}удалить и добавить заново
+        </ArtNote>
+      </ScrollView>
+
+      <View style={[subStyles.actionBar, { borderTopColor: theme.line }]}>
+        <View style={{ flex: 1 }} />
+        <Button title="🗑 удалить" onPress={onDelete} disabled={deleting} />
+      </View>
+    </Phone>
+  );
+}
+
 const styles = StyleSheet.create({
   hero: { height: 300, overflow: 'hidden', position: 'relative' },
   heroFade: { ...StyleSheet.absoluteFillObject },
@@ -192,6 +348,53 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row', gap: 8,
+    padding: 12,
+    borderTopWidth: 1.5,
+  },
+});
+
+const subStyles = StyleSheet.create({
+  header: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
+  scroll: {
+    padding: 22,
+    paddingTop: 8,
+    alignItems: 'stretch',
+  },
+  statusBox: {
+    marginTop: 22,
+    padding: 14,
+    borderWidth: 1.5,
+    borderRadius: 14,
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'flex-start',
+  },
+  statusIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  progress: {
+    height: 4,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    width: '60%',
+    height: '100%',
+    borderRadius: 2,
+  },
+  actionBar: {
+    flexDirection: 'row',
+    gap: 8,
     padding: 12,
     borderTopWidth: 1.5,
   },

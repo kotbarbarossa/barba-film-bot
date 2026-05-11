@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
-import { Poster, PosterProcessing, PosterUnrecognized } from '@/components/Poster';
+import { Poster, PosterPending, PosterMissing } from '@/components/Poster';
 import { Chip } from '@/components/Chip';
 import { StatusPill } from '@/components/StatusPill';
 import { StarRow } from '@/components/StarRow';
@@ -60,54 +60,79 @@ export function MoviesScreen() {
     { label: `Просм. · ${countByStatus('watched')}`,  value: 'watched',  tone: 'orange' },
   ] as const;
 
-  const renderItem = ({ item }: { item: UserMovieListResponse }) => (
-    <Pressable
-      onPress={() =>
-        router.push({ pathname: '/movie/[id]', params: { id: String(item.movie.id) } } as any)
-      }
-      style={[styles.item, { borderBottomColor: theme.shade2 }]}
-    >
-      {item.movie.processing_status === 'pending' ? (
-        <PosterProcessing width={44} aspectRatio={2 / 3} />
-      ) : item.movie.processing_status === 'unrecognized' ? (
-        <PosterUnrecognized width={44} aspectRatio={2 / 3} />
-      ) : (
-        <Poster
-          width={44}
-          aspectRatio={2 / 3}
-          posterUrl={item.movie.poster_url}
-          label={(item.movie.title_ru ?? '?').slice(0, 4)}
-        />
-      )}
-      <View style={{ flex: 1 }}>
-        <Body weight="bold" size={13}>
-          {item.movie.title_ru ?? item.movie.title_original}
-        </Body>
-        <Mono size={9}>
-          {[
-            item.movie.year,
-            item.movie.media_type === 'film'
-              ? 'ФИЛЬМ'
-              : item.movie.media_type === 'series'
-              ? 'СЕРИАЛ'
-              : null,
-          ]
-            .filter(Boolean)
-            .join(' · ')}
-        </Mono>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
-          <StatusPill status={item.status} />
-          {item.rating != null ? (
-            <>
-              <StarRow value={item.rating} size={11} />
-              <Body weight="bold" size={11}>{item.rating}</Body>
-            </>
-          ) : null}
+  const renderItem = ({ item }: { item: UserMovieListResponse }) => {
+    const ps = item.movie.processing_status;
+    const isPending = ps === 'pending';
+    const isMissing = ps === 'unrecognized';
+    const displayTitle =
+      isPending || isMissing
+        ? (item.movie.user_query ?? item.movie.title_ru ?? item.movie.title_original ?? '…')
+        : (item.movie.title_ru ?? item.movie.title_original);
+
+    return (
+      <Pressable
+        onPress={() =>
+          router.push({ pathname: '/movie/[id]', params: { id: String(item.movie.id) } } as any)
+        }
+        style={[styles.item, { borderBottomColor: theme.shade2 }]}
+      >
+        {isPending ? (
+          <PosterPending width={44} aspectRatio={2 / 3} compact />
+        ) : isMissing ? (
+          <PosterMissing width={44} aspectRatio={2 / 3} compact />
+        ) : (
+          <Poster
+            width={44}
+            aspectRatio={2 / 3}
+            posterUrl={item.movie.poster_url}
+            label={(item.movie.title_ru ?? '?').slice(0, 4)}
+          />
+        )}
+        <View style={{ flex: 1 }}>
+          <Body
+            weight="bold"
+            size={13}
+            style={[
+              isPending && { fontStyle: 'italic' },
+              isMissing && { fontStyle: 'italic', textDecorationLine: 'line-through', color: theme.accentOrange },
+            ]}
+          >
+            {displayTitle}
+          </Body>
+          {isPending ? (
+            <Mono size={9} color={theme.ink}>⌛ обрабатывается…</Mono>
+          ) : isMissing ? (
+            <Mono size={9} color={theme.accentOrange}>⚠ не найдено</Mono>
+          ) : (
+            <Mono size={9}>
+              {[
+                item.movie.year,
+                item.movie.media_type === 'film'
+                  ? 'ФИЛЬМ'
+                  : item.movie.media_type === 'series'
+                  ? 'СЕРИАЛ'
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </Mono>
+          )}
+          {!isPending && !isMissing && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+              <StatusPill status={item.status} />
+              {item.rating != null ? (
+                <>
+                  <StarRow value={item.rating} size={11} />
+                  <Body weight="bold" size={11}>{item.rating}</Body>
+                </>
+              ) : null}
+            </View>
+          )}
         </View>
-      </View>
-      <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.inkFaint }}>›</Text>
-    </Pressable>
-  );
+        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.inkFaint }}>›</Text>
+      </Pressable>
+    );
+  };
 
   return (
     <Phone>

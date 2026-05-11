@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { View, ScrollView, StyleSheet, Pressable, Text } from 'react-native';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
-import { Poster, PosterProcessing, PosterUnrecognized } from '@/components/Poster';
+import { Poster, PosterPending, PosterMissing } from '@/components/Poster';
 import { H, Body, Mono, ArtNote } from '@/components/Text';
 import { useRouter } from 'expo-router';
 import { useMyMovies } from '@/hooks/queries/useMyMovies';
@@ -177,9 +177,9 @@ function PosterShelf({
           return (
             <Pressable key={m.id} onPress={() => onMoviePress(m)}>
               {status === 'pending' ? (
-                <PosterProcessing width={76} aspectRatio={2 / 3} />
+                <PosterPending width={76} aspectRatio={2 / 3} />
               ) : status === 'unrecognized' ? (
-                <PosterUnrecognized width={76} aspectRatio={2 / 3} />
+                <PosterMissing width={76} aspectRatio={2 / 3} />
               ) : (
                 <Poster
                   width={76}

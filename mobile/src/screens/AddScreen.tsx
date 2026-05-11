@@ -14,11 +14,13 @@ export function AddScreen() {
   const [year, setYear] = React.useState('');
   const [hint, setHint] = React.useState('');
   const [type, setType] = React.useState<'film' | 'series'>('film');
+  const [toastVariant, setToastVariant] = React.useState<'pending' | 'found'>('pending');
 
   const { mutateAsync, isPending } = useAddMovie();
   const toastOpacity = React.useRef(new Animated.Value(0)).current;
 
-  const showToastAndRedirect = () => {
+  const showToastAndRedirect = (variant: 'pending' | 'found') => {
+    setToastVariant(variant);
     Animated.sequence([
       Animated.timing(toastOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
       Animated.delay(1800),
@@ -39,14 +41,21 @@ export function AddScreen() {
         user_query: hint.trim() || undefined,
       });
       if (result.movie.processing_status === 'pending') {
-        showToastAndRedirect();
+        showToastAndRedirect('pending');
       } else {
-        router.replace({ pathname: '/movie/[id]', params: { id: String(result.movie.id) } } as any);
+        showToastAndRedirect('found');
       }
     } catch {
       Alert.alert('Ошибка', 'Не удалось найти фильм. Попробуй уточнить название.');
     }
   };
+
+  const toastBg = toastVariant === 'found' ? theme.accentMint : theme.accentYellow;
+  const toastTitle = toastVariant === 'found' ? '✓ Фильм найден и добавлен' : '✓ Добавлено в обработку';
+  const toastSub =
+    toastVariant === 'found'
+      ? 'Фильм добавлен в твою коллекцию'
+      : 'Данные о фильме скоро появятся в списке';
 
   return (
     <Phone safeBottom>
@@ -128,13 +137,11 @@ export function AddScreen() {
       </ScrollView>
 
       <Animated.View
-        style={[styles.toast, { backgroundColor: theme.accentYellow, borderColor: theme.ink, opacity: toastOpacity }]}
+        style={[styles.toast, { backgroundColor: toastBg, borderColor: theme.ink, opacity: toastOpacity }]}
         pointerEvents="none"
       >
-        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 20, color: theme.ink }}>✓ Добавлено в обработку</Text>
-        <Text style={{ fontFamily: 'Kalam', fontSize: 13, color: theme.inkSoft }}>
-          Данные о фильме скоро появятся в списке
-        </Text>
+        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 20, color: theme.ink }}>{toastTitle}</Text>
+        <Text style={{ fontFamily: 'Kalam', fontSize: 13, color: theme.inkSoft }}>{toastSub}</Text>
       </Animated.View>
 
       <View style={{ padding: 12 }}>
