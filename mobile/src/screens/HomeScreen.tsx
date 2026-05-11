@@ -37,10 +37,6 @@ export function HomeScreen() {
       <Phone>
         <View style={[styles.row, { paddingHorizontal: 18, paddingTop: 14, paddingBottom: 6 }]}>
           <H size="lg">Кинокопилка</H>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <View style={[styles.iconBox, { borderColor: theme.ink }]} />
-            <View style={[styles.iconBox, { borderColor: theme.ink, backgroundColor: theme.accentYellow }]} />
-          </View>
         </View>
         <View style={{ flex: 1, padding: 24, alignItems: 'center', justifyContent: 'center', gap: 16 }}>
           <View style={[styles.emptyIllu, { borderColor: theme.line, backgroundColor: theme.accentYellow }]}>
@@ -71,10 +67,6 @@ export function HomeScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: 16 }} showsVerticalScrollIndicator={false}>
         <View style={[styles.row, { paddingHorizontal: 18, paddingTop: 14, paddingBottom: 6 }]}>
           <H size="lg">Кинокопилка</H>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <View style={[styles.iconBox, { borderColor: theme.ink }]} />
-            <View style={[styles.iconBox, { borderColor: theme.ink, backgroundColor: theme.accentYellow }]} />
-          </View>
         </View>
 
         <Pressable
@@ -164,8 +156,8 @@ function PosterShelf({
   return (
     <View style={{ marginTop: 14 }}>
       <View style={[styles.row, { paddingHorizontal: 18, marginBottom: 6 }]}>
-        <H size="md">{title}</H>
-        {sub ? <Mono>{sub}</Mono> : null}
+        <H size="md" style={{ flex: 1 }}>{title}</H>
+        {sub ? <Mono style={{ flexShrink: 0 }}>{sub}</Mono> : null}
       </View>
       <ScrollView
         horizontal
@@ -198,7 +190,6 @@ function PosterShelf({
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  iconBox: { width: 22, height: 22, borderWidth: 1.5, borderRadius: 3 },
   emptyIllu: {
     width: 140, height: 140, borderRadius: 70,
     borderWidth: 2,
