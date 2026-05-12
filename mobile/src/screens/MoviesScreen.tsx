@@ -14,6 +14,8 @@ import { H, Body, Mono, ArtNote } from '@/components/Text';
 import { useRouter } from 'expo-router';
 import { useMyMovies } from '@/hooks/queries/useMyMovies';
 import { useFiltersStore, isFiltersActive } from '@/store/filters.store';
+import { useSettingsStore } from '@/store/settings.store';
+import { movieTitle } from '@/utils/localize';
 import type { UserMovieListResponse } from '@/types/api';
 
 export function MoviesScreen() {
@@ -23,6 +25,7 @@ export function MoviesScreen() {
   const [searchOpen, setSearchOpen] = useState(false);
 
   const filters = useFiltersStore();
+  const language = useSettingsStore(s => s.language);
   const apiFilters = useMemo(
     () => filters.toApiFilters(),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -68,8 +71,8 @@ export function MoviesScreen() {
     const isMissing = ps === 'unrecognized';
     const displayTitle =
       isPending || isMissing
-        ? (item.movie.user_query ?? item.movie.title_ru ?? item.movie.title_original ?? '…')
-        : (item.movie.title_ru ?? item.movie.title_original);
+        ? (item.movie.user_query ?? (movieTitle(item.movie, language) || '…'))
+        : movieTitle(item.movie, language);
 
     return (
       <Pressable
@@ -87,7 +90,7 @@ export function MoviesScreen() {
             width={44}
             aspectRatio={2 / 3}
             posterUrl={item.movie.poster_url}
-            label={(item.movie.title_ru ?? '?').slice(0, 4)}
+            label={(movieTitle(item.movie, language) || '?').slice(0, 4)}
           />
         )}
         <View style={{ flex: 1 }}>

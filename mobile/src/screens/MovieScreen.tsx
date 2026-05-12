@@ -14,6 +14,8 @@ import { TabBar } from '@/components/TabBar';
 import { useMovie } from '@/hooks/queries/useMovie';
 import { useMarkWatched, useUpdateMovie } from '@/hooks/mutations/useUpdateMovie';
 import { useDeleteMovie } from '@/hooks/mutations/useDeleteMovie';
+import { useSettingsStore } from '@/store/settings.store';
+import { movieTitle, genreName, personName } from '@/utils/localize';
 import type { UserMovieDetailResponse } from '@/types/api';
 
 export function MovieScreen({ id }: { id: string }) {
@@ -25,6 +27,7 @@ export function MovieScreen({ id }: { id: string }) {
   const { data: item, isLoading } = useMovie(movieId);
   const { mutateAsync: markWatched, isPending: markingWatched } = useMarkWatched(movieId);
   const { mutateAsync: deleteMovie, isPending: deleting } = useDeleteMovie();
+  const language = useSettingsStore(s => s.language);
 
   const movie = item?.movie;
   const watched = item?.status === 'watched';
@@ -43,7 +46,7 @@ export function MovieScreen({ id }: { id: string }) {
   const handleDelete = () => {
     Alert.alert(
       t('movie.delete_title'),
-      t('movie.delete_body', { title: movie.title_ru ?? movie.user_query ?? movie.title_original }),
+      t('movie.delete_body', { title: movie.user_query ?? movieTitle(movie, language) }),
       [
         { text: t('movie.cancel'), style: 'cancel' },
         {
@@ -73,7 +76,7 @@ export function MovieScreen({ id }: { id: string }) {
   const handleMarkWatched = async () => {
     try {
       await markWatched();
-      router.push({ pathname: '/rate', params: { title: movie.title_ru ?? movie.title_original ?? '', movieId: id } } as any);
+      router.push({ pathname: '/rate', params: { title: movieTitle(movie, language), movieId: id } } as any);
     } catch {
       Alert.alert(t('movie.error'), t('movie.update_error'));
     }
@@ -83,15 +86,15 @@ export function MovieScreen({ id }: { id: string }) {
     router.push({
       pathname: '/share',
       params: {
-        title: movie.title_ru ?? movie.title_original ?? '',
+        title: movieTitle(movie, language),
         year: String(movie.year ?? ''),
         rating: String(item.rating ?? ''),
       },
     } as any);
   };
 
-  const actors = movie.persons?.filter(p => p.role_type === 'actor').map(p => p.person.name).join(' · ');
-  const directors = movie.persons?.filter(p => p.role_type === 'director').map(p => p.person.name).join(', ');
+  const actors = movie.persons?.filter(p => p.role_type === 'actor').map(p => personName(p.person, language)).join(' · ');
+  const directors = movie.persons?.filter(p => p.role_type === 'director').map(p => personName(p.person, language)).join(', ');
 
   return (
     <Phone>
@@ -100,7 +103,7 @@ export function MovieScreen({ id }: { id: string }) {
           aspectRatio={undefined}
           height={300}
           posterUrl={movie.poster_url}
-          label={movie.title_ru?.slice(0, 8) ?? 'ПОСТЕР'}
+          label={movieTitle(movie, language).slice(0, 8) || 'POSTER'}
           style={{ position: 'absolute', top: 0, left: 0, right: 0, borderRadius: 0, borderWidth: 0 } as any}
         />
         {hasImage && (
@@ -115,7 +118,7 @@ export function MovieScreen({ id }: { id: string }) {
           </Pressable>
         </View>
         <View style={styles.heroTitle}>
-          <H size="xl" color={hasImage ? '#fff' : theme.ink}>{movie.title_ru ?? movie.title_original}</H>
+          <H size="xl" color={hasImage ? '#fff' : theme.ink}>{movieTitle(movie, language)}</H>
           <Mono style={{ color: hasImage ? 'rgba(255,255,255,0.8)' : undefined }}>
             {[movie.year, movie.duration_minutes ? `${movie.duration_minutes} ${t('movie.min')}` : null, movie.imdb_rating ? `⭐ ${movie.imdb_rating}` : null]
               .filter(Boolean)
@@ -128,7 +131,7 @@ export function MovieScreen({ id }: { id: string }) {
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
           <StatusPill status={item.status} />
           {movie.categories?.map(c => (
-            <Chip key={c.id} label={c.name} />
+            <Chip key={c.id} label={genreName(c, language)} />
           ))}
         </View>
 
@@ -139,7 +142,7 @@ export function MovieScreen({ id }: { id: string }) {
             <Body weight="bold" size={14}>{item.rating}/10</Body>
             <Pressable
               style={{ marginLeft: 'auto' }}
-              onPress={() => router.push({ pathname: '/rate', params: { title: movie.title_ru ?? '', movieId: id } } as any)}
+              onPress={() => router.push({ pathname: '/rate', params: { title: movieTitle(movie, language), movieId: id } } as any)}
             >
               <Text style={{ fontFamily: 'Caveat-Bold', color: theme.accentOrange }}>{t('movie.edit')}</Text>
             </Pressable>
@@ -203,7 +206,8 @@ type SubViewProps = {
 function PendingView({ item, onBack, onDelete, deleting }: SubViewProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
-  const displayTitle = item.movie.user_query ?? item.movie.title_ru ?? item.movie.title_original ?? '…';
+  const language = useSettingsStore(s => s.language);
+  const displayTitle = item.movie.user_query ?? (movieTitle(item.movie, language) || '…');
 
   return (
     <Phone>
@@ -268,7 +272,8 @@ function PendingView({ item, onBack, onDelete, deleting }: SubViewProps) {
 function MissingView({ item, onBack, onDelete, deleting }: SubViewProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
-  const displayTitle = item.movie.user_query ?? item.movie.title_ru ?? item.movie.title_original ?? '…';
+  const language = useSettingsStore(s => s.language);
+  const displayTitle = item.movie.user_query ?? (movieTitle(item.movie, language) || '…');
 
   return (
     <Phone>

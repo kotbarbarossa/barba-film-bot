@@ -7,6 +7,8 @@ import { Poster, PosterPending, PosterMissing } from '@/components/Poster';
 import { H, Body, Mono, ArtNote } from '@/components/Text';
 import { useRouter } from 'expo-router';
 import { useMyMovies } from '@/hooks/queries/useMyMovies';
+import { useSettingsStore } from '@/store/settings.store';
+import { movieTitle } from '@/utils/localize';
 import type { UserMovieListResponse } from '@/types/api';
 
 export function HomeScreen() {
@@ -14,6 +16,7 @@ export function HomeScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { data: movies = [] } = useMyMovies();
+  const language = useSettingsStore(s => s.language);
 
   const movieCount = movies.length;
   const wantCount = useMemo(() => movies.filter(m => m.status === 'want').length, [movies]);
@@ -154,6 +157,7 @@ function PosterShelf({
   movies: UserMovieListResponse[];
   onMoviePress: (m: UserMovieListResponse) => void;
 }) {
+  const language = useSettingsStore(s => s.language);
   if (movies.length === 0) return null;
   return (
     <View style={{ marginTop: 14 }}>
@@ -179,7 +183,7 @@ function PosterShelf({
                   width={76}
                   aspectRatio={2 / 3}
                   posterUrl={m.movie.poster_url}
-                  label={(m.movie.title_ru ?? m.movie.title_original ?? '?').slice(0, 5)}
+                  label={(movieTitle(m.movie, language) || '?').slice(0, 5)}
                 />
               )}
             </Pressable>

@@ -11,6 +11,8 @@ import { TabBar } from '@/components/TabBar';
 import { Button } from '@/components/Button';
 import { useGlobalTrending, useChart } from '@/hooks/queries/useCharts';
 import { useMyMovies } from '@/hooks/queries/useMyMovies';
+import { useSettingsStore } from '@/store/settings.store';
+import { movieTitle } from '@/utils/localize';
 import type { ChartSlug } from '@/types/api';
 
 const CHART_ICONS: Record<string, string> = {
@@ -45,6 +47,7 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
 
   const { data: myMovies = [] } = useMyMovies();
   const myMovieIds = new Set(myMovies.map(m => m.movie.id));
+  const language = useSettingsStore(s => s.language);
 
   const icon = CHART_ICONS[chartId] ?? '📊';
 
@@ -88,7 +91,7 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
                   params: {
                     id: String(entry.movie_id),
                     posterUrl: entry.poster_url ?? '',
-                    title: entry.title_ru ?? entry.title_original ?? '',
+                    title: movieTitle(entry, language),
                     year: String(entry.year ?? ''),
                     score: String(entry.score.toFixed(1)),
                     watchCount: String(entry.watch_count),
@@ -102,9 +105,9 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
                 ]}
               >
                 <Text style={[styles.rank, { color: i === 0 ? theme.accentOrange : theme.ink }]}>#{i + 1}</Text>
-                <Poster width={40} aspectRatio={2 / 3} posterUrl={entry.poster_url} label={entry.title_ru?.slice(0, 4) ?? '?'} />
+                <Poster width={40} aspectRatio={2 / 3} posterUrl={entry.poster_url} label={(movieTitle(entry, language) || '?').slice(0, 4)} />
                 <View style={{ flex: 1 }}>
-                  <Body weight="bold" size={13}>{entry.title_ru ?? entry.title_original}</Body>
+                  <Body weight="bold" size={13}>{movieTitle(entry, language)}</Body>
                   <Mono size={9}>{entry.year}</Mono>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
                     <StarRow value={entry.score} size={11} />
