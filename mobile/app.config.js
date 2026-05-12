@@ -37,11 +37,7 @@ module.exports = {
   },
   plugins: [
     'expo-router',
-    ['expo-splash-screen', {
-      image: './assets/splash.png',
-      resizeMode: 'cover',
-      backgroundColor: '#faf7f2',
-    }],
+    ['expo-splash-screen', { image: './assets/adaptive-icon.png', backgroundColor: '#faf7f2', imageWidth: 200 }],
     'expo-secure-store',
     'expo-notifications',
     'expo-apple-authentication',

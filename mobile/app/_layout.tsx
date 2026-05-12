@@ -16,7 +16,6 @@ import { useSettingsStore } from '@/store/settings.store';
 
 SplashScreen.preventAutoHideAsync();
 
-
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     'Caveat':         Caveat_400Regular,
