@@ -11,7 +11,7 @@ export function Phone({ children, safeBottom = false }: { children: ReactNode; s
   useEffect(() => {
     // Android 15+ (API 35) enforces edge-to-edge automatically — these calls cause warnings there
     if (Platform.OS === 'android' && Number(Platform.Version) < 35) {
-      NavigationBar.setBackgroundColorAsync('transparent');
+      NavigationBar.setBackgroundColorAsync(theme.paper);
       NavigationBar.setButtonStyleAsync(isLight ? 'dark' : 'light');
     }
   }, [isLight]);
