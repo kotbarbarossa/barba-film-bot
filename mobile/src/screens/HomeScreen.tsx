@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, ScrollView, StyleSheet, Pressable, Text } from 'react-native';
+import { View, ScrollView, StyleSheet, Pressable, Text, ActivityIndicator } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
@@ -15,27 +15,38 @@ export function HomeScreen() {
   const { theme } = useTheme();
   const router = useRouter();
   const { t } = useTranslation();
-  const { data: movies = [] } = useMyMovies();
+  const { data: movies } = useMyMovies();
   const language = useSettingsStore(s => s.language);
 
-  const movieCount = movies.length;
-  const wantCount = useMemo(() => movies.filter(m => m.status === 'want').length, [movies]);
-  const watchedCount = useMemo(() => movies.filter(m => m.status === 'watched').length, [movies]);
+  const allMovies = movies ?? [];
+  const movieCount = allMovies.length;
+  const wantCount = useMemo(() => allMovies.filter(m => m.status === 'want').length, [allMovies]);
+  const watchedCount = useMemo(() => allMovies.filter(m => m.status === 'watched').length, [allMovies]);
 
   const recentAdded = useMemo(
-    () => [...movies].sort((a, b) => b.id - a.id).slice(0, 6),
-    [movies],
+    () => [...allMovies].sort((a, b) => b.id - a.id).slice(0, 6),
+    [allMovies],
   );
   const recentWatched = useMemo(
-    () => movies.filter(m => m.status === 'watched').sort((a, b) => b.id - a.id).slice(0, 6),
-    [movies],
+    () => allMovies.filter(m => m.status === 'watched').sort((a, b) => b.id - a.id).slice(0, 6),
+    [allMovies],
   );
 
   const onRandom = () => {
-    if (movies.length === 0) return;
-    const pick = movies[Math.floor(Math.random() * movies.length)];
+    if (allMovies.length === 0) return;
+    const pick = allMovies[Math.floor(Math.random() * allMovies.length)];
     router.push({ pathname: '/movie/[id]', params: { id: String(pick.movie.id) } } as any);
   };
+
+  if (movies === undefined) {
+    return (
+      <Phone>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator size="large" color={theme.ink} />
+        </View>
+      </Phone>
+    );
+  }
 
   if (movieCount === 0) {
     return (

@@ -2,7 +2,8 @@ import '@/i18n';
 import { Caveat_400Regular, Caveat_700Bold } from '@expo-google-fonts/caveat';
 import { JetBrainsMono_400Regular } from '@expo-google-fonts/jetbrains-mono';
 import { Kalam_400Regular, Kalam_700Bold } from '@expo-google-fonts/kalam';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { queryClient, persister } from '@/lib/queryClient';
 import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -15,7 +16,6 @@ import { useSettingsStore } from '@/store/settings.store';
 
 SplashScreen.preventAutoHideAsync();
 
-const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -60,7 +60,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <QueryClientProvider client={queryClient}>
+      <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
         <SafeAreaProvider>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
@@ -76,7 +76,7 @@ export default function RootLayout() {
             <Stack.Screen name="empty/filter" />
           </Stack>
         </SafeAreaProvider>
-      </QueryClientProvider>
+      </PersistQueryClientProvider>
     </ThemeProvider>
   );
 }

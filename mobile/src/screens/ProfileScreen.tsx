@@ -23,6 +23,7 @@ import { useSettingsStore } from '@/store/settings.store';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { useMyMovies } from '@/hooks/queries/useMyMovies';
 import { useUpdateProfile } from '@/hooks/mutations/useUpdateProfile';
+import { queryClient } from '@/lib/queryClient';
 import type { Theme } from '@/theme';
 
 // ─── local primitives ────────────────────────────────────────────────────────
@@ -429,7 +430,7 @@ export function ProfileScreen() {
               title={t('profile.logout_confirm')}
               variant="accent"
               full
-              onPress={() => { setShowLogout(false); signOut(); }}
+              onPress={() => { setShowLogout(false); queryClient.clear(); signOut(); }}
               style={{ marginBottom: 8 }}
             />
             <Button
