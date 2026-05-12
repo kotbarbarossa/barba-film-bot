@@ -46,6 +46,7 @@ module.exports = {
     'expo-apple-authentication',
     '@react-native-google-signin/google-signin',
     'expo-localization',
+    './plugins/withAndroidNavBar',
     ['expo-build-properties', { android: { usesCleartextTraffic: true, edgeToEdgeEnabled: true } }],
   ],
   newArchEnabled: true,
