@@ -44,6 +44,7 @@ module.exports = {
     'expo-secure-store',
     'expo-apple-authentication',
     '@react-native-google-signin/google-signin',
+    'expo-localization',
     ['expo-build-properties', { android: { usesCleartextTraffic: true, edgeToEdgeEnabled: true } }],
   ],
   newArchEnabled: true,
