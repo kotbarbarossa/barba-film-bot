@@ -24,6 +24,13 @@ const en: Translations = {
     recently_watched: 'Recently watched',
   },
 
+  poster: {
+    placeholder: 'POSTER',
+    pending_compact: 'PROC.',
+    pending_full: 'processing',
+    missing: 'not found',
+  },
+
   movies: {
     title: 'My movies',
     in_collection: '{{count}} in collection',

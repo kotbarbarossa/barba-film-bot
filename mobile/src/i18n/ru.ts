@@ -22,6 +22,13 @@ const ru = {
     recently_watched: 'Недавно просмотренные',
   },
 
+  poster: {
+    placeholder: 'ПОСТЕР',
+    pending_compact: 'ОБРАБ.',
+    pending_full: 'в обработке',
+    missing: 'не найдено',
+  },
+
   movies: {
     title: 'Мои фильмы',
     in_collection: '{{count}} в коллекции',

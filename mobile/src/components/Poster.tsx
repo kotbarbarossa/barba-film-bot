@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, ViewStyle } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
 
 type Props = {
@@ -11,8 +12,10 @@ type Props = {
   style?: ViewStyle;
 };
 
-export function Poster({ width, height, aspectRatio = 2 / 3, label = 'ПОСТЕР', posterUrl, style }: Props) {
+export function Poster({ width, height, aspectRatio = 2 / 3, label, posterUrl, style }: Props) {
   const { theme } = useTheme();
+  const { t } = useTranslation();
+  const resolvedLabel = label ?? t('poster.placeholder');
   return (
     <View
       style={[
@@ -33,7 +36,7 @@ export function Poster({ width, height, aspectRatio = 2 / 3, label = 'ПОСТЕ
         <>
           <View style={[styles.stripes, { borderColor: theme.shade2 }]} pointerEvents="none" />
           <View style={[styles.label, { backgroundColor: theme.paper, borderColor: theme.line }]}>
-            <Text style={[styles.labelText, { color: theme.inkFaint }]}>{label}</Text>
+            <Text style={[styles.labelText, { color: theme.inkFaint }]}>{resolvedLabel}</Text>
           </View>
         </>
       )}
@@ -51,6 +54,7 @@ type PendingMissingProps = {
 
 export function PosterPending({ width, height, aspectRatio = 2 / 3, compact = false, style }: PendingMissingProps) {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   return (
     <View
       style={[
@@ -87,7 +91,7 @@ export function PosterPending({ width, height, aspectRatio = 2 / 3, compact = fa
           ]}
         >
           <Text style={[styles.stampText, { color: theme.onYellow, fontSize: compact ? 6 : 9 }]}>
-            {compact ? 'ОБРАБ.' : 'в обработке'}
+            {compact ? t('poster.pending_compact') : t('poster.pending_full')}
           </Text>
         </View>
       </View>
@@ -173,6 +177,7 @@ const PERF_TOPS = ['18%', '33%', '49%', '64%', '80%'] as const;
 
 export function PosterMissing({ width, height, aspectRatio = 2 / 3, compact = false, style }: PendingMissingProps) {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const w = typeof width === 'number' ? width : 168;
 
   // Three size tiers based on poster width
@@ -215,7 +220,7 @@ export function PosterMissing({ width, height, aspectRatio = 2 / 3, compact = fa
             paddingHorizontal: 5, paddingVertical: 2,
             transform: [{ rotate: '1.5deg' }],
           }]}>
-            <Text style={[styles.stampText, { color: theme.ink, fontSize: 7 }]}>не найдено</Text>
+            <Text style={[styles.stampText, { color: theme.ink, fontSize: 7 }]}>{t('poster.missing')}</Text>
           </View>
         </View>
       )}
@@ -243,7 +248,7 @@ export function PosterMissing({ width, height, aspectRatio = 2 / 3, compact = fa
               paddingHorizontal: 8, paddingVertical: 3,
               transform: [{ rotate: '1.5deg' }],
             }]}>
-              <Text style={[styles.stampText, { color: theme.ink, fontSize: 9 }]}>не найдено</Text>
+              <Text style={[styles.stampText, { color: theme.ink, fontSize: 9 }]}>{t('poster.missing')}</Text>
             </View>
           </View>
         </>
