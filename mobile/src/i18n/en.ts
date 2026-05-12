@@ -189,9 +189,75 @@ const en: Translations = {
     language_en: 'English',
     notifications: 'Notifications',
     notif_on: 'on',
+    notif_off: 'off',
     about: 'ABOUT',
     rate_app: 'Rate the app',
     policy: 'Privacy & Terms',
+    policy_title: 'Privacy & Terms',
+    policy_ok: 'Got it',
+    policy_content: `FLICKBOOK — PRIVACY POLICY
+
+Last updated: May 2025
+
+─────────────────────────
+
+1. WHAT WE COLLECT
+
+The app collects only what is needed to operate:
+
+• Account data — name and email provided when signing in via Google or Apple.
+• Your collection — movies, watch statuses, personal ratings.
+• App settings — chosen language and theme.
+
+─────────────────────────
+
+2. HOW WE USE YOUR DATA
+
+Solely to operate the service: storing your collection, syncing across devices, and displaying your personalized interface. We do not analyse your data for marketing purposes.
+
+─────────────────────────
+
+3. SHARING WITH THIRD PARTIES
+
+We do not sell, rent, or share your data with advertising networks, data brokers, or third parties.
+
+Data may be shared with technical partners (hosting, infrastructure) solely to keep the service running, under strict confidentiality obligations.
+
+─────────────────────────
+
+4. SIGN IN WITH GOOGLE / APPLE
+
+When signing in via Google or Apple we receive only the data you explicitly allow: your name and email address. Passwords are never shared with us.
+
+─────────────────────────
+
+5. NOTIFICATIONS
+
+Push notifications are sent only with your explicit consent. Permission can be revoked at any time in device settings or from the Profile section.
+
+─────────────────────────
+
+6. DELETING YOUR DATA
+
+You can delete your account and all associated data in Profile → "Delete account". Deleted data cannot be recovered.
+
+─────────────────────────
+
+7. CHILDREN
+
+The app is not intended for children under 13. We do not knowingly collect data from children.
+
+─────────────────────────
+
+8. POLICY CHANGES
+
+We will notify you of significant changes through the app. The current version is always available in Profile → Privacy & Terms.
+
+─────────────────────────
+
+CONTACT
+
+Privacy questions: ultra.kot.dev@gmail.com`,
     sign_out: 'Sign out',
     delete_account: 'delete account',
     app_name: 'FLICKBOOK',

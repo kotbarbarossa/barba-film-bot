@@ -43,6 +43,7 @@ module.exports = {
       backgroundColor: '#faf7f2',
     }],
     'expo-secure-store',
+    'expo-notifications',
     'expo-apple-authentication',
     '@react-native-google-signin/google-signin',
     'expo-localization',

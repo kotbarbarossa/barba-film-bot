@@ -1,14 +1,18 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   ScrollView,
   Pressable,
+  TouchableWithoutFeedback,
   Modal,
   TextInput,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
+  Linking,
+  AppState,
 } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
@@ -121,9 +125,48 @@ export function ProfileScreen() {
   const { language, setLanguage } = useSettingsStore();
   const [showLogout, setShowLogout] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const [showPolicy, setShowPolicy] = useState(false);
+  const [notifGranted, setNotifGranted] = useState<boolean | null>(null);
   const [editFirst, setEditFirst] = useState('');
   const [editLast, setEditLast] = useState('');
   const [editUsername, setEditUsername] = useState('');
+
+  const appState = useRef(AppState.currentState);
+
+  const refreshNotifStatus = useCallback(() => {
+    Notifications.getPermissionsAsync().then(({ status }) => {
+      setNotifGranted(status === 'granted');
+    });
+  }, []);
+
+  useEffect(() => {
+    refreshNotifStatus();
+    const sub = AppState.addEventListener('change', nextState => {
+      if (appState.current.match(/inactive|background/) && nextState === 'active') {
+        refreshNotifStatus();
+      }
+      appState.current = nextState;
+    });
+    return () => sub.remove();
+  }, [refreshNotifStatus]);
+
+  const handleNotifications = useCallback(async () => {
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status === 'undetermined') {
+      const result = await Notifications.requestPermissionsAsync();
+      setNotifGranted(result.status === 'granted');
+    } else {
+      Linking.openSettings();
+    }
+  }, []);
+
+  const handleRateApp = useCallback(() => {
+    const androidUrl = 'market://details?id=com.barbarossa.flickbook';
+    const webUrl = 'https://play.google.com/store/apps/details?id=com.barbarossa.flickbook';
+    Linking.canOpenURL(androidUrl)
+      .then(supported => Linking.openURL(supported ? androidUrl : webUrl))
+      .catch(() => Linking.openURL(webUrl));
+  }, []);
 
   const { data: profile } = useUserProfile();
   const { data: movies = [] } = useMyMovies();
@@ -158,7 +201,7 @@ export function ProfileScreen() {
     <Phone>
       {/* Header */}
       <View style={styles.header}>
-        <H size="lg">{t('profile.title')}</H>
+        <H size="lg" style={{ flex: 1 }}>{t('profile.title')}</H>
         <Pressable hitSlop={8} onPress={openEdit}>
           <H size="sm" color={theme.accentOrange}>{t('profile.edit')}</H>
         </Pressable>
@@ -207,13 +250,20 @@ export function ProfileScreen() {
             onPress={() => setLanguage(language === 'ru' ? 'en' : 'ru')}
             theme={theme}
           />
-          <SettingRow icon="🔔" title={t('profile.notifications')} value={t('profile.notif_on')} last theme={theme} />
+          <SettingRow
+            icon="🔔"
+            title={t('profile.notifications')}
+            value={notifGranted === null ? undefined : notifGranted ? t('profile.notif_on') : t('profile.notif_off')}
+            onPress={handleNotifications}
+            last
+            theme={theme}
+          />
         </GroupCard>
 
         {/* About */}
         <GroupCard label={t('profile.about')} theme={theme}>
-          <SettingRow icon="★" title={t('profile.rate_app')} theme={theme} />
-          <SettingRow icon="§" title={t('profile.policy')} last theme={theme} />
+          <SettingRow icon="★" title={t('profile.rate_app')} onPress={handleRateApp} theme={theme} />
+          <SettingRow icon="§" title={t('profile.policy')} onPress={() => setShowPolicy(true)} last theme={theme} />
         </GroupCard>
 
         {/* Sign out */}
@@ -307,6 +357,41 @@ export function ProfileScreen() {
             </Pressable>
           </KeyboardAvoidingView>
         </Pressable>
+      </Modal>
+
+      {/* Policy bottom sheet */}
+      <Modal
+        visible={showPolicy}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        onRequestClose={() => setShowPolicy(false)}
+      >
+        <View style={styles.backdrop}>
+          <TouchableWithoutFeedback onPress={() => setShowPolicy(false)}>
+            <View style={StyleSheet.absoluteFillObject} />
+          </TouchableWithoutFeedback>
+          <View style={[styles.sheet, { backgroundColor: theme.paper, borderTopColor: theme.line }]}>
+            <View style={[styles.sheetHandle, { backgroundColor: theme.inkFaint }]} />
+            <H size="md" style={{ marginBottom: 14 }}>{t('profile.policy_title')}</H>
+            <ScrollView
+              nestedScrollEnabled
+              showsVerticalScrollIndicator={false}
+              style={styles.policyScroll}
+            >
+              <Body size={13} color={theme.inkSoft} style={{ lineHeight: 20 }}>
+                {t('profile.policy_content')}
+              </Body>
+            </ScrollView>
+            <Button
+              title={t('profile.policy_ok')}
+              variant="accent"
+              full
+              onPress={() => setShowPolicy(false)}
+              style={{ marginTop: 12 }}
+            />
+          </View>
+        </View>
       </Modal>
 
       {/* Logout bottom sheet */}
@@ -451,6 +536,10 @@ const styles = StyleSheet.create({
     paddingTop: 14,
     paddingBottom: 32,
     gap: 4,
+  },
+  policyScroll: {
+    maxHeight: 380,
+    marginBottom: 4,
   },
   sheetHandle: {
     width: 36,
