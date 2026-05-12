@@ -29,7 +29,7 @@ module.exports = {
       backgroundColor: '#faf7f2',
     },
     package: 'com.barbarossa.flickbook',
-    versionCode: 2,
+    versionCode: 3,
   },
   web: {
     bundler: 'metro',
