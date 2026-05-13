@@ -20,9 +20,9 @@ export function StarRow({ value = 0, max = 10, size = 18, color }: Props) {
         const fill = Math.max(0, Math.min(1, fillUnits - i));
         return (
           <View key={i} style={{ width: size, height: size }}>
-            <Text style={[styles.empty, { fontSize: size, color: c }]}>☆</Text>
+            <Text style={[styles.empty, { fontSize: size, lineHeight: size, color: c }]}>☆</Text>
             <View style={{ position: 'absolute', left: 0, top: 0, width: size * fill, height: size, overflow: 'hidden' }}>
-              <Text style={[styles.full, { fontSize: size, color: c }]}>★</Text>
+              <Text style={[styles.full, { fontSize: size, lineHeight: size, color: c }]}>★</Text>
             </View>
           </View>
         );
@@ -33,6 +33,6 @@ export function StarRow({ value = 0, max = 10, size = 18, color }: Props) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 2 },
-  empty: { lineHeight: undefined },
-  full: { lineHeight: undefined },
+  empty: { includeFontPadding: false },
+  full: { includeFontPadding: false },
 });

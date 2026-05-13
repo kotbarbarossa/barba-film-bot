@@ -19,6 +19,7 @@ from app.movie.router import (
     persons_router,
     user_movies_router,
 )
+from app.share.router import router as share_router
 from app.user.router import router as user_router
 
 API_PREFIX = '/api/v1'
@@ -49,6 +50,7 @@ async def health() -> dict[str, str]:
     return {'status': 'ok'}
 
 
+app.include_router(share_router)
 app.include_router(auth_router, prefix=API_PREFIX)
 app.include_router(public_discovery_router, prefix=API_PREFIX)
 app.include_router(discovery_router, prefix=API_PREFIX)

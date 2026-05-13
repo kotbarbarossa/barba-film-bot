@@ -15,5 +15,8 @@ function getApiUrl(): string {
 }
 
 export const API_URL = getApiUrl();
+
+// Base server URL without /api/v1 — used for share deep-link pages
+export const SHARE_BASE_URL = API_URL.replace(/\/api\/v1\/?$/, '');
 export const GOOGLE_CLIENT_ID: string = extra.googleClientId ?? '';
 export const GOOGLE_CLIENT_ID_WEB: string = extra.googleClientIdWeb ?? '';

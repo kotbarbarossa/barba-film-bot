@@ -86,9 +86,11 @@ export function MovieScreen({ id }: { id: string }) {
     router.push({
       pathname: '/share',
       params: {
+        id: String(movieId),
         title: movieTitle(movie, language),
         year: String(movie.year ?? ''),
         rating: String(item.rating ?? ''),
+        posterUrl: movie.poster_url ?? '',
       },
     } as any);
   };
@@ -113,9 +115,6 @@ export function MovieScreen({ id }: { id: string }) {
           <Pressable onPress={() => router.back()}>
             <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: hasImage ? '#fff' : theme.ink }}>←</Text>
           </Pressable>
-          <Pressable onPress={handleShare}>
-            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: hasImage ? '#fff' : theme.ink }}>↗</Text>
-          </Pressable>
         </View>
         <View style={styles.heroTitle}>
           <H size="xl" color={hasImage ? '#fff' : theme.ink}>{movieTitle(movie, language)}</H>
@@ -129,7 +128,7 @@ export function MovieScreen({ id }: { id: string }) {
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 18, paddingTop: 12 }}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-          <StatusPill status={item.status} />
+            <StatusPill status={item.status} />
           {movie.categories?.map(c => (
             <Chip key={c.id} label={genreName(c, language)} />
           ))}
@@ -171,12 +170,23 @@ export function MovieScreen({ id }: { id: string }) {
       <View style={[styles.actions, { borderTopColor: theme.line }]}>
         {watched ? (
           <>
+            <Button
+              title={t('share.button')}
+              style={{ flex: 1, backgroundColor: theme.accentYellow }}
+              textStyle={{ color: '#111' }}
+              onPress={handleShare}
+            />
             <Button title={t('movie.rewatch')} style={{ flex: 1 }} onPress={handleMarkWatched} disabled={markingWatched} />
-            <Button title="↗" style={{ paddingHorizontal: 14, minWidth: 52 }} onPress={handleShare} />
             <Button title="🗑" style={{ paddingHorizontal: 14, minWidth: 52 }} onPress={handleDelete} disabled={deleting} />
           </>
         ) : (
           <>
+            <Button
+              title={t('share.button')}
+              style={{ flex: 1, backgroundColor: theme.accentYellow }}
+              textStyle={{ color: '#111' }}
+              onPress={handleShare}
+            />
             <Button
               title={markingWatched ? '…' : t('movie.watched')}
               variant="primary"
@@ -184,7 +194,6 @@ export function MovieScreen({ id }: { id: string }) {
               onPress={handleMarkWatched}
               disabled={markingWatched}
             />
-            <Button title="↗" style={{ paddingHorizontal: 14, minWidth: 52 }} onPress={handleShare} />
             <Button title="🗑" style={{ paddingHorizontal: 14, minWidth: 52 }} onPress={handleDelete} disabled={deleting} />
           </>
         )}
@@ -210,7 +219,7 @@ function PendingView({ item, onBack, onDelete, deleting }: SubViewProps) {
   const displayTitle = item.movie.user_query ?? (movieTitle(item.movie, language) || '…');
 
   return (
-    <Phone>
+    <Phone safeBottom>
       <View style={subStyles.header}>
         <Pressable onPress={onBack}>
           <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink }}>{t('movie.back')}</Text>
@@ -276,7 +285,7 @@ function MissingView({ item, onBack, onDelete, deleting }: SubViewProps) {
   const displayTitle = item.movie.user_query ?? (movieTitle(item.movie, language) || '…');
 
   return (
-    <Phone>
+    <Phone safeBottom>
       <View style={subStyles.header}>
         <Pressable onPress={onBack}>
           <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink }}>{t('movie.back')}</Text>

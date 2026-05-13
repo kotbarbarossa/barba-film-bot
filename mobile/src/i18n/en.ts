@@ -99,7 +99,7 @@ const en: Translations = {
     description: 'DESCRIPTION',
     cast: 'cast: ',
     director: 'director: ',
-    rewatch: 'rewatch?',
+    rewatch: 'Rewatched',
     watched: '✓ Watched',
     delete_title: 'Remove from list?',
     delete_body: '«{{title}}» will be removed from your list.',
@@ -312,6 +312,15 @@ Privacy questions: ultra.kot.dev@gmail.com`,
     adding: 'Adding…',
     error: 'Error',
     error_body: "Couldn't add the movie",
+  },
+
+  share: {
+    title: 'Share movie',
+    hint: 'recipient opens the movie in the app or downloads it',
+    button: 'Share',
+    sharing: '…',
+    branding: '🎬 Flickbook',
+    my_rating: 'my rating',
   },
 
   empty: {

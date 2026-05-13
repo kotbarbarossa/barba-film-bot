@@ -70,6 +70,7 @@ export default function RootLayout() {
             <Stack.Screen name="share"            options={{ presentation: 'modal' }} />
             <Stack.Screen name="charts/[id]" />
             <Stack.Screen name="movie/[id]" />
+            <Stack.Screen name="share/movie/[id]" />
             <Stack.Screen name="movie-from-chart/[id]" />
             <Stack.Screen name="empty/movies" />
             <Stack.Screen name="empty/filter" />

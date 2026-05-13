@@ -13,23 +13,26 @@ import { TabBar } from '@/components/TabBar';
 import { usePublicMovie } from '@/hooks/queries/useMovie';
 import { useMyMovies } from '@/hooks/queries/useMyMovies';
 import { useAddMovie } from '@/hooks/mutations/useAddMovie';
+import { useSettingsStore } from '@/store/settings.store';
+import { movieTitle } from '@/utils/localize';
 
 type Props = {
   movieId: string;
   posterUrl?: string;
-  title: string;
+  title?: string;
   year?: string;
   score?: string;
   watchCount?: string;
   rank?: string;
   chartId?: string;
+  onOpenCard?: () => void;
 };
 
 function chartTitleKey(id: string): string {
   return `charts.${id.replace(/-/g, '_')}_title`;
 }
 
-export function MovieFromChartScreen({ movieId, posterUrl, title, year, score, watchCount, rank, chartId }: Props) {
+export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, year, score, watchCount, rank, chartId, onOpenCard }: Props) {
   const { theme } = useTheme();
   const router = useRouter();
   const { t } = useTranslation();
@@ -42,7 +45,10 @@ export function MovieFromChartScreen({ movieId, posterUrl, title, year, score, w
   const inMyList = myMovies.some(m => m.movie.id === numericId);
   const [added, setAdded] = useState(false);
 
-  const hasImage = !!posterUrl;
+  const language = useSettingsStore(s => s.language);
+  const title = titleProp || (movieDetail ? movieTitle(movieDetail, language) : '') || '';
+  const resolvedPosterUrl = posterUrl || movieDetail?.poster_url || undefined;
+  const hasImage = !!resolvedPosterUrl;
   const heroTextColor = hasImage ? '#fff' : theme.ink;
 
   const handleAdd = async () => {
@@ -55,7 +61,11 @@ export function MovieFromChartScreen({ movieId, posterUrl, title, year, score, w
   };
 
   const handleOpenMyCard = () => {
-    router.push({ pathname: '/movie/[id]', params: { id: movieId } } as any);
+    if (onOpenCard) {
+      onOpenCard();
+    } else {
+      router.push({ pathname: '/movie/[id]', params: { id: movieId } } as any);
+    }
   };
 
   const isInList = inMyList || added;
@@ -72,7 +82,7 @@ export function MovieFromChartScreen({ movieId, posterUrl, title, year, score, w
         <Poster
           aspectRatio={undefined}
           height={280}
-          posterUrl={posterUrl || null}
+          posterUrl={resolvedPosterUrl || null}
           label={title.slice(0, 8)}
           style={{ position: 'absolute', top: 0, left: 0, right: 0, borderRadius: 0, borderWidth: 0 } as any}
         />

@@ -24,6 +24,7 @@ export function useMovie(movieId: number) {
     queryKey: movieKeys.detail(userId!, movieId),
     queryFn: () => getMyMovie(userId!, movieId),
     enabled: userId != null && movieId > 0,
+    retry: false,
     staleTime: (query) =>
       (query.state.data as { movie?: { processing_status?: string } } | undefined)
         ?.movie?.processing_status === 'pending'
