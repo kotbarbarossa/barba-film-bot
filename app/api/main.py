@@ -4,6 +4,7 @@ from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
 
+from app.admin.router import admin_router
 from app.auth.router import router as auth_router
 from app.core.config import settings
 from app.core.limiter import limiter
@@ -11,7 +12,6 @@ from app.core.sentry import init_sentry
 from app.core.settings import Environment
 from app.discovery.router import discovery_router, public_discovery_router
 from app.infrastructure.database.lifespan import lifespan
-from app.admin.router import admin_router
 from app.movie.router import (
     categories_router,
     movie_persons_router,
