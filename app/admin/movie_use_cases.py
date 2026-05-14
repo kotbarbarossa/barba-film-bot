@@ -117,7 +117,7 @@ class BackfillEnglishFieldsUseCase:
                 await self.session.execute(
                     update(Movie).where(Movie.id == movie.id).values(**fields)
                 )
-                await self.session.commit()
+                await self.session.flush()
                 logger.info('Movie %d: updated %s', movie.id, ', '.join(fields.keys()))
                 updated += 1
             else:
