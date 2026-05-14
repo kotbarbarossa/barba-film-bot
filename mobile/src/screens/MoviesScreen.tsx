@@ -3,9 +3,10 @@ import {
   View, FlatList, StyleSheet, Pressable, Text,
   ActivityIndicator, TextInput,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
-import { Poster } from '@/components/Poster';
+import { Poster, PosterPending, PosterMissing } from '@/components/Poster';
 import { Chip } from '@/components/Chip';
 import { StatusPill } from '@/components/StatusPill';
 import { StarRow } from '@/components/StarRow';
@@ -13,14 +14,18 @@ import { H, Body, Mono, ArtNote } from '@/components/Text';
 import { useRouter } from 'expo-router';
 import { useMyMovies } from '@/hooks/queries/useMyMovies';
 import { useFiltersStore, isFiltersActive } from '@/store/filters.store';
+import { useSettingsStore } from '@/store/settings.store';
+import { movieTitle } from '@/utils/localize';
 import type { UserMovieListResponse } from '@/types/api';
 
 export function MoviesScreen() {
   const { theme } = useTheme();
   const router = useRouter();
+  const { t } = useTranslation();
   const [searchOpen, setSearchOpen] = useState(false);
 
   const filters = useFiltersStore();
+  const language = useSettingsStore(s => s.language);
   const apiFilters = useMemo(
     () => filters.toApiFilters(),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -55,61 +60,92 @@ export function MoviesScreen() {
     allMovies.filter((m) => m.status === s).length;
 
   const STATUS_TABS = [
-    { label: `Все · ${allMovies.length}`,          value: 'all',      tone: 'solid' },
-    { label: `Хочу · ${countByStatus('want')}`,    value: 'want',     tone: 'yellow' },
-    { label: `Просм. · ${countByStatus('watched')}`,  value: 'watched',  tone: 'orange' },
+    { label: t('movies.tab_all',     { count: allMovies.length }),      value: 'all',      tone: 'solid' },
+    { label: t('movies.tab_want',    { count: countByStatus('want') }),  value: 'want',     tone: 'yellow' },
+    { label: t('movies.tab_watched', { count: countByStatus('watched') }), value: 'watched', tone: 'orange' },
   ] as const;
 
-  const renderItem = ({ item }: { item: UserMovieListResponse }) => (
-    <Pressable
-      onPress={() =>
-        router.push({ pathname: '/movie/[id]', params: { id: String(item.movie.id) } } as any)
-      }
-      style={[styles.item, { borderBottomColor: theme.shade2 }]}
-    >
-      <Poster
-        width={44}
-        aspectRatio={2 / 3}
-        posterUrl={item.movie.poster_url}
-        label={(item.movie.title_ru ?? '?').slice(0, 4)}
-      />
-      <View style={{ flex: 1 }}>
-        <Body weight="bold" size={13}>
-          {item.movie.title_ru ?? item.movie.title_original}
-        </Body>
-        <Mono size={9}>
-          {[
-            item.movie.year,
-            item.movie.media_type === 'film'
-              ? 'ФИЛЬМ'
-              : item.movie.media_type === 'series'
-              ? 'СЕРИАЛ'
-              : null,
-          ]
-            .filter(Boolean)
-            .join(' · ')}
-        </Mono>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
-          <StatusPill status={item.status} />
-          {item.rating != null ? (
-            <>
-              <StarRow value={item.rating} size={11} />
-              <Body weight="bold" size={11}>{item.rating}</Body>
-            </>
-          ) : null}
+  const renderItem = ({ item }: { item: UserMovieListResponse }) => {
+    const ps = item.movie.processing_status;
+    const isPending = ps === 'pending';
+    const isMissing = ps === 'unrecognized';
+    const displayTitle =
+      isPending || isMissing
+        ? (item.movie.user_query ?? (movieTitle(item.movie, language) || '…'))
+        : movieTitle(item.movie, language);
+
+    return (
+      <Pressable
+        onPress={() =>
+          router.push({ pathname: '/movie/[id]', params: { id: String(item.movie.id) } } as any)
+        }
+        style={[styles.item, { borderBottomColor: theme.shade2 }]}
+      >
+        {isPending ? (
+          <PosterPending width={44} aspectRatio={2 / 3} compact />
+        ) : isMissing ? (
+          <PosterMissing width={44} aspectRatio={2 / 3} compact />
+        ) : (
+          <Poster
+            width={44}
+            aspectRatio={2 / 3}
+            posterUrl={(language === 'en' ? item.movie.poster_url_original : null) ?? item.movie.poster_url}
+            label={(movieTitle(item.movie, language) || '?').slice(0, 4)}
+          />
+        )}
+        <View style={{ flex: 1 }}>
+          <Body
+            weight="bold"
+            size={13}
+            style={[
+              isPending && { fontStyle: 'italic' },
+              isMissing && { fontStyle: 'italic', textDecorationLine: 'line-through', color: theme.accentOrange },
+            ]}
+          >
+            {displayTitle}
+          </Body>
+          {isPending ? (
+            <Mono size={9} color={theme.ink}>{t('movies.processing')}</Mono>
+          ) : isMissing ? (
+            <Mono size={9} color={theme.accentOrange}>{t('movies.not_found_label')}</Mono>
+          ) : (
+            <Mono size={9}>
+              {[
+                item.movie.year,
+                item.movie.media_type === 'film'
+                  ? t('movies.type_film')
+                  : item.movie.media_type === 'series'
+                  ? t('movies.type_series')
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </Mono>
+          )}
+          {!isPending && !isMissing && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+              <StatusPill status={item.status} />
+              {item.rating != null ? (
+                <>
+                  <StarRow value={item.rating} size={11} />
+                  <Body weight="bold" size={11}>{item.rating}</Body>
+                </>
+              ) : null}
+            </View>
+          )}
         </View>
-      </View>
-      <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.inkFaint }}>›</Text>
-    </Pressable>
-  );
+        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.inkFaint }}>›</Text>
+      </Pressable>
+    );
+  };
 
   return (
     <Phone>
       {/* ── Header ── */}
       <View style={[styles.headerRow, { paddingHorizontal: 16, paddingTop: 12 }]}>
         <View style={{ flex: 1 }}>
-          <H size="lg">Мои фильмы</H>
-          <ArtNote>{allMovies.length} в коллекции</ArtNote>
+          <H size="lg">{t('movies.title')}</H>
+          <ArtNote>{t('movies.in_collection', { count: allMovies.length })}</ArtNote>
         </View>
         <View style={{ flexDirection: 'row', gap: 8 }}>
           {filtersActive && (
@@ -150,8 +186,8 @@ export function MoviesScreen() {
           <TextInput
             autoFocus
             value={filters.search}
-            onChangeText={(t) => filters.setFilters({ search: t })}
-            placeholder="Поиск по названию..."
+            onChangeText={(text) => filters.setFilters({ search: text })}
+            placeholder={t('movies.search_placeholder')}
             placeholderTextColor={theme.inkFaint}
             style={[
               styles.searchInput,
@@ -205,14 +241,15 @@ function EmptyListState({
   filtersActive, onReset,
 }: { filtersActive: boolean; onReset: () => void }) {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   if (filtersActive) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
         <Text style={{ fontSize: 36 }}>🔍</Text>
-        <ArtNote style={{ textAlign: 'center' }}>Ничего не найдено</ArtNote>
+        <ArtNote style={{ textAlign: 'center' }}>{t('movies.nothing_found')}</ArtNote>
         <Pressable onPress={onReset}>
           <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, color: theme.accentOrange }}>
-            сбросить фильтры
+            {t('movies.reset_filters')}
           </Text>
         </Pressable>
       </View>
@@ -220,7 +257,7 @@ function EmptyListState({
   }
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <ArtNote style={{ textAlign: 'center' }}>Коллекция пуста — добавь первый фильм</ArtNote>
+      <ArtNote style={{ textAlign: 'center' }}>{t('movies.empty_collection')}</ArtNote>
     </View>
   );
 }

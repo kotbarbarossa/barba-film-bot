@@ -5,12 +5,14 @@ import { useTheme } from '@/theme';
 
 export function Phone({ children, safeBottom = false }: { children: ReactNode; safeBottom?: boolean }) {
   const { theme } = useTheme();
+  const isLight = theme.paper === '#faf7f2';
+
   return (
     <SafeAreaView
       style={[styles.root, { backgroundColor: theme.paper }]}
       edges={safeBottom ? ['top', 'bottom'] : ['top']}
     >
-      <RNStatusBar barStyle={theme.paper === '#faf7f2' ? 'dark-content' : 'light-content'} />
+      <RNStatusBar barStyle={isLight ? 'dark-content' : 'light-content'} />
       <View style={styles.screen}>{children}</View>
     </SafeAreaView>
   );

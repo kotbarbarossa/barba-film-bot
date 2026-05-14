@@ -87,3 +87,38 @@ async def search_movie(
     except httpx.HTTPError as e:
         logger.error('search_movie: HTTP error for %r: %s', query, e)
         return None
+
+
+async def fetch_movie_by_id(
+    *,
+    tmdb_id: str,
+    media_type: MediaType,
+    api_key: str,
+    language: str = 'en-US',
+) -> TmdbMovieInfo | None:
+    """Fetch overview and poster by TMDB ID. Default locale is en-US."""
+    endpoint = 'tv' if media_type == MediaType.SERIES else 'movie'
+    params = {'api_key': api_key, 'language': language}
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(
+                f'{_TMDB_API_URL}/{endpoint}/{tmdb_id}', params=params
+            )
+            response.raise_for_status()
+
+        data = response.json()
+        poster_path: str | None = data.get('poster_path')
+        return TmdbMovieInfo(
+            title_ru=None,
+            title_original=None,
+            overview=data.get('overview') or None,
+            year=None,
+            poster_url=f'{_POSTER_BASE_URL}{poster_path}' if poster_path else None,
+            tmdb_id=tmdb_id,
+            tmdb_rating=None,
+        )
+
+    except httpx.HTTPError as e:
+        logger.error('fetch_movie_by_id: HTTP error for tmdb_id=%r: %s', tmdb_id, e)
+        return None

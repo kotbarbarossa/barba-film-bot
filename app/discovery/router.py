@@ -50,6 +50,7 @@ async def recent_posters(
                 title_original=m.title_original,
                 year=m.year,
                 poster_url=m.poster_url,  # type: ignore[arg-type]
+                poster_url_original=m.poster_url_original,
             )
             for m in movies
         ]

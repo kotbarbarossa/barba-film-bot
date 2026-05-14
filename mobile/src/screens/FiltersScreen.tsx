@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet, Pressable, Text, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
 import { Chip } from '@/components/Chip';
@@ -15,37 +16,10 @@ import {
   type StatusFilter,
 } from '@/store/filters.store';
 
-const STATUS_OPTIONS: { label: string; value: StatusFilter }[] = [
-  { label: 'Все',         value: 'all' },
-  { label: 'Хочу',       value: 'want' },
-  { label: 'Просмотрено',value: 'watched' },
-];
-
-const MEDIA_TYPES: { label: string; value: MediaTypeFilter }[] = [
-  { label: 'Все',      value: 'all' },
-  { label: 'Фильмы',  value: 'film' },
-  { label: 'Сериалы', value: 'series' },
-];
-
-const YEAR_PERIODS: { label: string; from: number | null; to: number | null }[] = [
-  { label: 'Любой',   from: null, to: null },
-  { label: 'до 1990', from: null, to: 1989 },
-  { label: '90-е',    from: 1990, to: 1999 },
-  { label: '00-е',    from: 2000, to: 2009 },
-  { label: '10-е',    from: 2010, to: 2019 },
-  { label: '2020+',   from: 2020, to: null },
-];
-
-const SORTS: { label: string; value: SortOption }[] = [
-  { label: 'Год ⬇️',          value: 'year_desc' },
-  { label: 'Мой рейтинг ⬇️', value: 'rating_desc' },
-  { label: 'Добавлен ⬇️',    value: 'added_desc' },
-  { label: 'Просмотрен ⬇️',  value: 'watched_first' },
-];
-
 export function FiltersScreen() {
   const { theme } = useTheme();
   const router = useRouter();
+  const { t } = useTranslation();
   const stored = useFiltersStore();
   const { data: categories = [], isLoading: catsLoading } = useCategories();
 
@@ -56,6 +30,34 @@ export function FiltersScreen() {
   const [yearTo, setYearTo] = useState<number | null>(stored.yearTo);
   const [hasRating, setHasRating] = useState(stored.hasRating);
   const [sort, setSort] = useState<SortOption>(stored.sort);
+
+  const STATUS_OPTIONS: { label: string; value: StatusFilter }[] = [
+    { label: t('filters.all'),     value: 'all' },
+    { label: t('filters.want'),    value: 'want' },
+    { label: t('filters.watched'), value: 'watched' },
+  ];
+
+  const MEDIA_TYPES: { label: string; value: MediaTypeFilter }[] = [
+    { label: t('filters.all'),    value: 'all' },
+    { label: t('filters.films'),  value: 'film' },
+    { label: t('filters.series'), value: 'series' },
+  ];
+
+  const YEAR_PERIODS: { label: string; from: number | null; to: number | null }[] = [
+    { label: t('filters.any'),          from: null, to: null },
+    { label: t('filters.before_1990'),  from: null, to: 1989 },
+    { label: t('filters.nineties'),     from: 1990, to: 1999 },
+    { label: t('filters.noughties'),    from: 2000, to: 2009 },
+    { label: t('filters.tens'),         from: 2010, to: 2019 },
+    { label: '2020+',                   from: 2020, to: null },
+  ];
+
+  const SORTS: { label: string; value: SortOption }[] = [
+    { label: t('filters.year_desc'),     value: 'year_desc' },
+    { label: t('filters.rating_desc'),   value: 'rating_desc' },
+    { label: t('filters.added_desc'),    value: 'added_desc' },
+    { label: t('filters.watched_first'), value: 'watched_first' },
+  ];
 
   const activePeriod = YEAR_PERIODS.find((p) => p.from === yearFrom && p.to === yearTo);
 
@@ -85,17 +87,17 @@ export function FiltersScreen() {
         <Pressable onPress={() => router.back()}>
           <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink }}>✕</Text>
         </Pressable>
-        <H size="md">Фильтры</H>
+        <H size="md">{t('filters.title')}</H>
         <Pressable onPress={handleReset}>
           <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 16, color: draftActive ? theme.accentOrange : theme.inkFaint }}>
-            сбросить
+            {t('filters.reset')}
           </Text>
         </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 96 }}>
 
-        <Section title="Статус">
+        <Section title={t('filters.status')}>
           <View style={styles.chipsWrap}>
             {STATUS_OPTIONS.map((s) => (
               <Pressable key={s.value} onPress={() => setStatus(s.value)}>
@@ -112,7 +114,7 @@ export function FiltersScreen() {
           </View>
         </Section>
 
-        <Section title="Тип">
+        <Section title={t('filters.type')}>
           <View style={styles.chipsWrap}>
             {MEDIA_TYPES.map((mt) => (
               <Pressable key={mt.value} onPress={() => setMediaType(mt.value)}>
@@ -123,7 +125,7 @@ export function FiltersScreen() {
         </Section>
 
         <Section
-          title="Жанр"
+          title={t('filters.genre')}
           hint={categoryId ? categories.find(c => c.id === categoryId)?.name : undefined}
         >
           {catsLoading ? (
@@ -131,7 +133,7 @@ export function FiltersScreen() {
           ) : (
             <View style={styles.chipsWrap}>
               <Pressable onPress={() => setCategoryId(null)}>
-                <Chip label="Любой" tone={categoryId === null ? 'solid' : undefined} />
+                <Chip label={t('filters.any')} tone={categoryId === null ? 'solid' : undefined} />
               </Pressable>
               {categories.map((c) => (
                 <Pressable key={c.id} onPress={() => setCategoryId(categoryId === c.id ? null : c.id)}>
@@ -143,8 +145,8 @@ export function FiltersScreen() {
         </Section>
 
         <Section
-          title="Год"
-          hint={activePeriod && activePeriod.label !== 'Любой' ? activePeriod.label : undefined}
+          title={t('filters.year')}
+          hint={activePeriod && activePeriod.label !== t('filters.any') ? activePeriod.label : undefined}
         >
           <View style={styles.chipsWrap}>
             {YEAR_PERIODS.map((p) => {
@@ -158,19 +160,19 @@ export function FiltersScreen() {
           </View>
         </Section>
 
-        <Section title="Оценка">
+        <Section title={t('filters.rating_section')}>
           <Pressable
             onPress={() => setHasRating(!hasRating)}
             style={[styles.toggleRow, { borderColor: theme.line }]}
           >
-            <Body size={14}>Только с моей оценкой</Body>
+            <Body size={14}>{t('filters.only_rated')}</Body>
             <View style={[styles.toggle, { backgroundColor: hasRating ? theme.ink : theme.paper2, borderColor: theme.line }]}>
               <View style={[styles.toggleDot, { backgroundColor: theme.paper, borderColor: theme.line, marginLeft: hasRating ? 18 : 0 }]} />
             </View>
           </Pressable>
         </Section>
 
-        <Section title="Сортировка">
+        <Section title={t('filters.sort')}>
           <View style={{ gap: 6 }}>
             {SORTS.map((s) => {
               const active = sort === s.value;
@@ -183,8 +185,8 @@ export function FiltersScreen() {
                     backgroundColor: active ? theme.accentYellow : 'transparent',
                   }]}
                 >
-                  <Body size={14}>{s.label}</Body>
-                  {active && <Mono>✓</Mono>}
+                  <Body size={14} color={active ? theme.onYellow : theme.ink}>{s.label}</Body>
+                  {active && <Mono color={theme.onYellow}>✓</Mono>}
                 </Pressable>
               );
             })}
@@ -194,7 +196,7 @@ export function FiltersScreen() {
       </ScrollView>
 
       <View style={[styles.actions, { borderTopColor: theme.line, backgroundColor: theme.paper }]}>
-        <Button title="Применить" variant="primary" full onPress={handleApply} />
+        <Button title={t('filters.apply')} variant="primary" full onPress={handleApply} />
       </View>
     </Phone>
   );

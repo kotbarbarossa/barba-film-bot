@@ -4,6 +4,7 @@ from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
 
+from app.admin.router import admin_router
 from app.auth.router import router as auth_router
 from app.core.config import settings
 from app.core.limiter import limiter
@@ -11,7 +12,6 @@ from app.core.sentry import init_sentry
 from app.core.settings import Environment
 from app.discovery.router import discovery_router, public_discovery_router
 from app.infrastructure.database.lifespan import lifespan
-from app.movie.ops_router import ops_router
 from app.movie.router import (
     categories_router,
     movie_persons_router,
@@ -19,6 +19,7 @@ from app.movie.router import (
     persons_router,
     user_movies_router,
 )
+from app.share.router import router as share_router
 from app.user.router import router as user_router
 
 API_PREFIX = '/api/v1'
@@ -49,10 +50,11 @@ async def health() -> dict[str, str]:
     return {'status': 'ok'}
 
 
+app.include_router(share_router)
 app.include_router(auth_router, prefix=API_PREFIX)
 app.include_router(public_discovery_router, prefix=API_PREFIX)
 app.include_router(discovery_router, prefix=API_PREFIX)
-app.include_router(ops_router, prefix=API_PREFIX)
+app.include_router(admin_router, prefix=API_PREFIX)
 app.include_router(user_router, prefix=API_PREFIX)
 app.include_router(movies_router, prefix=API_PREFIX)
 app.include_router(movie_persons_router, prefix=API_PREFIX)

@@ -28,6 +28,7 @@ If the movie/series is found, return:
     "title_original": "original title (English or native language) or null",
     "title_ru": "official Russian title as listed on Кинопоиск",
     "description": "brief description in Russian, 2-3 sentences, or null",
+    "description_original": "brief description in English, 2-3 sentences, or null",
     "year": release year as integer or null,
     "duration_minutes": duration as integer or null,
     "age_rating": "e.g. 16+, R, PG-13, or null",
@@ -74,6 +75,7 @@ Return JSON:
     "age_rating": "e.g. 16+, R, PG-13, or null",
     "imdb_rating": float 0.0-10.0 or null,
     "kinopoisk_rating": float 0.0-10.0 or null,
+    "description_original": "brief description in English, 2-3 sentences, or null",
     "country": "country of origin in Russian or null",
     "categories": [
       {"name": "genre in Russian", "name_original": "genre in English or null"}
@@ -120,6 +122,7 @@ class MovieData(BaseModel):
     title_original: str | None = None
     title_ru: str | None = None
     description: str | None = None
+    description_original: str | None = None
     year: int | None = None
     duration_minutes: int | None = None
     age_rating: str | None = None
@@ -128,6 +131,7 @@ class MovieData(BaseModel):
     tmdb_rating: float | None = None
     country: str | None = None
     poster_url: str | None = None
+    poster_url_original: str | None = None
     trailer_url: str | None = None
     tmdb_id: str | None = None
     media_type: MediaType
@@ -143,6 +147,7 @@ class _GroqResponse(BaseModel):
 class _EnrichData(BaseModel):
     duration_minutes: int | None = None
     age_rating: str | None = None
+    description_original: str | None = None
     imdb_rating: float | None = None
     kinopoisk_rating: float | None = None
     country: str | None = None
@@ -248,6 +253,7 @@ async def fetch_movie_data_enriched(
             title_original=title_original,
             title_ru=title_ru,
             description=overview,
+            description_original=enrich.description_original,
             year=year,
             duration_minutes=enrich.duration_minutes,
             age_rating=enrich.age_rating,

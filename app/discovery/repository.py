@@ -23,6 +23,7 @@ def _base_movie_cols():
         Movie.title_ru,
         Movie.title_original,
         Movie.poster_url,
+        Movie.poster_url_original,
         Movie.year,
         Movie.media_type,
     )
@@ -247,6 +248,7 @@ class DiscoveryRepository:
                 title_ru=row.title_ru,
                 title_original=row.title_original,
                 poster_url=row.poster_url,
+                poster_url_original=row.poster_url_original,
                 year=row.year,
                 media_type=row.media_type,
                 watch_count=row.watch_count,
