@@ -20,6 +20,14 @@ bot:
 worker:
     uv run arq app.worker.main.WorkerSettings
 
+# --- Scripts ---
+
+backfill-original-fields:
+    uv run python scripts/backfill_original_fields.py
+
+replace-posters-with-tmdb:
+    uv run python scripts/replace_posters_with_tmdb.py
+
 # --- Database ---
 
 migrate message:

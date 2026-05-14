@@ -89,7 +89,7 @@ export function MoviesScreen() {
           <Poster
             width={44}
             aspectRatio={2 / 3}
-            posterUrl={item.movie.poster_url}
+            posterUrl={(language === 'en' ? item.movie.poster_url_original : null) ?? item.movie.poster_url}
             label={(movieTitle(item.movie, language) || '?').slice(0, 4)}
           />
         )}

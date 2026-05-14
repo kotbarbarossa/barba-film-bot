@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 _CLEARED_FIELDS: dict[str, None] = {
     'description': None,
+    'description_original': None,
     'year': None,
     'duration_minutes': None,
     'age_rating': None,
@@ -19,6 +20,7 @@ _CLEARED_FIELDS: dict[str, None] = {
     'tmdb_rating': None,
     'country': None,
     'poster_url': None,
+    'poster_url_original': None,
     'trailer_url': None,
     'tmdb_id': None,
     'user_query': None,

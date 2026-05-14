@@ -18,12 +18,14 @@ import { Poster } from '@/components/Poster';
 import { loginWithApple, loginWithGoogle } from '@/api/auth';
 import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_ID_WEB, API_URL } from '@/constants/env';
 import { useAuthStore } from '@/store/auth.store';
+import { useSettingsStore } from '@/store/settings.store';
 interface PublicPosterEntry {
   id: number;
   title_ru: string | null;
   title_original: string | null;
   year: number | null;
   poster_url: string;
+  poster_url_original: string | null;
 }
 interface PublicPostersResponse { entries: PublicPosterEntry[] }
 
@@ -55,6 +57,7 @@ export function AuthScreen({ variant }: { variant?: Variant }) {
   const router = useRouter();
   const { t } = useTranslation();
   const signIn = useAuthStore((s) => s.signIn);
+  const language = useSettingsStore((s) => s.language);
 
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [loadingApple, setLoadingApple] = useState(false);
@@ -77,10 +80,12 @@ export function AuthScreen({ variant }: { variant?: Variant }) {
 
   const posterUrls = useMemo<(string | null)[]>(() => {
     const entries = postersData?.entries ?? [];
-    const urls: (string | null)[] = entries.slice(0, BASE_COUNT).map((e) => e.poster_url);
+    const urls: (string | null)[] = entries.slice(0, BASE_COUNT).map((e) =>
+      (language === 'en' ? e.poster_url_original : null) ?? e.poster_url,
+    );
     while (urls.length < BASE_COUNT) urls.push(null);
     return urls;
-  }, [postersData]);
+  }, [postersData, language]);
 
   const loopTiles = useMemo(() => [...posterUrls, ...posterUrls, ...posterUrls], [posterUrls]);
 

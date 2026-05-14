@@ -90,7 +90,7 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
                   pathname: '/movie-from-chart/[id]',
                   params: {
                     id: String(entry.movie_id),
-                    posterUrl: entry.poster_url ?? '',
+                    posterUrl: (language === 'en' ? entry.poster_url_original : null) ?? entry.poster_url ?? '',
                     title: movieTitle(entry, language),
                     year: String(entry.year ?? ''),
                     score: String(entry.score.toFixed(1)),
@@ -105,7 +105,7 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
                 ]}
               >
                 <Text style={[styles.rank, { color: i === 0 ? theme.accentOrange : theme.ink }]}>#{i + 1}</Text>
-                <Poster width={40} aspectRatio={2 / 3} posterUrl={entry.poster_url} label={(movieTitle(entry, language) || '?').slice(0, 4)} />
+                <Poster width={40} aspectRatio={2 / 3} posterUrl={(language === 'en' ? entry.poster_url_original : null) ?? entry.poster_url} label={(movieTitle(entry, language) || '?').slice(0, 4)} />
                 <View style={{ flex: 1 }}>
                   <Body weight="bold" size={13}>{movieTitle(entry, language)}</Body>
                   <Mono size={9}>{entry.year}</Mono>

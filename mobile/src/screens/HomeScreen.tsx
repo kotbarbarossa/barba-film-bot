@@ -193,7 +193,7 @@ function PosterShelf({
                 <Poster
                   width={76}
                   aspectRatio={2 / 3}
-                  posterUrl={m.movie.poster_url}
+                  posterUrl={(language === 'en' ? m.movie.poster_url_original : null) ?? m.movie.poster_url}
                   label={(movieTitle(m.movie, language) || '?').slice(0, 5)}
                 />
               )}

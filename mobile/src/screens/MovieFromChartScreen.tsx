@@ -14,7 +14,7 @@ import { usePublicMovie } from '@/hooks/queries/useMovie';
 import { useMyMovies } from '@/hooks/queries/useMyMovies';
 import { useAddMovie } from '@/hooks/mutations/useAddMovie';
 import { useSettingsStore } from '@/store/settings.store';
-import { movieTitle } from '@/utils/localize';
+import { movieTitle, genreName, personName } from '@/utils/localize';
 
 type Props = {
   movieId: string;
@@ -47,7 +47,8 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
 
   const language = useSettingsStore(s => s.language);
   const title = titleProp || (movieDetail ? movieTitle(movieDetail, language) : '') || '';
-  const resolvedPosterUrl = posterUrl || movieDetail?.poster_url || undefined;
+  const isEn = language === 'en';
+  const resolvedPosterUrl = posterUrl || (isEn ? movieDetail?.poster_url_original : null) || movieDetail?.poster_url || undefined;
   const hasImage = !!resolvedPosterUrl;
   const heroTextColor = hasImage ? '#fff' : theme.ink;
 
@@ -71,8 +72,8 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
   const isInList = inMyList || added;
 
   const displayMovie = movieDetail ?? null;
-  const actors = displayMovie?.persons?.filter(p => p.role_type === 'actor').map(p => p.person.name).join(' · ');
-  const directors = displayMovie?.persons?.filter(p => p.role_type === 'director').map(p => p.person.name).join(', ');
+  const actors = displayMovie?.persons?.filter(p => p.role_type === 'actor').map(p => personName(p.person, language)).join(' · ');
+  const directors = displayMovie?.persons?.filter(p => p.role_type === 'director').map(p => personName(p.person, language)).join(', ');
 
   const chartTitle = chartId ? t(chartTitleKey(chartId)) : undefined;
 
@@ -139,7 +140,7 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
         {displayMovie?.categories && displayMovie.categories.length > 0 ? (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
             {displayMovie.categories.map(c => (
-              <Chip key={c.id} label={c.name} />
+              <Chip key={c.id} label={genreName(c, language)} />
             ))}
           </View>
         ) : null}
@@ -148,10 +149,10 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
         {loadingDetail && !displayMovie ? (
           <ActivityIndicator color={theme.inkFaint} size="small" style={{ marginVertical: 8 }} />
         ) : null}
-        {displayMovie?.description ? (
+        {(isEn ? displayMovie?.description_original : null) ?? displayMovie?.description ? (
           <>
             <Mono style={{ marginBottom: 4 }}>{t('chart_movie.description')}</Mono>
-            <Body color={theme.inkSoft}>{displayMovie.description}</Body>
+            <Body color={theme.inkSoft}>{(isEn ? displayMovie?.description_original : null) ?? displayMovie?.description}</Body>
           </>
         ) : null}
 

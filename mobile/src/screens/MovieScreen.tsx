@@ -31,7 +31,10 @@ export function MovieScreen({ id }: { id: string }) {
 
   const movie = item?.movie;
   const watched = item?.status === 'watched';
-  const hasImage = !!movie?.poster_url;
+  const isEn = language === 'en';
+  const posterUrl = (isEn ? movie?.poster_url_original : null) ?? movie?.poster_url ?? null;
+  const description = (isEn ? movie?.description_original : null) ?? movie?.description ?? null;
+  const hasImage = !!posterUrl;
 
   if (isLoading || !item || !movie) {
     return (
@@ -90,7 +93,7 @@ export function MovieScreen({ id }: { id: string }) {
         title: movieTitle(movie, language),
         year: String(movie.year ?? ''),
         rating: String(item.rating ?? ''),
-        posterUrl: movie.poster_url ?? '',
+        posterUrl: posterUrl ?? '',
       },
     } as any);
   };
@@ -104,7 +107,7 @@ export function MovieScreen({ id }: { id: string }) {
         <Poster
           aspectRatio={undefined}
           height={300}
-          posterUrl={movie.poster_url}
+          posterUrl={posterUrl}
           label={movieTitle(movie, language).slice(0, 8) || 'POSTER'}
           style={{ position: 'absolute', top: 0, left: 0, right: 0, borderRadius: 0, borderWidth: 0 } as any}
         />
@@ -148,10 +151,10 @@ export function MovieScreen({ id }: { id: string }) {
           </View>
         )}
 
-        {movie.description ? (
+        {description ? (
           <>
             <Mono style={{ marginBottom: 4 }}>{t('movie.description')}</Mono>
-            <Body color={theme.inkSoft}>{movie.description}</Body>
+            <Body color={theme.inkSoft}>{description}</Body>
           </>
         ) : null}
 
