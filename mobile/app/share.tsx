@@ -2,6 +2,12 @@ import { useLocalSearchParams } from 'expo-router';
 import { ShareScreen } from '@/screens/ShareScreen';
 
 export default function SharePage() {
-  const { title, year, rating } = useLocalSearchParams<{ title: string; year: string; rating: string }>();
-  return <ShareScreen title={title} year={year} rating={rating} />;
+  const { id, title, year, rating, posterUrl } = useLocalSearchParams<{
+    id: string;
+    title: string;
+    year: string;
+    rating: string;
+    posterUrl: string;
+  }>();
+  return <ShareScreen id={id} title={title} year={year} rating={rating} posterUrl={posterUrl} />;
 }

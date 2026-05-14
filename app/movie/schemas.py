@@ -57,6 +57,8 @@ class MovieListResponse(BaseModel):
     age_rating: str | None
     country: str | None
     poster_url: str | None
+    poster_url_original: str | None
+    description_original: str | None
     imdb_id: str | None
     imdb_rating: Decimal | None
     kp_id: str | None
@@ -156,6 +158,8 @@ class MoviePreviewResponse(BaseModel):
     tmdb_rating: float | None
     country: str | None
     poster_url: str | None
+    poster_url_original: str | None
+    description_original: str | None
     tmdb_id: str | None
     media_type: MediaType
     categories: list[MoviePreviewCategoryResponse]

@@ -61,6 +61,7 @@ export interface MovieListResponse {
   age_rating: string | null;
   country: string | null;
   poster_url: string | null;
+  poster_url_original: string | null;
   imdb_id: string | null;
   imdb_rating: number | null;
   kp_id: string | null;
@@ -68,6 +69,7 @@ export interface MovieListResponse {
   tmdb_id: string | null;
   tmdb_rating: number | null;
   description: string | null;
+  description_original: string | null;
 }
 
 export interface MovieDetailResponse extends MovieListResponse {
@@ -123,6 +125,26 @@ export interface UserMovieFilters {
   category_id?: number;
 }
 
+// --- User profile ---
+
+export type AuthProvider = 'telegram' | 'google' | 'apple';
+
+export interface UserAuthProviderResponse {
+  provider: AuthProvider;
+  created_at: string;
+}
+
+export interface UserDetailResponse {
+  id: number;
+  username: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  is_admin: boolean;
+  created_at: string;
+  updated_at: string;
+  auth_providers: UserAuthProviderResponse[];
+}
+
 // --- Discovery ---
 
 export interface ChartEntry {
@@ -130,6 +152,7 @@ export interface ChartEntry {
   title_ru: string | null;
   title_original: string | null;
   poster_url: string | null;
+  poster_url_original: string | null;
   year: number | null;
   media_type: MediaType | null;
   watch_count: number;

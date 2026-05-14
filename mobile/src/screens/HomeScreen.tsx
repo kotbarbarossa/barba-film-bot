@@ -1,64 +1,76 @@
 import React, { useMemo } from 'react';
-import { View, ScrollView, StyleSheet, Pressable, Text } from 'react-native';
+import { View, ScrollView, StyleSheet, Pressable, Text, ActivityIndicator } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
-import { Poster } from '@/components/Poster';
+import { Poster, PosterPending, PosterMissing } from '@/components/Poster';
 import { H, Body, Mono, ArtNote } from '@/components/Text';
 import { useRouter } from 'expo-router';
 import { useMyMovies } from '@/hooks/queries/useMyMovies';
+import { useSettingsStore } from '@/store/settings.store';
+import { movieTitle } from '@/utils/localize';
 import type { UserMovieListResponse } from '@/types/api';
 
 export function HomeScreen() {
   const { theme } = useTheme();
   const router = useRouter();
-  const { data: movies = [] } = useMyMovies();
+  const { t } = useTranslation();
+  const { data: movies } = useMyMovies();
+  const language = useSettingsStore(s => s.language);
 
-  const movieCount = movies.length;
-  const wantCount = useMemo(() => movies.filter(m => m.status === 'want').length, [movies]);
-  const watchedCount = useMemo(() => movies.filter(m => m.status === 'watched').length, [movies]);
+  const allMovies = movies ?? [];
+  const movieCount = allMovies.length;
+  const wantCount = useMemo(() => allMovies.filter(m => m.status === 'want').length, [allMovies]);
+  const watchedCount = useMemo(() => allMovies.filter(m => m.status === 'watched').length, [allMovies]);
 
   const recentAdded = useMemo(
-    () => [...movies].sort((a, b) => b.id - a.id).slice(0, 6),
-    [movies],
+    () => [...allMovies].sort((a, b) => b.id - a.id).slice(0, 6),
+    [allMovies],
   );
   const recentWatched = useMemo(
-    () => movies.filter(m => m.status === 'watched').sort((a, b) => b.id - a.id).slice(0, 6),
-    [movies],
+    () => allMovies.filter(m => m.status === 'watched').sort((a, b) => b.id - a.id).slice(0, 6),
+    [allMovies],
   );
 
   const onRandom = () => {
-    if (movies.length === 0) return;
-    const pick = movies[Math.floor(Math.random() * movies.length)];
+    if (allMovies.length === 0) return;
+    const pick = allMovies[Math.floor(Math.random() * allMovies.length)];
     router.push({ pathname: '/movie/[id]', params: { id: String(pick.movie.id) } } as any);
   };
+
+  if (movies === undefined) {
+    return (
+      <Phone>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator size="large" color={theme.ink} />
+        </View>
+      </Phone>
+    );
+  }
 
   if (movieCount === 0) {
     return (
       <Phone>
         <View style={[styles.row, { paddingHorizontal: 18, paddingTop: 14, paddingBottom: 6 }]}>
-          <H size="lg">Кинокопилка</H>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <View style={[styles.iconBox, { borderColor: theme.ink }]} />
-            <View style={[styles.iconBox, { borderColor: theme.ink, backgroundColor: theme.accentYellow }]} />
-          </View>
+          <H size="lg">{t('home.title')}</H>
         </View>
         <View style={{ flex: 1, padding: 24, alignItems: 'center', justifyContent: 'center', gap: 16 }}>
           <View style={[styles.emptyIllu, { borderColor: theme.line, backgroundColor: theme.accentYellow }]}>
             <Text style={{ fontSize: 52 }}>🎬</Text>
           </View>
-          <H size="xl" style={{ textAlign: 'center' }}>Копилка пуста</H>
+          <H size="xl" style={{ textAlign: 'center' }}>{t('home.empty_title')}</H>
           <Body color={theme.inkSoft} style={{ textAlign: 'center', maxWidth: 260 }}>
-            Добавь первый фильм — и здесь появятся твои полки, статистика и кнопка «Наугад»
+            {t('home.empty_body')}
           </Body>
           <View style={{ marginTop: 8, gap: 8, alignItems: 'center' }}>
             <Pressable
               onPress={() => router.push('/add' as any)}
               style={[styles.addBtn, { backgroundColor: theme.accentOrange, borderColor: theme.ink, shadowColor: theme.line }]}
             >
-              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 18, color: theme.paper }}>+ Добавить фильм</Text>
+              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 18, color: theme.paper }}>{t('home.add_movie')}</Text>
             </Pressable>
             <Pressable onPress={() => router.push('/charts' as any)}>
-              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, color: theme.inkSoft }}>🔥 Посмотреть чарты</Text>
+              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, color: theme.inkSoft }}>{t('home.see_charts')}</Text>
             </Pressable>
           </View>
         </View>
@@ -70,48 +82,44 @@ export function HomeScreen() {
     <Phone>
       <ScrollView contentContainerStyle={{ paddingBottom: 16 }} showsVerticalScrollIndicator={false}>
         <View style={[styles.row, { paddingHorizontal: 18, paddingTop: 14, paddingBottom: 6 }]}>
-          <H size="lg">Кинокопилка</H>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <View style={[styles.iconBox, { borderColor: theme.ink }]} />
-            <View style={[styles.iconBox, { borderColor: theme.ink, backgroundColor: theme.accentYellow }]} />
-          </View>
+          <H size="lg">{t('home.title')}</H>
         </View>
 
         <Pressable
           onPress={onRandom}
           style={[styles.dice, { backgroundColor: theme.ink, borderColor: theme.line, shadowColor: theme.line }]}
         >
-          <H size="xl" color={theme.paper} style={{ fontSize: 40 }}>🎲 Наугад</H>
+          <H size="xl" color={theme.paper} style={{ fontSize: 40 }}>{t('home.random')}</H>
           <Body color={theme.paper} size={13} style={{ opacity: 0.85 }}>
-            один из {movieCount} фильмов в твоём списке
+            {t('home.random_sub', { count: movieCount })}
           </Body>
         </Pressable>
 
         <View style={styles.tilesRow}>
           <NavTile
-            title="Все мои"
+            title={t('home.all_mine')}
             emoji="📚"
             tone="orange"
-            sub={`${movieCount} фильмов`}
+            sub={t('home.movies_count_sub', { count: movieCount })}
             onPress={() => router.push('/movies' as any)}
           />
           <NavTile
-            title="Чарты"
+            title={t('home.charts')}
             emoji="🔥"
             tone="yellow"
-            sub="7 подборок"
+            sub={t('home.seven_collections')}
             onPress={() => router.push('/charts' as any)}
           />
         </View>
 
         <PosterShelf
-          title="Недавно добавленные"
+          title={t('home.recently_added')}
           sub={wantCount > 0 ? `${wantCount} →` : ''}
           movies={recentAdded}
           onMoviePress={(m) => router.push({ pathname: '/movie/[id]', params: { id: String(m.movie.id) } } as any)}
         />
         <PosterShelf
-          title="Недавно просмотренные"
+          title={t('home.recently_watched')}
           sub={watchedCount > 0 ? `${watchedCount} →` : ''}
           movies={recentWatched}
           onMoviePress={(m) => router.push({ pathname: '/movie/[id]', params: { id: String(m.movie.id) } } as any)}
@@ -136,7 +144,7 @@ function NavTile({
 }) {
   const { theme } = useTheme();
   const bg = tone === 'orange' ? theme.accentOrange : theme.accentYellow;
-  const fg = tone === 'orange' ? theme.paper : theme.ink;
+  const fg = tone === 'orange' ? theme.paper : theme.onYellow;
   return (
     <Pressable onPress={onPress} style={[styles.tile, { backgroundColor: bg, borderColor: theme.line }]}>
       <Text style={{ fontSize: 24 }}>{emoji}</Text>
@@ -160,28 +168,38 @@ function PosterShelf({
   movies: UserMovieListResponse[];
   onMoviePress: (m: UserMovieListResponse) => void;
 }) {
+  const language = useSettingsStore(s => s.language);
   if (movies.length === 0) return null;
   return (
     <View style={{ marginTop: 14 }}>
       <View style={[styles.row, { paddingHorizontal: 18, marginBottom: 6 }]}>
-        <H size="md">{title}</H>
-        {sub ? <Mono>{sub}</Mono> : null}
+        <H size="md" style={{ flex: 1 }}>{title}</H>
+        {sub ? <Mono style={{ flexShrink: 0 }}>{sub}</Mono> : null}
       </View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 18, gap: 8 }}
       >
-        {movies.map(m => (
-          <Pressable key={m.id} onPress={() => onMoviePress(m)}>
-            <Poster
-              width={76}
-              aspectRatio={2 / 3}
-              posterUrl={m.movie.poster_url}
-              label={(m.movie.title_ru ?? m.movie.title_original ?? '?').slice(0, 5)}
-            />
-          </Pressable>
-        ))}
+        {movies.map(m => {
+          const status = m.movie.processing_status;
+          return (
+            <Pressable key={m.id} onPress={() => onMoviePress(m)}>
+              {status === 'pending' ? (
+                <PosterPending width={76} aspectRatio={2 / 3} />
+              ) : status === 'unrecognized' ? (
+                <PosterMissing width={76} aspectRatio={2 / 3} />
+              ) : (
+                <Poster
+                  width={76}
+                  aspectRatio={2 / 3}
+                  posterUrl={(language === 'en' ? m.movie.poster_url_original : null) ?? m.movie.poster_url}
+                  label={(movieTitle(m.movie, language) || '?').slice(0, 5)}
+                />
+              )}
+            </Pressable>
+          );
+        })}
       </ScrollView>
     </View>
   );
@@ -189,7 +207,6 @@ function PosterShelf({
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  iconBox: { width: 22, height: 22, borderWidth: 1.5, borderRadius: 3 },
   emptyIllu: {
     width: 140, height: 140, borderRadius: 70,
     borderWidth: 2,

@@ -5,13 +5,13 @@ module.exports = {
   name: 'Flickbook',
   slug: 'flickbook',
   scheme: 'flickbook',
-  version: '1.0.0',
+  version: '1.1.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
   splash: {
     image: './assets/splash.png',
-    resizeMode: 'contain',
+    resizeMode: 'cover',
     backgroundColor: '#faf7f2',
   },
   ios: {
@@ -29,6 +29,7 @@ module.exports = {
       backgroundColor: '#faf7f2',
     },
     package: 'com.barbarossa.flickbook',
+    versionCode: 4,
   },
   web: {
     bundler: 'metro',
@@ -36,10 +37,14 @@ module.exports = {
   },
   plugins: [
     'expo-router',
+    ['expo-splash-screen', { image: './assets/adaptive-icon.png', backgroundColor: '#faf7f2', imageWidth: 200 }],
     'expo-secure-store',
+    'expo-notifications',
     'expo-apple-authentication',
     '@react-native-google-signin/google-signin',
-    ['expo-build-properties', { android: { usesCleartextTraffic: true } }],
+    'expo-localization',
+    './plugins/withAndroidNavBar',
+    ['expo-build-properties', { android: { usesCleartextTraffic: true, edgeToEdgeEnabled: true } }],
   ],
   newArchEnabled: true,
   experiments: {

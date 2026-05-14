@@ -4,7 +4,7 @@ from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.clients.groq import MovieData, PersonData, fetch_movie_data, fetch_movie_data_enriched
-from app.clients.tmdb import search_movie
+from app.clients.tmdb import fetch_movie_by_id, search_movie
 from app.core.config import settings
 from app.movie.models import Category, MediaType, Movie, Person, ProcessingStatus
 from app.movie.repository import (
@@ -17,6 +17,22 @@ from app.movie.repository import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+async def _apply_en_data(data: MovieData, media_type: MediaType) -> None:
+    """Fetch English poster and description from TMDB and attach to MovieData."""
+    if not data.tmdb_id:
+        return
+    tmdb_en = await fetch_movie_by_id(
+        tmdb_id=data.tmdb_id,
+        media_type=media_type,
+        api_key=settings.tmdb_api_key,
+    )
+    if tmdb_en is None:
+        return
+    data.poster_url_original = tmdb_en.poster_url
+    if not data.description_original:
+        data.description_original = tmdb_en.overview
 
 
 class PreviewMovieUseCase:
@@ -50,6 +66,7 @@ class PreviewMovieUseCase:
                     data.poster_url = tmdb.poster_url
                     data.tmdb_id = tmdb.tmdb_id
                     data.tmdb_rating = tmdb.tmdb_rating
+                    await _apply_en_data(data, media_type)
                     return data
                 logger.warning('Preview: Groq enrich failed, falling back to full flow')
         else:
@@ -82,6 +99,7 @@ class PreviewMovieUseCase:
             if data.tmdb_rating is None:
                 data.tmdb_rating = tmdb_for_poster.tmdb_rating
 
+        await _apply_en_data(data, media_type)
         return data
 
 
@@ -169,6 +187,7 @@ class ProcessMovieUseCase:
                 'title_original': data.title_original,
                 'title_ru': data.title_ru,
                 'description': data.description,
+                'description_original': data.description_original,
                 'year': data.year,
                 'duration_minutes': data.duration_minutes,
                 'age_rating': data.age_rating,
@@ -183,6 +202,7 @@ class ProcessMovieUseCase:
                 else None,
                 'country': data.country,
                 'poster_url': data.poster_url,
+                'poster_url_original': data.poster_url_original,
                 'trailer_url': data.trailer_url,
                 'tmdb_id': data.tmdb_id,
                 'media_type': data.media_type,

@@ -4,6 +4,7 @@ import { deleteMovie } from '@/api/movies';
 import { useAuthStore } from '@/store/auth.store';
 
 import { myMoviesKeys } from '../queries/useMyMovies';
+import { movieKeys } from '../queries/useMovie';
 
 export function useDeleteMovie() {
   const queryClient = useQueryClient();
@@ -11,8 +12,9 @@ export function useDeleteMovie() {
 
   return useMutation({
     mutationFn: (movieId: number) => deleteMovie(userId!, movieId),
-    onSuccess: () => {
+    onSuccess: (_data, movieId) => {
       queryClient.invalidateQueries({ queryKey: myMoviesKeys.all(userId!) });
+      queryClient.removeQueries({ queryKey: movieKeys.detail(userId!, movieId) });
     },
   });
 }

@@ -20,7 +20,7 @@ export function Chip({
     switch (tone) {
       case 'solid':  return { bg: theme.ink,           fg: theme.paper, border: theme.line };
       case 'orange': return { bg: theme.accentOrange,  fg: theme.paper, border: theme.line };
-      case 'yellow': return { bg: theme.accentYellow,  fg: theme.ink,   border: theme.line };
+      case 'yellow': return { bg: theme.accentYellow,  fg: theme.onYellow, border: theme.line };
       case 'blue':   return { bg: theme.accentBlue,    fg: theme.paper, border: theme.line };
       default:       return { bg: theme.paper,         fg: theme.ink,   border: theme.line };
     }

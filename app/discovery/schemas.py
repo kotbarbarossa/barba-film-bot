@@ -8,6 +8,7 @@ class ChartEntry(BaseModel):
     title_ru: str | None
     title_original: str | None
     poster_url: str | None
+    poster_url_original: str | None = None
     year: int | None
     media_type: MediaType | None
     watch_count: int
@@ -30,6 +31,7 @@ class PublicPosterEntry(BaseModel):
     title_original: str | None
     year: int | None
     poster_url: str
+    poster_url_original: str | None
 
 
 class PublicPostersResponse(BaseModel):
