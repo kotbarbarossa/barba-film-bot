@@ -6,9 +6,9 @@
 [![Python](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A movie and TV series tracker with two clients sharing one backend: a **Telegram bot** (@kino_kopilka_bot) and a **mobile app** (Flickbook, iOS/Android).
+A movie and TV series tracker with two clients sharing one backend: a **Telegram bot** (@kino_kopilka_bot) and a **mobile app** (Flickbook, iOS/Android). Film metadata is enriched automatically via an **AI pipeline** — Groq and Anthropic Claude identify titles, extract structured data, and fill in ratings, cast, genres, and descriptions.
 
-**Backend stack:** FastAPI · aiogram 3 · SQLAlchemy 2.0 async · asyncpg · PostgreSQL · Redis · ARQ · Groq · TMDB · Sentry · Docker · GitLab CI/CD · AWS EC2
+**Backend stack:** FastAPI · aiogram 3 · SQLAlchemy 2.0 async · asyncpg · PostgreSQL · Redis · ARQ · Groq · Anthropic Claude · TMDB · Sentry · Langfuse · Docker · GitLab CI/CD · AWS EC2
 
 **Mobile stack:** React Native · Expo SDK 55 · expo-router · TanStack Query · Zustand · EAS
 
@@ -184,8 +184,10 @@ flowchart LR
 
   subgraph External
     GROQ[Groq API]
+    CLAUDE[Anthropic Claude]
     TMDB[TMDB API]
     SENTRY[Sentry]
+    LANGFUSE[Langfuse]
     GOOG[Google OAuth]
     APPLE[Apple OAuth]
   end
@@ -198,7 +200,12 @@ flowchart LR
   RED --> WORKER
   WORKER --> PG
   WORKER --> GROQ
+  WORKER --> CLAUDE
   WORKER --> TMDB
+  API -.llm preview.-> GROQ
+  API -.llm preview.-> CLAUDE
+  GROQ -.observe.-> LANGFUSE
+  CLAUDE -.observe.-> LANGFUSE
   MOB -.auth.-> GOOG
   MOB -.auth.-> APPLE
   BOT -.error.-> SENTRY
@@ -293,6 +300,10 @@ Auth endpoints are rate-limited per IP (slowapi):
 
 **ARQ for metadata enrichment** — adding a film returns immediately; Groq + TMDB lookups (~1–3s of external calls) run as an ARQ job so the bot UX is never blocked on third-party APIs.
 
+**Multi-provider LLM pipeline** — all LLM access is isolated in `app/clients/llm/`: a `LLMClient` Protocol defines the interface, `GroqLLMClient` and `ClaudeLLMClient` implement it independently, and `CachedLLMClient` wraps either one with transparent Redis caching (7-day TTL). The worker uses Groq (llama-3.3-70b) for bulk enrichment; the preview API endpoint accepts a `llm` field to switch providers per request. Adding a new provider requires only a new file — no changes to business logic.
+
+**LLM observability via Langfuse** — every LLM call (both providers) is tracked as a generation in [Langfuse](https://langfuse.com): input prompt, model output, token counts (input / output), latency, and metadata (`title`, `media_type`). Tracking is opt-in — if `LANGFUSE_PUBLIC_KEY` is not set, the code path is a no-op. Langfuse errors never surface to the caller (wrapped in `try/except`).
+
 **Per-service Sentry tagging** — each process (`bot`, `api`, `worker`) sets its own `app` tag on Sentry init, so errors are filterable per component on the dashboard.
 
 **Add-film deduplication** — before creating a new row the bot does an exact-title lookup across the already-enriched catalog, so the same film added by two different users is reused rather than re-enriched.
@@ -307,9 +318,9 @@ Auth endpoints are rate-limited per IP (slowapi):
 
 **Data & async:** SQLAlchemy 2.0 async, asyncpg, Alembic, Redis, ARQ, Pydantic v2, pydantic-settings
 
-**External APIs:** Groq (LLM metadata enrichment), TMDB (posters & ratings)
+**External APIs:** Groq · Anthropic Claude (multi-provider LLM pipeline), TMDB (posters & ratings)
 
-**Observability & DevOps:** Sentry, Docker Compose, GitLab CI/CD, AWS EC2
+**Observability & DevOps:** Langfuse (LLM tracing), Sentry (errors), Docker Compose, GitLab CI/CD, AWS EC2
 
 ---
 
@@ -332,8 +343,14 @@ Copy into a `.env` file at the project root.
 | `REDIS_DB` | `0` | Redis database index |
 | `BOT_TOKEN` | — | Telegram bot token (from @BotFather) |
 | `GROQ_API_KEY` | — | Groq API key |
+| `GROQ_MODEL` | `llama-3.3-70b-versatile` | Groq model name |
+| `ANTHROPIC_API_KEY` | `""` | Anthropic API key (leave empty to disable Claude provider) |
+| `ANTHROPIC_MODEL` | `claude-haiku-4-5-20251001` | Anthropic model name |
 | `TMDB_API_KEY` | — | TMDB API key |
 | `SENTRY_DSN` | `""` | Sentry DSN (leave empty to disable) |
+| `LANGFUSE_PUBLIC_KEY` | `""` | Langfuse public key (leave empty to disable LLM tracing) |
+| `LANGFUSE_SECRET_KEY` | `""` | Langfuse secret key |
+| `LANGFUSE_BASE_URL` | `https://cloud.langfuse.com` | Langfuse host (override for self-hosted) |
 | `JWT_SECRET` | — | Secret key for signing JWT tokens (generate a long random string) |
 | `JWT_ALGORITHM` | `HS256` | JWT signing algorithm |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `15` | Access token lifetime in minutes |

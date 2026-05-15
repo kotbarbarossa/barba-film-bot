@@ -5,7 +5,7 @@ from typing import Any
 from arq import Retry
 
 import app.user.models  # noqa: F401 — registers User table in SQLAlchemy metadata
-from app.clients.groq import GroqRateLimitError
+from app.clients.llm import LLMProvider, LLMRateLimitError
 from app.infrastructure.database.session_manager import session_manager
 from app.movie.processing_use_case import ProcessMovieUseCase
 from app.movie.repository import MovieRepository
@@ -13,16 +13,17 @@ from app.movie.repository import MovieRepository
 logger = logging.getLogger(__name__)
 
 
-async def process_movie(_ctx: dict[str, Any], *, movie_id: int, year: int | None = None) -> None:
+async def process_movie(ctx: dict[str, Any], *, movie_id: int, year: int | None = None) -> None:
     session = session_manager.get_session()
     try:
         async with session.begin():
             movie = await MovieRepository(session).get(movie_id)
             if movie is None:
                 raise Retry(defer=timedelta(seconds=3))
-            await ProcessMovieUseCase(session).execute(movie_id, year)
-    except GroqRateLimitError:
-        logger.warning('Movie %d: Groq 429 — stays PENDING, recover cron will retry', movie_id)
+            llm = ctx['llm'][LLMProvider.groq]
+            await ProcessMovieUseCase(session, llm).execute(movie_id, year)
+    except LLMRateLimitError:
+        logger.warning('Movie %d: LLM 429 — stays PENDING, recover cron will retry', movie_id)
 
 
 async def recover_pending_movies(ctx: dict[str, Any]) -> None:
