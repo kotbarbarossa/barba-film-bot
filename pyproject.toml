@@ -1,6 +1,6 @@
 [project]
 name = "barba-film-bot"
-version = "1.8.0"
+version = "1.9.0"
 description = ""
 authors = [
 {name = "kot_barba"}
@@ -16,6 +16,8 @@ dependencies = [
     "pydantic-settings (>=2.12.0,<3.0.0)",
     "greenlet (>=3.3.2,<4.0.0)",
     "arq>=0.25.0",
+    "anthropic>=0.102.0",
+    "langfuse>=2.0.0",
     "httpx>=0.28.1",
     "sentry-sdk[fastapi,sqlalchemy]>=2.58.0",
     "pyjwt[crypto]>=2.12.1",

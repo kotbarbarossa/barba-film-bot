@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.clients.llm import ClaudeLLMClient, GroqLLMClient, LLMClient, LLMProvider
 from app.core.auth import get_current_user, require_admin
+from app.core.config import settings
 from app.infrastructure.database.dependencies import get_session
 from app.movie.models import MediaType, ProcessingStatus, RoleType, WatchStatus
 from app.movie.processing_use_case import PreviewMovieUseCase
@@ -59,6 +61,17 @@ def _require_own_user(user_id: int, current_user: User) -> None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Forbidden')
 
 
+def _build_llm(provider: LLMProvider) -> LLMClient:
+    if provider == LLMProvider.claude:
+        if not settings.anthropic_api_key:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='Anthropic API key not configured',
+            )
+        return ClaudeLLMClient(api_key=settings.anthropic_api_key, model=settings.anthropic_model)
+    return GroqLLMClient(api_key=settings.groq_api_key, model=settings.groq_model)
+
+
 # --- Movies ---
 
 
@@ -68,7 +81,7 @@ def _require_own_user(user_id: int, current_user: User) -> None:
     dependencies=[Depends(require_admin)],
 )
 async def preview_movie(data: MoviePreviewGet):
-    return await PreviewMovieUseCase().execute(
+    return await PreviewMovieUseCase(_build_llm(data.llm)).execute(
         title=data.title,
         media_type=data.media_type,
         user_query=data.user_query,

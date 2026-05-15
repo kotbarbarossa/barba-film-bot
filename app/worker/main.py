@@ -5,6 +5,8 @@ from typing import Any
 from arq.connections import RedisSettings
 from arq.cron import cron
 
+from app.clients.llm import CachedLLMClient, ClaudeLLMClient, GroqLLMClient, LLMProvider
+from app.clients.llm.observability import get_langfuse
 from app.core.config import settings
 from app.core.sentry import init_sentry
 from app.infrastructure.database.engine import create_engine
@@ -17,11 +19,28 @@ async def startup(ctx: dict[str, Any]) -> None:
     init_sentry('worker')
     engine = create_engine()
     session_manager.init(engine)
+    llm_clients = {
+        LLMProvider.groq: CachedLLMClient(
+            inner=GroqLLMClient(api_key=settings.groq_api_key, model=settings.groq_model),
+            redis=ctx['redis'],
+        ),
+    }
+    if settings.anthropic_api_key:
+        llm_clients[LLMProvider.claude] = CachedLLMClient(
+            inner=ClaudeLLMClient(
+                api_key=settings.anthropic_api_key, model=settings.anthropic_model
+            ),
+            redis=ctx['redis'],
+        )
+    ctx['llm'] = llm_clients
     await recover_pending_movies(ctx)
 
 
 async def shutdown(ctx: dict[str, Any]) -> None:
     await session_manager.close()
+    lf = get_langfuse()
+    if lf:
+        lf.flush()
 
 
 class WorkerSettings:

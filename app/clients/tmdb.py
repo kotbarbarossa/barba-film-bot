@@ -102,9 +102,7 @@ async def fetch_movie_by_id(
 
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.get(
-                f'{_TMDB_API_URL}/{endpoint}/{tmdb_id}', params=params
-            )
+            response = await client.get(f'{_TMDB_API_URL}/{endpoint}/{tmdb_id}', params=params)
             response.raise_for_status()
 
         data = response.json()

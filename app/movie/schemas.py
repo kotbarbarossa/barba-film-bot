@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict
 
+from app.clients.llm import LLMProvider
 from app.movie.models import MediaType, ProcessingStatus, RoleType, WatchStatus
 
 
@@ -130,6 +131,7 @@ class MoviePreviewGet(BaseModel):
     media_type: MediaType
     user_query: str | None = None
     year: int | None = None
+    llm: LLMProvider = LLMProvider.groq
 
 
 class MoviePreviewPersonResponse(BaseModel):
