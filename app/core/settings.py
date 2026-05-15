@@ -31,6 +31,12 @@ class Settings(BaseSettings):
     database_name: str = 'postgres'
     bot_token: str = ''
     groq_api_key: str = ''
+    groq_model: str = 'llama-3.3-70b-versatile'
+    anthropic_api_key: str = ''
+    anthropic_model: str = 'claude-haiku-4-5-20251001'
+    langfuse_public_key: str = ''
+    langfuse_secret_key: str = ''
+    langfuse_base_url: str = 'https://cloud.langfuse.com'
     tmdb_api_key: str = ''
 
     redis_host: str = 'localhost'

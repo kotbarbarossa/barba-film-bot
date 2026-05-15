@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.clients.groq import MovieData, PersonData, fetch_movie_data, fetch_movie_data_enriched
+from app.clients.llm import LLMClient, MovieData, PersonData
 from app.clients.tmdb import fetch_movie_by_id, search_movie
 from app.core.config import settings
 from app.movie.models import Category, MediaType, Movie, Person, ProcessingStatus
@@ -36,6 +36,9 @@ async def _apply_en_data(data: MovieData, media_type: MediaType) -> None:
 
 
 class PreviewMovieUseCase:
+    def __init__(self, llm: LLMClient) -> None:
+        self._llm = llm
+
     async def execute(
         self,
         *,
@@ -54,58 +57,60 @@ class PreviewMovieUseCase:
             )
             if tmdb is not None and tmdb.title_original:
                 logger.info('Preview: found in TMDB: %r', tmdb.title_original)
-                data = await fetch_movie_data_enriched(
+                llm_data = await self._llm.fetch_movie_data_enriched(
                     title_original=tmdb.title_original,
                     title_ru=tmdb.title_ru,
                     year=tmdb.year,
                     overview=tmdb.overview,
                     media_type=media_type,
-                    api_key=settings.groq_api_key,
                 )
-                if data is not None:
-                    data.poster_url = tmdb.poster_url
-                    data.tmdb_id = tmdb.tmdb_id
-                    data.tmdb_rating = tmdb.tmdb_rating
+                if llm_data is not None:
+                    data = MovieData(
+                        **llm_data.model_dump(),
+                        poster_url=tmdb.poster_url,
+                        tmdb_id=tmdb.tmdb_id,
+                        tmdb_rating=tmdb.tmdb_rating,
+                    )
                     await _apply_en_data(data, media_type)
                     return data
-                logger.warning('Preview: Groq enrich failed, falling back to full flow')
+                logger.warning('Preview: LLM enrich failed, falling back to full flow')
         else:
             tmdb = None
 
-        # user_query present → Groq resolves from context (year as hint)
-        # or TMDB-first failed → Groq full flow
-        data = await fetch_movie_data(
+        # user_query present → LLM resolves from context (year as hint)
+        # or TMDB-first failed → LLM full flow
+        llm_data = await self._llm.fetch_movie_data(
             title=title,
             media_type=media_type,
             user_query=user_query,
             year=year,
-            api_key=settings.groq_api_key,
         )
-        if data is None:
+        if llm_data is None:
             return None
 
         tmdb_for_poster = tmdb or (
             await search_movie(
-                query=data.title_original,
-                media_type=data.media_type,
+                query=llm_data.title_original,
+                media_type=llm_data.media_type,
                 api_key=settings.tmdb_api_key,
             )
-            if data.title_original
+            if llm_data.title_original
             else None
         )
-        if tmdb_for_poster is not None:
-            data.poster_url = tmdb_for_poster.poster_url
-            data.tmdb_id = tmdb_for_poster.tmdb_id
-            if data.tmdb_rating is None:
-                data.tmdb_rating = tmdb_for_poster.tmdb_rating
-
+        data = MovieData(
+            **llm_data.model_dump(),
+            poster_url=tmdb_for_poster.poster_url if tmdb_for_poster else None,
+            tmdb_id=tmdb_for_poster.tmdb_id if tmdb_for_poster else None,
+            tmdb_rating=tmdb_for_poster.tmdb_rating if tmdb_for_poster else None,
+        )
         await _apply_en_data(data, media_type)
         return data
 
 
 class ProcessMovieUseCase:
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(self, session: AsyncSession, llm: LLMClient) -> None:
         self.session = session
+        self._llm = llm
         self.movie_repo = MovieRepository(session)
         self.category_repo = CategoryRepository(session)
         self.person_repo = PersonRepository(session)
@@ -146,7 +151,7 @@ class ProcessMovieUseCase:
     async def _fetch_movie_data(self, movie: Movie, year: int | None) -> MovieData | None:
         assert movie.media_type is not None
         query = movie.title_ru or movie.title_original or ''
-        return await PreviewMovieUseCase().execute(
+        return await PreviewMovieUseCase(self._llm).execute(
             title=query,
             media_type=movie.media_type,
             user_query=movie.user_query,
@@ -243,7 +248,7 @@ class ProcessMovieUseCase:
         for person_data in data.persons:
             if person_data.name is None:
                 logger.error(
-                    'Movie %d: Groq person without name (role=%s, original=%r) — skipping',
+                    'Movie %d: LLM person without name (role=%s, original=%r) — skipping',
                     movie_id,
                     person_data.role,
                     person_data.original_name,
