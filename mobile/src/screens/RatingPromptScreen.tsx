@@ -62,7 +62,7 @@ export function RatingPromptScreen({ title = '', movieId, posterUrl }: { title?:
               onPress={() => setValue(n)}
               style={[styles.scaleBtn, { backgroundColor: n <= value ? theme.accentOrange : theme.paper2, borderColor: theme.line }]}
             >
-              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 16, color: n <= value ? theme.paper : theme.ink }}>{n}</Text>
+              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 16, lineHeight: 19, paddingVertical: 4, color: n <= value ? theme.paper : theme.ink }}>{n}</Text>
             </Pressable>
           ))}
         </View>
@@ -74,8 +74,8 @@ export function RatingPromptScreen({ title = '', movieId, posterUrl }: { title?:
               onPress={() => setValue(q.v)}
               style={[styles.quickChip, { borderColor: theme.line, backgroundColor: value === q.v ? theme.accentYellow : 'transparent' }]}
             >
-              <Body weight="bold" size={11} color={value === q.v ? theme.onYellow : theme.ink}>{q.v}</Body>
-              <Body size={11} color={value === q.v ? theme.onYellow : theme.inkSoft}>{t(q.key)}</Body>
+              <Body weight="bold" size={13} color={value === q.v ? theme.onYellow : theme.ink}>{q.v}</Body>
+              <Body size={13} color={value === q.v ? theme.onYellow : theme.inkSoft}>{t(q.key)}</Body>
             </Pressable>
           ))}
         </View>

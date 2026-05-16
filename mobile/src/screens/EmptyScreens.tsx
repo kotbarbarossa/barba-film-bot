@@ -29,8 +29,8 @@ export function EmptyMoviesScreen() {
         </View>
 
         <View style={{ marginTop: 36, alignItems: 'center', gap: 4 }}>
-          <Body color={theme.inkSoft} size={12}>{t('empty.can_add')}</Body>
-          <Body size={13}>{t('empty.can_add_methods')}</Body>
+          <Body color={theme.inkSoft}>{t('empty.can_add')}</Body>
+          <Body>{t('empty.can_add_methods')}</Body>
         </View>
       </View>
       <TabBar />

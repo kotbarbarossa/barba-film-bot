@@ -90,12 +90,12 @@ export function FiltersScreen() {
     <Phone safeBottom>
       <View style={[styles.header, { paddingHorizontal: 16, borderBottomColor: theme.line }]}>
         <Pressable onPress={() => router.back()}>
-          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink }}>✕</Text>
+          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4, letterSpacing: 2, color: theme.ink }}>✕</Text>
         </Pressable>
-        <H size="md">{t('filters.title')}</H>
+        <H size="md" style={{ flexShrink: 0 }}>{t('filters.title') + ' '}</H>
         <Pressable onPress={handleReset}>
-          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 16, color: draftActive ? theme.accentOrange : theme.inkFaint }}>
-            {t('filters.reset')}
+          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 16, lineHeight: 19, paddingVertical: 4, letterSpacing: 1, color: draftActive ? theme.accentOrange : theme.inkFaint }}>
+            {t('filters.reset') + ' '}
           </Text>
         </Pressable>
       </View>
@@ -201,7 +201,7 @@ export function FiltersScreen() {
       </ScrollView>
 
       <View style={[styles.actions, { borderTopColor: theme.line, backgroundColor: theme.paper }]}>
-        <Button title={t('filters.apply')} variant="primary" full onPress={handleApply} />
+        <Button title={t('filters.apply') + ' '} variant="primary" full onPress={handleApply} />
       </View>
     </Phone>
   );
@@ -212,7 +212,7 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
   return (
     <View style={{ marginBottom: 22 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 8 }}>
-        <H size="md" style={{ flexShrink: 0, paddingRight: 3 }}>{title}</H>
+        <H size="md" style={{ flexShrink: 0 }}>{title + ' '}</H>
         {hint ? (
           <Mono style={{ color: theme.accentOrange, flex: 1, minWidth: 0 }} numberOfLines={1}>
             {hint}

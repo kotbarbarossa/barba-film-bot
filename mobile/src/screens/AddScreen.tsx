@@ -61,9 +61,9 @@ export function AddScreen() {
     <Phone safeBottom>
       <View style={[styles.header, { paddingHorizontal: 16 }]}>
         <Pressable onPress={() => router.back()}>
-          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink }}>{t('add.back')}</Text>
+          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4, color: theme.ink }}>{t('add.back')}</Text>
         </Pressable>
-        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 18, color: theme.accentOrange }}>{t('add.header_action')}</Text>
+        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 18, lineHeight: 22, paddingVertical: 4, color: theme.accentOrange }} numberOfLines={1}>{t('add.header_action')}</Text>
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 22, paddingTop: 8 }}>
@@ -78,7 +78,7 @@ export function AddScreen() {
               onChangeText={setTitle}
               placeholder={t('add.name_placeholder')}
               placeholderTextColor={theme.inkFaint}
-              style={{ fontFamily: 'Kalam', fontSize: 15, color: theme.ink }}
+              style={{ fontFamily: 'Nunito', fontSize: 15, color: theme.ink }}
             />
           </View>
         </View>
@@ -113,7 +113,7 @@ export function AddScreen() {
               keyboardType="number-pad"
               placeholder="2024"
               placeholderTextColor={theme.inkFaint}
-              style={{ fontFamily: 'Kalam', fontSize: 15, color: theme.ink }}
+              style={{ fontFamily: 'Nunito', fontSize: 15, color: theme.ink }}
             />
           </View>
         </View>
@@ -130,7 +130,7 @@ export function AddScreen() {
               placeholder={t('add.hint_placeholder')}
               placeholderTextColor={theme.inkFaint}
               multiline
-              style={{ fontFamily: 'Kalam', fontSize: 13, color: theme.ink }}
+              style={{ fontFamily: 'Nunito', fontSize: 15, color: theme.ink }}
             />
           </View>
         </View>
@@ -140,8 +140,8 @@ export function AddScreen() {
         style={[styles.toast, { backgroundColor: toastBg, borderColor: theme.ink, opacity: toastOpacity }]}
         pointerEvents="none"
       >
-        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 20, color: toastFg }}>{toastTitle}</Text>
-        <Text style={{ fontFamily: 'Kalam', fontSize: 13, color: toastFg, opacity: 0.7 }}>{toastSub}</Text>
+        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 20, lineHeight: 24, paddingVertical: 4, color: toastFg }}>{toastTitle}</Text>
+        <Text style={{ fontFamily: 'Nunito', fontSize: 15, color: toastFg, opacity: 0.7 }}>{toastSub}</Text>
       </Animated.View>
 
       <View style={{ padding: 12 }}>
@@ -187,9 +187,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderWidth: 1.5,
     borderRadius: 12,
-    overflow: 'hidden',
     marginTop: 4,
   },
   segmentBtn: { flex: 1, paddingVertical: 10, alignItems: 'center' },
-  segmentText: { fontFamily: 'Caveat-Bold', fontSize: 18 },
+  segmentText: { fontFamily: 'Caveat-Bold', fontSize: 18, lineHeight: 22, paddingVertical: 4 },
 });

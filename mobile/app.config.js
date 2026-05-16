@@ -18,7 +18,7 @@ module.exports = {
   },
   ios: {
     supportsTablet: false,
-    bundleIdentifier: IS_DEV ? 'com.barbarossa.flickbook.debug' : 'com.barbarossa.flickbook',
+    bundleIdentifier: 'com.barbarossa.flickbook',
     infoPlist: {
       NSAppTransportSecurity: {
         NSAllowsArbitraryLoads: true,
@@ -30,7 +30,7 @@ module.exports = {
       foregroundImage: './assets/adaptive-icon.png',
       backgroundColor: '#faf7f2',
     },
-    package: IS_DEV ? 'com.barbarossa.flickbook.debug' : 'com.barbarossa.flickbook',
+    package: 'com.barbarossa.flickbook',
     versionCode: 4,
   },
   web: {

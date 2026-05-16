@@ -80,7 +80,7 @@ export function ShareScreen({
         <View style={styles.header}>
           <H size="lg">{t('share.title')}</H>
           <Pressable onPress={() => router.back()}>
-            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink }}>✕</Text>
+            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4, color: theme.ink }}>✕</Text>
           </Pressable>
         </View>
 
@@ -108,14 +108,14 @@ export function ShareScreen({
               {numRating != null && numRating > 0 ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 }}>
                   <StarRow value={numRating} size={15} />
-                  <Body weight="bold" size={13}>{numRating}/10</Body>
+                  <Body weight="bold" size={15}>{numRating}/10</Body>
                 </View>
               ) : null}
               {chartData && chartData.positions.length > 0 ? (
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginTop: 10 }}>
                   {chartData.positions.map(pos => (
                     <View key={pos.chart_slug} style={[styles.chartBadge, { backgroundColor: theme.accentYellow, borderColor: theme.line }]}>
-                      <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 13, color: theme.onYellow }}>
+                      <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 14, lineHeight: 17, paddingVertical: 4, letterSpacing: 2, color: theme.onYellow }} numberOfLines={1}>
                         #{pos.rank} · {t(`charts.${pos.chart_slug.replace(/-/g, '_')}_title`)}
                       </Text>
                     </View>
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   chartBadge: {
-    paddingHorizontal: 7, paddingVertical: 2,
+    paddingHorizontal: 7, paddingVertical: 4,
     borderWidth: 1.5, borderRadius: 6,
   },
   actions: {

@@ -131,7 +131,7 @@ const ru = {
     series: 'Сериалы',
     genre: 'Жанр',
     any: 'Любой',
-    year: 'Год',
+    year: 'Род',
     before_1990: 'до 1990',
     nineties: '90-е',
     noughties: '00-е',

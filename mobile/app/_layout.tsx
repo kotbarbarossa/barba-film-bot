@@ -1,7 +1,7 @@
 import '@/i18n';
 import { Caveat_400Regular, Caveat_700Bold } from '@expo-google-fonts/caveat';
 import { JetBrainsMono_400Regular } from '@expo-google-fonts/jetbrains-mono';
-import { Kalam_400Regular, Kalam_700Bold } from '@expo-google-fonts/kalam';
+import { Nunito_400Regular, Nunito_700Bold, Nunito_400Regular_Italic } from '@expo-google-fonts/nunito';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { queryClient, persister } from '@/lib/queryClient';
 import { useFonts } from 'expo-font';
@@ -20,8 +20,9 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     'Caveat':         Caveat_400Regular,
     'Caveat-Bold':    Caveat_700Bold,
-    'Kalam':          Kalam_400Regular,
-    'Kalam-Bold':     Kalam_700Bold,
+    'Nunito':         Nunito_400Regular,
+    'Nunito-Bold':    Nunito_700Bold,
+    'Nunito-Italic':  Nunito_400Regular_Italic,
     'JetBrainsMono':  JetBrainsMono_400Regular,
   });
 

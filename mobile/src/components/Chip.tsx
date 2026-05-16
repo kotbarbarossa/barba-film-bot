@@ -46,6 +46,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   text: {
-    fontFamily: 'Kalam',
+    fontFamily: 'Nunito',
   },
 });

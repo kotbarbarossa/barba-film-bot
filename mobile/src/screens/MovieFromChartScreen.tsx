@@ -95,14 +95,14 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
         )}
         <View style={styles.heroTop}>
           <Pressable onPress={() => router.back()}>
-            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: heroTextColor }}>{t('chart_movie.back_to_chart')}</Text>
+            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4, color: heroTextColor }}>{t('chart_movie.back_to_chart')}</Text>
           </Pressable>
         </View>
         {chartData && chartData.positions.length > 0 ? (
           <View style={{ position: 'absolute', top: 46, left: 16, right: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
             {chartData.positions.map(pos => (
               <View key={pos.chart_slug} style={[styles.chartBadge, { backgroundColor: theme.accentYellow, borderColor: theme.line }]}>
-                <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, color: theme.onYellow }}>
+                <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, lineHeight: 18, paddingVertical: 4, letterSpacing: 2, color: theme.onYellow }} numberOfLines={1}>
                   #{pos.rank} · {t(chartTitleKey(pos.chart_slug))}
                 </Text>
               </View>
@@ -110,14 +110,14 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
           </View>
         ) : rank && chartTitle ? (
           <View style={[styles.chartBadge, { backgroundColor: theme.accentYellow, borderColor: theme.line }]}>
-            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, color: theme.onYellow }}>#{rank} · {chartTitle}</Text>
+            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, lineHeight: 18, paddingVertical: 4, letterSpacing: 2, color: theme.onYellow }} numberOfLines={1}>#{rank} · {chartTitle}</Text>
           </View>
         ) : null}
         <View style={styles.heroBottom}>
           <H size="xl" color={heroTextColor}>{title}</H>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4, flexWrap: 'wrap' }}>
             {year ? <Mono style={{ color: hasImage ? 'rgba(255,255,255,0.8)' : undefined }}>{year}</Mono> : null}
-            {displayMovie?.country ? <Mono style={{ color: hasImage ? 'rgba(255,255,255,0.8)' : undefined }}>{displayMovie.country}</Mono> : null}
+            {/* {displayMovie?.country ? <Mono style={{ color: hasImage ? 'rgba(255,255,255,0.8)' : undefined }}>{displayMovie.country}</Mono> : null} */}
             {displayMovie?.duration_minutes ? (
               <Mono style={{ color: hasImage ? 'rgba(255,255,255,0.8)' : undefined }}>{displayMovie.duration_minutes} {t('chart_movie.min')}</Mono>
             ) : null}
@@ -130,7 +130,7 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
         <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
           {avgRating ? (
             <View style={[styles.ratingBox, { backgroundColor: theme.shade, borderColor: theme.line }]}>
-              <Mono size={9}>{t('charts.our_rating')}</Mono>
+              <Mono>{t('charts.our_rating')}</Mono>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
                 <StarRow value={parseFloat(avgRating)} size={13} />
                 <Body weight="bold" size={14}>{parseFloat(avgRating).toFixed(1)}</Body>
@@ -139,7 +139,7 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
           ) : null}
           {displayMovie?.imdb_rating ? (
             <View style={[styles.ratingBox, { backgroundColor: theme.shade, borderColor: theme.line }]}>
-              <Mono size={9}>IMDB</Mono>
+              <Mono>IMDB</Mono>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
                 <StarRow value={displayMovie.imdb_rating} size={13} />
                 <Body weight="bold" size={14}>{displayMovie.imdb_rating}</Body>
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     position: 'absolute', top: 12, left: 16, right: 16,
   },
   chartBadge: {
-    paddingHorizontal: 8, paddingVertical: 3,
+    paddingHorizontal: 8, paddingVertical: 5,
     borderWidth: 1.5, borderRadius: 6,
   },
   heroBottom: {

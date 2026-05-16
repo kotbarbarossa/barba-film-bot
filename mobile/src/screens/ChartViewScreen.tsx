@@ -45,37 +45,30 @@ type ScoreRowProps = {
 };
 
 function ScoreRow({ chartId, score, imdbRating, avgRating, t }: ScoreRowProps) {
+  const { theme } = useTheme();
+  const st = { fontFamily: 'Caveat-Bold', fontSize: 18, lineHeight: 22, color: theme.ink } as const;
+  const num = (s: string, minWidth = 52) => <Text style={[st, { minWidth }]} numberOfLines={1}>{s}</Text>;
   if (RATING_CHARTS.has(chartId)) {
-    return (
-      <>
-        <StarRow value={score} size={11} />
-        <Body weight="bold" size={11}>{score.toFixed(1)}</Body>
-      </>
-    );
+    return <><StarRow value={score} size={15} />{num(score.toFixed(1))}</>;
   }
   if (COUNT_CHARTS.has(chartId)) {
     const rating = imdbRating != null ? imdbRating.toFixed(1) : '—';
-    return <Body weight="bold" size={11}>IMDb {rating}</Body>;
+    return num(`imdb ${rating}`, 90);
   }
   if (chartId === 'top-watched') {
     const rating = avgRating != null ? avgRating.toFixed(1) : '—';
-    return (
-      <>
-        <StarRow value={avgRating ?? 0} size={11} />
-        <Body weight="bold" size={11}>{rating}</Body>
-      </>
-    );
+    return <><StarRow value={avgRating ?? 0} size={15} />{num(rating)}</>;
   }
   if (chartId === 'top-controversial') {
-    return <Body weight="bold" size={11}>±{score.toFixed(1)}</Body>;
+    return num(`±${score.toFixed(1)}`);
   }
   if (chartId === 'top-quick') {
     const label = score < 1
       ? t('charts.score_less_1_day')
       : t('charts.score_days', { count: score.toFixed(1) });
-    return <Body weight="bold" size={11}>{label}</Body>;
+    return num(label);
   }
-  return <Body weight="bold" size={11}>{score.toFixed(1)}</Body>;
+  return num(score.toFixed(1));
 }
 
 export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: string }) {
@@ -116,7 +109,7 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
     <Phone>
       <View style={[styles.header, { paddingHorizontal: 16 }]}>
         <Pressable onPress={() => router.back()}>
-          <H size="md" style={{ paddingRight: 6 }}>{t('charts.back')}</H>
+          <H size="md">{t('charts.back')}</H>
         </Pressable>
       </View>
 
@@ -154,15 +147,15 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
                 <Text style={[styles.rank, { color: i === 0 ? theme.accentOrange : theme.ink }]}>#{i + 1}</Text>
                 <Poster width={40} aspectRatio={2 / 3} posterUrl={(language === 'en' ? entry.poster_url_original : null) ?? entry.poster_url} label={(movieTitle(entry, language) || '?').slice(0, 4)} />
                 <View style={{ flex: 1 }}>
-                  <Body weight="bold" size={13}>{movieTitle(entry, language)}</Body>
-                  <Mono size={9}>{entry.year}</Mono>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                  <Body weight="bold" size={15} style={{ lineHeight: 20 }}>{movieTitle(entry, language)}</Body>
+                  <Mono>{entry.year}</Mono>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingRight: 10 }}>
                     <ScoreRow chartId={chartId} score={entry.score} watchCount={entry.watch_count} imdbRating={entry.imdb_rating} avgRating={entry.avg_rating} t={t} />
                   </View>
                 </View>
                 {mine ? (
                   <View style={[styles.badge, { backgroundColor: theme.accentMint, borderColor: theme.line }]}>
-                    <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 10, color: theme.ink }}>✓</Text>
+                    <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 13, lineHeight: 16, color: theme.ink }}>✓</Text>
                   </View>
                 ) : null}
               </Pressable>
@@ -184,7 +177,7 @@ export function ChartEmptyScreen() {
     <Phone>
       <View style={[styles.header, { paddingHorizontal: 16 }]}>
         <Pressable onPress={() => router.back()}>
-          <H size="md" style={{ paddingRight: 6 }}>{t('charts.back')}</H>
+          <H size="md">{t('charts.back')}</H>
         </Pressable>
       </View>
 
@@ -218,7 +211,7 @@ const styles = StyleSheet.create({
   },
   rank: {
     minWidth: 36, textAlign: 'center',
-    fontFamily: 'Caveat-Bold', fontSize: 22,
+    fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4,
   },
   badge: {
     width: 22, height: 22, borderRadius: 11,

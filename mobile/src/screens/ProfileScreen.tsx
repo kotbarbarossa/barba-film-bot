@@ -38,8 +38,8 @@ function StatCell({ value, label, tone, theme }: {
   const color = tone === 'yellow' ? theme.onYellow : theme.paper;
   return (
     <View style={[styles.statCell, { backgroundColor: bg, borderColor: theme.ink }]}>
-      <H size="lg" color={color} style={{ fontSize: 30, lineHeight: 28 }}>{value}</H>
-      <Body size={11} color={color} style={{ opacity: 0.85, marginTop: 4 }}>{label}</Body>
+      <H size="lg" color={color} style={{ fontSize: 30, lineHeight: 36 }}>{value}</H>
+      <Body size={15} color={color} style={{ opacity: 0.85, marginTop: 4 }}>{label}</Body>
     </View>
   );
 }
@@ -62,13 +62,13 @@ function SettingRow({ icon, title, value, danger, last, onPress, theme }: {
       ]}
     >
       <View style={[styles.settingIcon, { borderColor: theme.line, backgroundColor: theme.shade }]}>
-        <Body size={13}>{icon}</Body>
+        <Body size={15}>{icon}</Body>
       </View>
       <Body size={14} color={danger ? theme.accentOrange : theme.ink} style={{ flex: 1 }}>{title}</Body>
       {value !== undefined && (
-        <Body size={12} color={theme.inkSoft} style={{ marginRight: 6 }}>{value}</Body>
+        <Body size={14} color={theme.inkSoft} style={{ marginRight: 6 }}>{value}</Body>
       )}
-      <H size="sm" color={theme.inkFaint} style={{ fontSize: 20, lineHeight: 22 }}>›</H>
+      <H size="sm" color={theme.inkFaint} style={{ fontSize: 20, lineHeight: 24, letterSpacing: 6 }}>›</H>
     </Pressable>
   );
 }
@@ -81,7 +81,7 @@ function GroupCard({ label, children, theme }: {
   return (
     <View style={styles.groupCard}>
       <View style={{ paddingHorizontal: 4, marginBottom: 4 }}>
-        <Mono size={10}>{label}</Mono>
+        <Mono size={12}>{label}</Mono>
       </View>
       <View style={[styles.groupBox, { backgroundColor: theme.paper2, borderColor: theme.line }]}>
         {children}
@@ -204,7 +204,7 @@ export function ProfileScreen() {
       <View style={styles.header}>
         <H size="lg" style={{ flex: 1 }}>{t('profile.title')}</H>
         <Pressable hitSlop={8} onPress={openEdit}>
-          <H size="sm" color={theme.accentOrange}>{t('profile.edit')}</H>
+          <H size="sm" color={theme.accentOrange}>{t('profile.edit') + ' '}</H>
         </Pressable>
       </View>
 
@@ -219,9 +219,9 @@ export function ProfileScreen() {
             <H size="xl" color={theme.onYellow}>{initial}</H>
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <H size="md" style={{ lineHeight: 24 }}>{displayName}</H>
+            <H size="md" style={{ lineHeight: 26 }}>{displayName}</H>
             {profile && (
-              <Mono size={10} style={{ marginTop: 4 }}>
+              <Mono size={12} style={{ marginTop: 4 }}>
                 {profile.username ? `@${profile.username} · ` : ''}{t('profile.since', { date: formatDate(profile.created_at, language) })}
               </Mono>
             )}
@@ -282,11 +282,11 @@ export function ProfileScreen() {
         {/* Footer */}
         <View style={styles.footer}>
           <Pressable hitSlop={8}>
-            <Body size={11} color={theme.inkFaint} style={{ textDecorationLine: 'underline' }}>
+            <Body size={15} color={theme.inkFaint} style={{ textDecorationLine: 'underline', textAlign: 'center' }}>
               {t('profile.delete_account')}
             </Body>
           </Pressable>
-          <Mono size={9} style={{ marginTop: 6 }}>{t('profile.app_name')} · {t('profile.app_version')}</Mono>
+          <Mono size={11} style={{ marginTop: 6 }}>{t('profile.app_name')} · {t('profile.app_version')}</Mono>
         </View>
       </ScrollView>
 
@@ -307,29 +307,29 @@ export function ProfileScreen() {
               <View style={[styles.sheetHandle, { backgroundColor: theme.inkFaint }]} />
               <H size="md" style={{ marginBottom: 18 }}>{t('profile.edit_title')}</H>
 
-              <Mono size={10} style={{ marginBottom: 4 }}>{t('profile.first_name_label')}</Mono>
+              <Mono size={12} style={{ marginBottom: 4 }}>{t('profile.first_name_label')}</Mono>
               <View style={[styles.field, { backgroundColor: theme.shade, borderColor: theme.line }]}>
                 <TextInput
                   value={editFirst}
                   onChangeText={setEditFirst}
                   placeholder={t('profile.first_name_placeholder')}
                   placeholderTextColor={theme.inkFaint}
-                  style={{ fontFamily: 'Kalam', fontSize: 15, color: theme.ink }}
+                  style={{ fontFamily: 'Nunito', fontSize: 16, color: theme.ink }}
                 />
               </View>
 
-              <Mono size={10} style={{ marginTop: 12, marginBottom: 4 }}>{t('profile.last_name_label')}</Mono>
+              <Mono size={12} style={{ marginTop: 12, marginBottom: 4 }}>{t('profile.last_name_label')}</Mono>
               <View style={[styles.field, { backgroundColor: theme.shade, borderColor: theme.line }]}>
                 <TextInput
                   value={editLast}
                   onChangeText={setEditLast}
                   placeholder={t('profile.last_name_placeholder')}
                   placeholderTextColor={theme.inkFaint}
-                  style={{ fontFamily: 'Kalam', fontSize: 15, color: theme.ink }}
+                  style={{ fontFamily: 'Nunito', fontSize: 16, color: theme.ink }}
                 />
               </View>
 
-              <Mono size={10} style={{ marginTop: 12, marginBottom: 4 }}>{t('profile.username_label')}</Mono>
+              <Mono size={12} style={{ marginTop: 12, marginBottom: 4 }}>{t('profile.username_label')}</Mono>
               <View style={[styles.field, { backgroundColor: theme.shade, borderColor: theme.line }]}>
                 <TextInput
                   value={editUsername}
@@ -337,7 +337,7 @@ export function ProfileScreen() {
                   placeholder="@username"
                   placeholderTextColor={theme.inkFaint}
                   autoCapitalize="none"
-                  style={{ fontFamily: 'Kalam', fontSize: 15, color: theme.ink }}
+                  style={{ fontFamily: 'Nunito', fontSize: 16, color: theme.ink }}
                 />
               </View>
 
@@ -380,7 +380,7 @@ export function ProfileScreen() {
               showsVerticalScrollIndicator={false}
               style={styles.policyScroll}
             >
-              <Body size={13} color={theme.inkSoft} style={{ lineHeight: 20 }}>
+              <Body size={15} color={theme.inkSoft} style={{ lineHeight: 20 }}>
                 {t('profile.policy_content')}
               </Body>
             </ScrollView>
@@ -409,7 +409,7 @@ export function ProfileScreen() {
             onPress={() => {}}
           >
             <View style={[styles.sheetHandle, { backgroundColor: theme.inkFaint }]} />
-            <H size="lg" style={{ textAlign: 'center', lineHeight: 32, marginBottom: 6 }}>{t('profile.logout_title')}</H>
+            <H size="lg" style={{ textAlign: 'center', lineHeight: 34, marginBottom: 6 }}>{t('profile.logout_title')}</H>
             <ArtNote style={{ textAlign: 'center' }}>
               {t('profile.logout_body')}
             </ArtNote>
@@ -419,8 +419,8 @@ export function ProfileScreen() {
                   <H size="md" color={theme.onYellow}>{initial}</H>
                 </View>
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  <Body size={13} weight="bold">{displayName}</Body>
-                  <Mono size={10}>
+                  <Body size={15} weight="bold">{displayName}</Body>
+                  <Mono size={12}>
                     {profile.username ? `@${profile.username} · ` : ''}{t('profile.movies_count', { count: stats.total })}
                   </Mono>
                 </View>
