@@ -164,7 +164,7 @@ const ru = {
     in_chart: 'В ЧАРТЕ',
     our_rating: 'НАШ РЕЙТИНГ',
     global_trending_title: 'Горячая десятка',
-    global_trending_sub: 'активно смотрят и высоко оценивают прямо сейчас',
+    global_trending_sub: 'свежие просмотры влияют на оценку',
     top_rated_title: 'Топ10 рейтинг',
     top_rated_sub: 'наивысшие средние оценки пользователей',
     top_want_title: 'Топ10 в хочу',

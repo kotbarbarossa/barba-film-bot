@@ -166,7 +166,7 @@ const en: Translations = {
     in_chart: 'IN CHART',
     our_rating: 'OUR RATING',
     global_trending_title: 'Hot ten',
-    global_trending_sub: 'being watched and highly rated right now',
+    global_trending_sub: 'recent watches affect the score',
     top_rated_title: 'Top10 rated',
     top_rated_sub: 'highest average user ratings',
     top_want_title: 'Top10 most wanted',
