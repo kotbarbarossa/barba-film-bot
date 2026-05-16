@@ -1,8 +1,10 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 
+const IS_DEV = process.env.APP_VARIANT === 'development';
+
 /** @type {import('expo/config').ExpoConfig} */
 module.exports = {
-  name: 'Flickbook',
+  name: IS_DEV ? 'Flickbook (dev)' : 'Flickbook',
   slug: 'flickbook',
   scheme: 'flickbook',
   version: '1.1.0',
@@ -16,7 +18,7 @@ module.exports = {
   },
   ios: {
     supportsTablet: false,
-    bundleIdentifier: 'com.barbarossa.flickbook',
+    bundleIdentifier: IS_DEV ? 'com.barbarossa.flickbook.debug' : 'com.barbarossa.flickbook',
     infoPlist: {
       NSAppTransportSecurity: {
         NSAllowsArbitraryLoads: true,
@@ -28,7 +30,7 @@ module.exports = {
       foregroundImage: './assets/adaptive-icon.png',
       backgroundColor: '#faf7f2',
     },
-    package: 'com.barbarossa.flickbook',
+    package: IS_DEV ? 'com.barbarossa.flickbook.debug' : 'com.barbarossa.flickbook',
     versionCode: 4,
   },
   web: {
