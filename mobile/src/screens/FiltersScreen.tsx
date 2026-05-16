@@ -15,12 +15,15 @@ import {
   type SortOption,
   type StatusFilter,
 } from '@/store/filters.store';
+import { useSettingsStore } from '@/store/settings.store';
+import { genreName } from '@/utils/localize';
 
 export function FiltersScreen() {
   const { theme } = useTheme();
   const router = useRouter();
   const { t } = useTranslation();
   const stored = useFiltersStore();
+  const lang = useSettingsStore((s) => s.language);
   const { data: categories = [], isLoading: catsLoading } = useCategories();
 
   const [status, setStatus] = useState<StatusFilter>(stored.status);
@@ -60,6 +63,7 @@ export function FiltersScreen() {
   ];
 
   const activePeriod = YEAR_PERIODS.find((p) => p.from === yearFrom && p.to === yearTo);
+  const selectedCategory = categories.find((c) => c.id === categoryId);
 
   const draftActive = isFiltersActive({
     ...stored,
@@ -126,7 +130,7 @@ export function FiltersScreen() {
 
         <Section
           title={t('filters.genre')}
-          hint={categoryId ? categories.find(c => c.id === categoryId)?.name : undefined}
+          hint={selectedCategory ? genreName(selectedCategory, lang) : undefined}
         >
           {catsLoading ? (
             <ActivityIndicator color={theme.inkSoft} style={{ alignSelf: 'flex-start' }} />
@@ -137,7 +141,7 @@ export function FiltersScreen() {
               </Pressable>
               {categories.map((c) => (
                 <Pressable key={c.id} onPress={() => setCategoryId(categoryId === c.id ? null : c.id)}>
-                  <Chip label={c.name} tone={categoryId === c.id ? 'orange' : undefined} />
+                  <Chip label={genreName(c, lang)} tone={categoryId === c.id ? 'orange' : undefined} />
                 </Pressable>
               ))}
             </View>
