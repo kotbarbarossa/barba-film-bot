@@ -475,6 +475,17 @@ async def mark_user_movie_watched(
     return await repo.get_detail(user_id, movie_id)
 
 
+@user_movies_router.get('/categories', response_model=list[CategoryResponse])
+async def list_user_movie_categories(
+    user_id: int,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    _require_own_user(user_id, current_user)
+    repo = CategoryRepository(session)
+    return await repo.get_by_user_processed(user_id)
+
+
 @user_movies_router.delete('/{movie_id}', status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user_movie(
     user_id: int,

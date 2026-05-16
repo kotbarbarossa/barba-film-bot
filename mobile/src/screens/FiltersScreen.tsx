@@ -7,7 +7,8 @@ import { Phone } from '@/components/Phone';
 import { Chip } from '@/components/Chip';
 import { H, Body, Mono } from '@/components/Text';
 import { Button } from '@/components/Button';
-import { useCategories } from '@/hooks/queries/useCategories';
+import { useMyCategories } from '@/hooks/queries/useMyCategories';
+import type { CategoryResponse } from '@/types/api';
 import {
   useFiltersStore,
   isFiltersActive,
@@ -24,7 +25,7 @@ export function FiltersScreen() {
   const { t } = useTranslation();
   const stored = useFiltersStore();
   const lang = useSettingsStore((s) => s.language);
-  const { data: categories = [], isLoading: catsLoading } = useCategories();
+  const { data: categories = [] as CategoryResponse[], isLoading: catsLoading } = useMyCategories();
 
   const [status, setStatus] = useState<StatusFilter>(stored.status);
   const [categoryId, setCategoryId] = useState<number | null>(stored.categoryId);
