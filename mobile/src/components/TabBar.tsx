@@ -53,7 +53,7 @@ export function TabBar() {
     ]}>
       {renderTab(TABS[0])}
       {renderTab(TABS[1])}
-      <View style={{ width: 56 }} />
+      <View style={styles.fabSlot} />
       {renderTab(TABS[2])}
       {renderTab(TABS[3])}
       <View pointerEvents="box-none" style={styles.fabWrapper}>
@@ -72,11 +72,12 @@ const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingHorizontal: 8,
     borderTopWidth: 1.5,
     position: 'relative',
     overflow: 'visible',
+  },
+  fabSlot: {
+    flex: 1,
   },
   tab: {
     flex: 1,
