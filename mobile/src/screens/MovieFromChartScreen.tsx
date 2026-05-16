@@ -102,15 +102,15 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
           <View style={{ position: 'absolute', top: 46, left: 16, right: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
             {chartData.positions.map(pos => (
               <View key={pos.chart_slug} style={[styles.chartBadge, { backgroundColor: theme.accentYellow, borderColor: theme.line }]}>
-                <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, lineHeight: 18, paddingVertical: 4, letterSpacing: 2, color: theme.onYellow }} numberOfLines={1}>
-                  #{pos.rank} · {t(chartTitleKey(pos.chart_slug))}
+                <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 12, lineHeight: 15, paddingVertical: 4, letterSpacing: 2, color: theme.onYellow }} numberOfLines={1}>
+                  {`#${pos.rank} ${t(chartTitleKey(pos.chart_slug))} `}
                 </Text>
               </View>
             ))}
           </View>
         ) : rank && chartTitle ? (
           <View style={[styles.chartBadge, { backgroundColor: theme.accentYellow, borderColor: theme.line }]}>
-            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, lineHeight: 18, paddingVertical: 4, letterSpacing: 2, color: theme.onYellow }} numberOfLines={1}>#{rank} · {chartTitle}</Text>
+            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 12, lineHeight: 15, paddingVertical: 4, letterSpacing: 2, color: theme.onYellow }} numberOfLines={1}>{`#${rank} ${chartTitle} `}</Text>
           </View>
         ) : null}
         <View style={styles.heroBottom}>
@@ -200,7 +200,7 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
 }
 
 const styles = StyleSheet.create({
-  hero: { height: 280, overflow: 'hidden', position: 'relative' },
+  hero: { height: 280, position: 'relative' },
   heroFade: { ...StyleSheet.absoluteFillObject },
   heroTop: {
     position: 'absolute', top: 12, left: 16, right: 16,

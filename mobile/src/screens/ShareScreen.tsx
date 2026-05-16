@@ -116,7 +116,7 @@ export function ShareScreen({
                   {chartData.positions.map(pos => (
                     <View key={pos.chart_slug} style={[styles.chartBadge, { backgroundColor: theme.accentYellow, borderColor: theme.line }]}>
                       <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 14, lineHeight: 17, paddingVertical: 4, letterSpacing: 2, color: theme.onYellow }} numberOfLines={1}>
-                        #{pos.rank} · {t(`charts.${pos.chart_slug.replace(/-/g, '_')}_title`)}
+                        {`#${pos.rank} ${t(`charts.${pos.chart_slug.replace(/-/g, '_')}_title`)} `}
                       </Text>
                     </View>
                   ))}
