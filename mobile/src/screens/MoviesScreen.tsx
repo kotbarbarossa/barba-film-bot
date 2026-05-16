@@ -175,7 +175,7 @@ export function MoviesScreen() {
             ]}
             onPress={() => router.push('/filters' as any)}
           >
-            <Text>⚙</Text>
+            <Text style={{ color: theme.ink }}>⚙</Text>
           </Pressable>
         </View>
       </View>
