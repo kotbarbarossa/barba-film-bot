@@ -171,3 +171,12 @@ export interface GlobalTrendingResponse {
   min_count_used: number;
 }
 
+export interface MovieChartPosition {
+  chart_slug: ChartSlug;
+  rank: number;
+}
+
+export interface MovieChartsResponse {
+  positions: MovieChartPosition[];
+}
+

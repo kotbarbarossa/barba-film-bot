@@ -27,6 +27,15 @@ class GlobalTrendingResponse(BaseModel):
     min_count_used: int  # 1/2/3 for trending, 0 for all-time
 
 
+class MovieChartPosition(BaseModel):
+    chart_slug: str
+    rank: int
+
+
+class MovieChartsResponse(BaseModel):
+    positions: list[MovieChartPosition]
+
+
 class PublicPosterEntry(BaseModel):
     id: int
     title_ru: str | None

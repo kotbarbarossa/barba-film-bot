@@ -11,6 +11,7 @@ import { Poster } from '@/components/Poster';
 import { StarRow } from '@/components/StarRow';
 import { H, Body, Mono, ArtNote } from '@/components/Text';
 import { Button } from '@/components/Button';
+import { useMovieCharts } from '@/hooks/queries/useCharts';
 
 
 export function ShareScreen({
@@ -31,6 +32,8 @@ export function ShareScreen({
   const { t } = useTranslation();
   const cardRef = useRef<View>(null);
   const [sharing, setSharing] = useState(false);
+  const numericId = id ? parseInt(id, 10) : 0;
+  const { data: chartData } = useMovieCharts(numericId, !!id);
 
   const numYear = typeof year === 'string' ? parseInt(year, 10) : year;
   const numRating = typeof rating === 'string' ? parseFloat(rating) : rating;
@@ -108,6 +111,17 @@ export function ShareScreen({
                   <Body weight="bold" size={13}>{numRating}/10</Body>
                 </View>
               ) : null}
+              {chartData && chartData.positions.length > 0 ? (
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginTop: 10 }}>
+                  {chartData.positions.map(pos => (
+                    <View key={pos.chart_slug} style={[styles.chartBadge, { backgroundColor: theme.accentYellow, borderColor: theme.line }]}>
+                      <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 13, color: theme.onYellow }}>
+                        #{pos.rank} · {t(`charts.${pos.chart_slug.replace(/-/g, '_')}_title`)}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
             </View>
             <View style={[styles.cardFooter, { borderTopColor: theme.line }]}>
               <Mono size={10} style={{ color: theme.inkFaint }}>{t('share.branding')}</Mono>
@@ -176,6 +190,10 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     paddingHorizontal: 14,
     paddingVertical: 8,
+  },
+  chartBadge: {
+    paddingHorizontal: 7, paddingVertical: 2,
+    borderWidth: 1.5, borderRadius: 6,
   },
   actions: {
     paddingTop: 12,

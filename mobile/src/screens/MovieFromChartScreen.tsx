@@ -12,6 +12,7 @@ import { Button } from '@/components/Button';
 import { TabBar } from '@/components/TabBar';
 import { usePublicMovie } from '@/hooks/queries/useMovie';
 import { useMyMovies } from '@/hooks/queries/useMyMovies';
+import { useMovieCharts } from '@/hooks/queries/useCharts';
 import { useAddMovie } from '@/hooks/mutations/useAddMovie';
 import { useSettingsStore } from '@/store/settings.store';
 import { movieTitle, genreName, personName } from '@/utils/localize';
@@ -41,6 +42,7 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
 
   const { data: movieDetail, isLoading: loadingDetail } = usePublicMovie(numericId);
   const { data: myMovies = [] } = useMyMovies();
+  const { data: chartData } = useMovieCharts(numericId);
   const { mutateAsync: addMovie, isPending } = useAddMovie();
 
   const inMyList = myMovies.some(m => m.movie.id === numericId);
@@ -96,9 +98,19 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
             <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: heroTextColor }}>{t('chart_movie.back_to_chart')}</Text>
           </Pressable>
         </View>
-        {rank && chartTitle ? (
+        {chartData && chartData.positions.length > 0 ? (
+          <View style={{ position: 'absolute', top: 46, left: 16, right: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+            {chartData.positions.map(pos => (
+              <View key={pos.chart_slug} style={[styles.chartBadge, { backgroundColor: theme.accentYellow, borderColor: theme.line }]}>
+                <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, color: theme.onYellow }}>
+                  #{pos.rank} · {t(chartTitleKey(pos.chart_slug))}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : rank && chartTitle ? (
           <View style={[styles.chartBadge, { backgroundColor: theme.accentYellow, borderColor: theme.line }]}>
-            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 12, color: theme.onYellow }}>#{rank} · {chartTitle}</Text>
+            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, color: theme.onYellow }}>#{rank} · {chartTitle}</Text>
           </View>
         ) : null}
         <View style={styles.heroBottom}>
@@ -194,7 +206,6 @@ const styles = StyleSheet.create({
     position: 'absolute', top: 12, left: 16, right: 16,
   },
   chartBadge: {
-    position: 'absolute', top: 46, left: 16,
     paddingHorizontal: 8, paddingVertical: 3,
     borderWidth: 1.5, borderRadius: 6,
   },

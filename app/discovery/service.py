@@ -1,7 +1,9 @@
+import json
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.discovery.repository import DiscoveryRepository
-from app.discovery.schemas import ChartResponse, GlobalTrendingResponse
+from app.discovery.schemas import ChartResponse, GlobalTrendingResponse, MovieChartPosition
 from app.infrastructure import arq_pool
 
 _CACHE_TTL = 3600
@@ -14,6 +16,35 @@ _KEY_TOP_WATCHED = 'discovery:top_watched'
 _KEY_TOP_CONTROVERSIAL = 'discovery:top_controversial'
 _KEY_TOP_QUICK = 'discovery:top_quick'
 _KEY_TOP_POSTPONED = 'discovery:top_postponed'
+
+
+_ALL_CHART_KEYS: list[tuple[str, str]] = [
+    ('global-trending', _KEY_GLOBAL_TRENDING),
+    ('top-rated', _KEY_TOP_RATED),
+    ('top-want', _KEY_TOP_WANT),
+    ('top-watched', _KEY_TOP_WATCHED),
+    ('top-controversial', _KEY_TOP_CONTROVERSIAL),
+    ('top-quick', _KEY_TOP_QUICK),
+    ('top-postponed', _KEY_TOP_POSTPONED),
+]
+
+
+async def get_movie_chart_positions(movie_id: int) -> list[MovieChartPosition]:
+    redis = arq_pool.get()
+    slugs = [slug for slug, _ in _ALL_CHART_KEYS]
+    keys = [key for _, key in _ALL_CHART_KEYS]
+    cached_values = await redis.mget(*keys)
+
+    positions: list[MovieChartPosition] = []
+    for slug, cached in zip(slugs, cached_values):
+        if not cached:
+            continue
+        entries = json.loads(cached).get('entries', [])
+        for rank, entry in enumerate(entries, 1):
+            if entry.get('movie_id') == movie_id:
+                positions.append(MovieChartPosition(chart_slug=slug, rank=rank))
+                break
+    return positions
 
 
 async def get_global_trending(session: AsyncSession) -> GlobalTrendingResponse:

@@ -12,11 +12,16 @@ import { H, Body, Mono, ArtNote } from '@/components/Text';
 import { Button } from '@/components/Button';
 import { TabBar } from '@/components/TabBar';
 import { useMovie } from '@/hooks/queries/useMovie';
+import { useMovieCharts } from '@/hooks/queries/useCharts';
 import { useMarkWatched, useUpdateMovie } from '@/hooks/mutations/useUpdateMovie';
 import { useDeleteMovie } from '@/hooks/mutations/useDeleteMovie';
 import { useSettingsStore } from '@/store/settings.store';
 import { movieTitle, genreName, personName } from '@/utils/localize';
 import type { UserMovieDetailResponse } from '@/types/api';
+
+function chartTitleKey(slug: string) {
+  return `charts.${slug.replace(/-/g, '_')}_title`;
+}
 
 export function MovieScreen({ id }: { id: string }) {
   const { theme } = useTheme();
@@ -27,6 +32,7 @@ export function MovieScreen({ id }: { id: string }) {
   const { data: item, isLoading } = useMovie(movieId);
   const { mutateAsync: markWatched, isPending: markingWatched } = useMarkWatched(movieId);
   const { mutateAsync: deleteMovie, isPending: deleting } = useDeleteMovie();
+  const { data: chartData } = useMovieCharts(movieId, item?.movie.processing_status === 'processed');
   const language = useSettingsStore(s => s.language);
 
   const movie = item?.movie;
@@ -119,6 +125,17 @@ export function MovieScreen({ id }: { id: string }) {
             <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: hasImage ? '#fff' : theme.ink }}>←</Text>
           </Pressable>
         </View>
+        {chartData && chartData.positions.length > 0 && (
+          <View style={{ position: 'absolute', top: 46, left: 16, right: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+            {chartData.positions.map(pos => (
+              <View key={pos.chart_slug} style={[styles.chartBadge, { backgroundColor: theme.accentYellow, borderColor: theme.line }]}>
+                <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, color: theme.onYellow }}>
+                  #{pos.rank} · {t(chartTitleKey(pos.chart_slug))}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
         <View style={styles.heroTitle}>
           <H size="xl" color={hasImage ? '#fff' : theme.ink}>{movieTitle(movie, language)}</H>
           <Mono style={{ color: hasImage ? 'rgba(255,255,255,0.8)' : undefined }}>
@@ -369,6 +386,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row', gap: 8,
     padding: 12,
     borderTopWidth: 1.5,
+  },
+  chartBadge: {
+    paddingHorizontal: 8, paddingVertical: 3,
+    borderWidth: 1.5, borderRadius: 6,
   },
 });
 

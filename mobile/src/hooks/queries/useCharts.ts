@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { getChart, getGlobalTrending } from '@/api/charts';
+import { getChart, getGlobalTrending, getMovieCharts } from '@/api/charts';
 import type { ChartSlug } from '@/types/api';
 
 export const chartKeys = {
@@ -21,5 +21,14 @@ export function useChart(slug: Exclude<ChartSlug, 'global-trending'>) {
     queryKey: chartKeys.chart(slug),
     queryFn: () => getChart(slug),
     staleTime: 1000 * 60 * 5,
+  });
+}
+
+export function useMovieCharts(movieId: number, enabled = true) {
+  return useQuery({
+    queryKey: ['movie-charts', movieId] as const,
+    queryFn: () => getMovieCharts(movieId),
+    staleTime: 1000 * 60 * 5,
+    enabled,
   });
 }
