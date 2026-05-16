@@ -12,6 +12,7 @@ import { Button } from '@/components/Button';
 import { TabBar } from '@/components/TabBar';
 import { usePublicMovie } from '@/hooks/queries/useMovie';
 import { useMyMovies } from '@/hooks/queries/useMyMovies';
+import { useMovieCharts } from '@/hooks/queries/useCharts';
 import { useAddMovie } from '@/hooks/mutations/useAddMovie';
 import { useSettingsStore } from '@/store/settings.store';
 import { movieTitle, genreName, personName } from '@/utils/localize';
@@ -25,6 +26,7 @@ type Props = {
   watchCount?: string;
   rank?: string;
   chartId?: string;
+  avgRating?: string;
   onOpenCard?: () => void;
 };
 
@@ -32,7 +34,7 @@ function chartTitleKey(id: string): string {
   return `charts.${id.replace(/-/g, '_')}_title`;
 }
 
-export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, year, score, watchCount, rank, chartId, onOpenCard }: Props) {
+export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, year, score, watchCount, rank, chartId, avgRating, onOpenCard }: Props) {
   const { theme } = useTheme();
   const router = useRouter();
   const { t } = useTranslation();
@@ -40,6 +42,7 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
 
   const { data: movieDetail, isLoading: loadingDetail } = usePublicMovie(numericId);
   const { data: myMovies = [] } = useMyMovies();
+  const { data: chartData } = useMovieCharts(numericId);
   const { mutateAsync: addMovie, isPending } = useAddMovie();
 
   const inMyList = myMovies.some(m => m.movie.id === numericId);
@@ -92,19 +95,29 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
         )}
         <View style={styles.heroTop}>
           <Pressable onPress={() => router.back()}>
-            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: heroTextColor }}>{t('chart_movie.back_to_chart')}</Text>
+            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4, color: heroTextColor }}>{t('chart_movie.back_to_chart')}</Text>
           </Pressable>
         </View>
-        {rank && chartTitle ? (
+        {chartData && chartData.positions.length > 0 ? (
+          <View style={{ position: 'absolute', top: 46, left: 16, right: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+            {chartData.positions.map(pos => (
+              <View key={pos.chart_slug} style={[styles.chartBadge, { backgroundColor: theme.accentYellow, borderColor: theme.line }]}>
+                <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 12, lineHeight: 15, paddingVertical: 4, letterSpacing: 2, color: theme.onYellow }} numberOfLines={1}>
+                  {`#${pos.rank} ${t(chartTitleKey(pos.chart_slug))} `}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : rank && chartTitle ? (
           <View style={[styles.chartBadge, { backgroundColor: theme.accentYellow, borderColor: theme.line }]}>
-            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 12, color: theme.onYellow }}>#{rank} · {chartTitle}</Text>
+            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 12, lineHeight: 15, paddingVertical: 4, letterSpacing: 2, color: theme.onYellow }} numberOfLines={1}>{`#${rank} ${chartTitle} `}</Text>
           </View>
         ) : null}
         <View style={styles.heroBottom}>
           <H size="xl" color={heroTextColor}>{title}</H>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4, flexWrap: 'wrap' }}>
             {year ? <Mono style={{ color: hasImage ? 'rgba(255,255,255,0.8)' : undefined }}>{year}</Mono> : null}
-            {displayMovie?.country ? <Mono style={{ color: hasImage ? 'rgba(255,255,255,0.8)' : undefined }}>{displayMovie.country}</Mono> : null}
+            {/* {displayMovie?.country ? <Mono style={{ color: hasImage ? 'rgba(255,255,255,0.8)' : undefined }}>{displayMovie.country}</Mono> : null} */}
             {displayMovie?.duration_minutes ? (
               <Mono style={{ color: hasImage ? 'rgba(255,255,255,0.8)' : undefined }}>{displayMovie.duration_minutes} {t('chart_movie.min')}</Mono>
             ) : null}
@@ -115,19 +128,18 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 18, paddingBottom: 16 }}>
         {/* Ratings row */}
         <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-          {score ? (
+          {avgRating ? (
             <View style={[styles.ratingBox, { backgroundColor: theme.shade, borderColor: theme.line }]}>
-              <Mono size={9}>{t('charts.in_chart')}</Mono>
+              <Mono>{t('charts.our_rating')}</Mono>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
-                <StarRow value={parseFloat(score)} size={13} />
-                <Body weight="bold" size={14}>{score}</Body>
-                {watchCount ? <Body color={theme.inkFaint} size={10}>· {t('charts.ratings_count_short', { count: watchCount })}</Body> : null}
+                <StarRow value={parseFloat(avgRating)} size={13} />
+                <Body weight="bold" size={14}>{parseFloat(avgRating).toFixed(1)}</Body>
               </View>
             </View>
           ) : null}
           {displayMovie?.imdb_rating ? (
             <View style={[styles.ratingBox, { backgroundColor: theme.shade, borderColor: theme.line }]}>
-              <Mono size={9}>IMDB</Mono>
+              <Mono>IMDB</Mono>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
                 <StarRow value={displayMovie.imdb_rating} size={13} />
                 <Body weight="bold" size={14}>{displayMovie.imdb_rating}</Body>
@@ -171,7 +183,7 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
 
       <View style={[styles.actions, { borderTopColor: theme.line, backgroundColor: theme.paper }]}>
         {isInList ? (
-          <Button title={t('chart_movie.in_list')} full variant="ghost" onPress={handleOpenMyCard} />
+          <Button title={t('chart_movie.in_list')} full variant="ghost" textStyle={{ letterSpacing: 1 }} onPress={handleOpenMyCard} />
         ) : (
           <Button
             title={isPending ? t('chart_movie.adding') : t('chart_movie.add_to_watchlist')}
@@ -188,14 +200,13 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
 }
 
 const styles = StyleSheet.create({
-  hero: { height: 280, overflow: 'hidden', position: 'relative' },
+  hero: { height: 280, position: 'relative' },
   heroFade: { ...StyleSheet.absoluteFillObject },
   heroTop: {
     position: 'absolute', top: 12, left: 16, right: 16,
   },
   chartBadge: {
-    position: 'absolute', top: 46, left: 16,
-    paddingHorizontal: 8, paddingVertical: 3,
+    paddingHorizontal: 8, paddingVertical: 5,
     borderWidth: 1.5, borderRadius: 6,
   },
   heroBottom: {

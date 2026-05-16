@@ -35,8 +35,8 @@ export type Theme = typeof lightTheme;
 export const fonts = {
   caveat: 'Caveat',
   caveatBold: 'Caveat-Bold',
-  kalam: 'Kalam',
-  kalamBold: 'Kalam-Bold',
+  nunito: 'Nunito',
+  nunitoBold: 'Nunito-Bold',
   mono: 'JetBrainsMono',
 };
 

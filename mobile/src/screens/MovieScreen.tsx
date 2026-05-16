@@ -12,11 +12,16 @@ import { H, Body, Mono, ArtNote } from '@/components/Text';
 import { Button } from '@/components/Button';
 import { TabBar } from '@/components/TabBar';
 import { useMovie } from '@/hooks/queries/useMovie';
+import { useMovieCharts } from '@/hooks/queries/useCharts';
 import { useMarkWatched, useUpdateMovie } from '@/hooks/mutations/useUpdateMovie';
 import { useDeleteMovie } from '@/hooks/mutations/useDeleteMovie';
 import { useSettingsStore } from '@/store/settings.store';
 import { movieTitle, genreName, personName } from '@/utils/localize';
 import type { UserMovieDetailResponse } from '@/types/api';
+
+function chartTitleKey(slug: string) {
+  return `charts.${slug.replace(/-/g, '_')}_title`;
+}
 
 export function MovieScreen({ id }: { id: string }) {
   const { theme } = useTheme();
@@ -27,6 +32,7 @@ export function MovieScreen({ id }: { id: string }) {
   const { data: item, isLoading } = useMovie(movieId);
   const { mutateAsync: markWatched, isPending: markingWatched } = useMarkWatched(movieId);
   const { mutateAsync: deleteMovie, isPending: deleting } = useDeleteMovie();
+  const { data: chartData } = useMovieCharts(movieId, item?.movie.processing_status === 'processed');
   const language = useSettingsStore(s => s.language);
 
   const movie = item?.movie;
@@ -79,7 +85,7 @@ export function MovieScreen({ id }: { id: string }) {
   const handleMarkWatched = async () => {
     try {
       await markWatched();
-      router.push({ pathname: '/rate', params: { title: movieTitle(movie, language), movieId: id } } as any);
+      router.push({ pathname: '/rate', params: { title: movieTitle(movie, language), movieId: id, posterUrl: posterUrl ?? '' } } as any);
     } catch {
       Alert.alert(t('movie.error'), t('movie.update_error'));
     }
@@ -116,9 +122,20 @@ export function MovieScreen({ id }: { id: string }) {
         )}
         <View style={styles.heroTop}>
           <Pressable onPress={() => router.back()}>
-            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: hasImage ? '#fff' : theme.ink }}>←</Text>
+            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4, color: hasImage ? '#fff' : theme.ink }}>←</Text>
           </Pressable>
         </View>
+        {chartData && chartData.positions.length > 0 && (
+          <View style={{ position: 'absolute', top: 46, left: 16, right: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+            {chartData.positions.map(pos => (
+              <View key={pos.chart_slug} style={[styles.chartBadge, { backgroundColor: theme.accentYellow, borderColor: theme.line }]}>
+                <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 12, lineHeight: 15, paddingVertical: 4, letterSpacing: 2, color: theme.onYellow }} numberOfLines={1}>
+                  {`#${pos.rank} ${t(chartTitleKey(pos.chart_slug))} `}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
         <View style={styles.heroTitle}>
           <H size="xl" color={hasImage ? '#fff' : theme.ink}>{movieTitle(movie, language)}</H>
           <Mono style={{ color: hasImage ? 'rgba(255,255,255,0.8)' : undefined }}>
@@ -144,9 +161,9 @@ export function MovieScreen({ id }: { id: string }) {
             <Body weight="bold" size={14}>{item.rating}/10</Body>
             <Pressable
               style={{ marginLeft: 'auto' }}
-              onPress={() => router.push({ pathname: '/rate', params: { title: movieTitle(movie, language), movieId: id } } as any)}
+              onPress={() => router.push({ pathname: '/rate', params: { title: movieTitle(movie, language), movieId: id, posterUrl: posterUrl ?? '' } } as any)}
             >
-              <Text style={{ fontFamily: 'Caveat-Bold', color: theme.accentOrange }}>{t('movie.edit')}</Text>
+              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 16, lineHeight: 19, paddingVertical: 4, color: theme.accentOrange }}>{t('movie.edit')}</Text>
             </Pressable>
           </View>
         )}
@@ -174,26 +191,27 @@ export function MovieScreen({ id }: { id: string }) {
         {watched ? (
           <>
             <Button
-              title={t('share.button')}
+              title={t('share.button') + ' '}
               style={{ flex: 1, backgroundColor: theme.accentYellow }}
               textStyle={{ color: '#111' }}
               onPress={handleShare}
             />
-            <Button title={t('movie.rewatch')} style={{ flex: 1 }} onPress={handleMarkWatched} disabled={markingWatched} />
+            <Button title={t('movie.rewatch') + ' '} style={{ flex: 1, paddingHorizontal: 8 }} onPress={handleMarkWatched} disabled={markingWatched} />
             <Button title="🗑" style={{ paddingHorizontal: 14, minWidth: 52 }} onPress={handleDelete} disabled={deleting} />
           </>
         ) : (
           <>
             <Button
-              title={t('share.button')}
+              title={t('share.button') + ' '}
               style={{ flex: 1, backgroundColor: theme.accentYellow }}
               textStyle={{ color: '#111' }}
               onPress={handleShare}
             />
             <Button
-              title={markingWatched ? '…' : t('movie.watched')}
+              title={markingWatched ? '…' : t('movie.watched') + ' '}
               variant="primary"
-              style={{ flex: 1 }}
+              style={{ flex: 1, paddingHorizontal: 8 }}
+              textStyle={{ letterSpacing: 1 }}
               onPress={handleMarkWatched}
               disabled={markingWatched}
             />
@@ -225,7 +243,7 @@ function PendingView({ item, onBack, onDelete, deleting }: SubViewProps) {
     <Phone safeBottom>
       <View style={subStyles.header}>
         <Pressable onPress={onBack}>
-          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink }}>{t('movie.back')}</Text>
+          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4, color: theme.ink }}>{t('movie.back')}</Text>
         </Pressable>
       </View>
 
@@ -256,7 +274,7 @@ function PendingView({ item, onBack, onDelete, deleting }: SubViewProps) {
             <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 16, lineHeight: 20 }}>⌛</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink, lineHeight: 24 }}>
+            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink, lineHeight: 26, paddingVertical: 4 }}>
               {t('movie.pending_searching')}
             </Text>
             <Body color={theme.inkSoft} style={{ marginTop: 4 }}>
@@ -291,7 +309,7 @@ function MissingView({ item, onBack, onDelete, deleting }: SubViewProps) {
     <Phone safeBottom>
       <View style={subStyles.header}>
         <Pressable onPress={onBack}>
-          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink }}>{t('movie.back')}</Text>
+          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4, color: theme.ink }}>{t('movie.back')}</Text>
         </Pressable>
       </View>
 
@@ -324,12 +342,12 @@ function MissingView({ item, onBack, onDelete, deleting }: SubViewProps) {
             <Text style={{
               position: 'absolute', top: 0, left: 0, width: 28, height: 28,
               textAlign: 'center', textAlignVertical: 'center',
-              fontFamily: 'Caveat-Bold', fontSize: 18, color: theme.accentOrange,
+              fontFamily: 'Caveat-Bold', fontSize: 18, lineHeight: 32, color: theme.accentOrange,
               includeFontPadding: false,
             }}>?</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink, lineHeight: 24 }}>
+            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink, lineHeight: 26, paddingVertical: 4 }}>
               {t('movie.missing_title')}
             </Text>
             <Body color={theme.inkSoft} style={{ marginTop: 4 }}>
@@ -352,7 +370,7 @@ function MissingView({ item, onBack, onDelete, deleting }: SubViewProps) {
 }
 
 const styles = StyleSheet.create({
-  hero: { height: 300, overflow: 'hidden', position: 'relative' },
+  hero: { height: 300, position: 'relative' },
   heroFade: { ...StyleSheet.absoluteFillObject },
   heroTop: {
     position: 'absolute', top: 12, left: 16, right: 16,
@@ -369,6 +387,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row', gap: 8,
     padding: 12,
     borderTopWidth: 1.5,
+  },
+  chartBadge: {
+    paddingHorizontal: 8, paddingVertical: 5,
+    borderWidth: 1.5, borderRadius: 6,
   },
 });
 

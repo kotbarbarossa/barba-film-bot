@@ -96,8 +96,9 @@ export function MoviesScreen() {
         <View style={{ flex: 1 }}>
           <Body
             weight="bold"
-            size={13}
+            size={15}
             style={[
+              { lineHeight: 20 },
               isPending && { fontStyle: 'italic' },
               isMissing && { fontStyle: 'italic', textDecorationLine: 'line-through', color: theme.accentOrange },
             ]}
@@ -105,11 +106,11 @@ export function MoviesScreen() {
             {displayTitle}
           </Body>
           {isPending ? (
-            <Mono size={9} color={theme.ink}>{t('movies.processing')}</Mono>
+            <Mono size={11} color={theme.ink}>{t('movies.processing')}</Mono>
           ) : isMissing ? (
-            <Mono size={9} color={theme.accentOrange}>{t('movies.not_found_label')}</Mono>
+            <Mono size={11} color={theme.accentOrange}>{t('movies.not_found_label')}</Mono>
           ) : (
-            <Mono size={9}>
+            <Mono size={11} style={{ textTransform: 'none' }}>
               {[
                 item.movie.year,
                 item.movie.media_type === 'film'
@@ -123,18 +124,18 @@ export function MoviesScreen() {
             </Mono>
           )}
           {!isPending && !isMissing && (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
-              <StatusPill status={item.status} />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap', paddingRight: 10 }}>
+              <StatusPill status={item.status} size={10} />
               {item.rating != null ? (
                 <>
-                  <StarRow value={item.rating} size={11} />
-                  <Body weight="bold" size={11}>{item.rating}</Body>
+                  <StarRow value={item.rating} size={13} />
+                  <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 17, lineHeight: 20, color: theme.ink, minWidth: 36 }} numberOfLines={1}>{item.rating}</Text>
                 </>
               ) : null}
             </View>
           )}
         </View>
-        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.inkFaint }}>›</Text>
+        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4, letterSpacing: 6, color: theme.inkFaint }}>›</Text>
       </Pressable>
     );
   };
@@ -175,7 +176,7 @@ export function MoviesScreen() {
             ]}
             onPress={() => router.push('/filters' as any)}
           >
-            <Text>⚙</Text>
+            <Text style={{ color: theme.ink }}>⚙</Text>
           </Pressable>
         </View>
       </View>
@@ -248,7 +249,7 @@ function EmptyListState({
         <Text style={{ fontSize: 36 }}>🔍</Text>
         <ArtNote style={{ textAlign: 'center' }}>{t('movies.nothing_found')}</ArtNote>
         <Pressable onPress={onReset}>
-          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, color: theme.accentOrange }}>
+          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, lineHeight: 18, paddingVertical: 4, color: theme.accentOrange }}>
             {t('movies.reset_filters')}
           </Text>
         </Pressable>
@@ -295,7 +296,7 @@ const styles = StyleSheet.create({
   searchInput: {
     borderWidth: 1.5, borderRadius: 10,
     paddingHorizontal: 12, paddingVertical: 8,
-    fontFamily: 'Caveat-Bold', fontSize: 16,
+    fontFamily: 'Caveat-Bold', fontSize: 16, lineHeight: 19, paddingVertical: 4,
   },
   tabsRow: {
     flexDirection: 'row',

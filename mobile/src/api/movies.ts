@@ -82,3 +82,8 @@ export async function getCategories(): Promise<CategoryResponse[]> {
   const { data } = await apiClient.get<CategoryResponse[]>('/categories');
   return data;
 }
+
+export async function getMyCategories(userId: number): Promise<CategoryResponse[]> {
+  const { data } = await apiClient.get<CategoryResponse[]>(`/users/${userId}/movies/categories`);
+  return data;
+}
