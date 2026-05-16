@@ -32,6 +32,52 @@ function chartSubKey(id: string): string {
   return `charts.${id.replace(/-/g, '_')}_sub`;
 }
 
+const RATING_CHARTS = new Set(['global-trending', 'top-rated']);
+const COUNT_CHARTS  = new Set(['top-want', 'top-postponed']);
+
+type ScoreRowProps = {
+  chartId: string;
+  score: number;
+  watchCount: number;
+  imdbRating?: number | null;
+  avgRating?: number | null;
+  t: (key: string, opts?: Record<string, unknown>) => string;
+};
+
+function ScoreRow({ chartId, score, imdbRating, avgRating, t }: ScoreRowProps) {
+  if (RATING_CHARTS.has(chartId)) {
+    return (
+      <>
+        <StarRow value={score} size={11} />
+        <Body weight="bold" size={11}>{score.toFixed(1)}</Body>
+      </>
+    );
+  }
+  if (COUNT_CHARTS.has(chartId)) {
+    const rating = imdbRating != null ? imdbRating.toFixed(1) : '—';
+    return <Body weight="bold" size={11}>IMDb {rating}</Body>;
+  }
+  if (chartId === 'top-watched') {
+    const rating = avgRating != null ? avgRating.toFixed(1) : '—';
+    return (
+      <>
+        <StarRow value={avgRating ?? 0} size={11} />
+        <Body weight="bold" size={11}>{rating}</Body>
+      </>
+    );
+  }
+  if (chartId === 'top-controversial') {
+    return <Body weight="bold" size={11}>±{score.toFixed(1)}</Body>;
+  }
+  if (chartId === 'top-quick') {
+    const label = score < 1
+      ? t('charts.score_less_1_day')
+      : t('charts.score_days', { count: score.toFixed(1) });
+    return <Body weight="bold" size={11}>{label}</Body>;
+  }
+  return <Body weight="bold" size={11}>{score.toFixed(1)}</Body>;
+}
+
 export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: string }) {
   const { theme } = useTheme();
   const router = useRouter();
@@ -97,6 +143,7 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
                     watchCount: String(entry.watch_count),
                     rank: String(i + 1),
                     chartId,
+                    avgRating: entry.avg_rating != null ? String(entry.avg_rating) : '',
                   },
                 } as any)}
                 style={[
@@ -110,9 +157,7 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
                   <Body weight="bold" size={13}>{movieTitle(entry, language)}</Body>
                   <Mono size={9}>{entry.year}</Mono>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                    <StarRow value={entry.score} size={11} />
-                    <Body weight="bold" size={11}>{entry.score.toFixed(1)}</Body>
-                    <Body color={theme.inkFaint} size={10}>· {t('charts.ratings_count_short', { count: entry.watch_count })}</Body>
+                    <ScoreRow chartId={chartId} score={entry.score} watchCount={entry.watch_count} imdbRating={entry.imdb_rating} avgRating={entry.avg_rating} t={t} />
                   </View>
                 </View>
                 {mine ? (

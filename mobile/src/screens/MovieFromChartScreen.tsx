@@ -25,6 +25,7 @@ type Props = {
   watchCount?: string;
   rank?: string;
   chartId?: string;
+  avgRating?: string;
   onOpenCard?: () => void;
 };
 
@@ -32,7 +33,7 @@ function chartTitleKey(id: string): string {
   return `charts.${id.replace(/-/g, '_')}_title`;
 }
 
-export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, year, score, watchCount, rank, chartId, onOpenCard }: Props) {
+export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, year, score, watchCount, rank, chartId, avgRating, onOpenCard }: Props) {
   const { theme } = useTheme();
   const router = useRouter();
   const { t } = useTranslation();
@@ -115,13 +116,12 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 18, paddingBottom: 16 }}>
         {/* Ratings row */}
         <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-          {score ? (
+          {avgRating ? (
             <View style={[styles.ratingBox, { backgroundColor: theme.shade, borderColor: theme.line }]}>
-              <Mono size={9}>{t('charts.in_chart')}</Mono>
+              <Mono size={9}>{t('chart_movie.our_rating')}</Mono>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
-                <StarRow value={parseFloat(score)} size={13} />
-                <Body weight="bold" size={14}>{score}</Body>
-                {watchCount ? <Body color={theme.inkFaint} size={10}>· {t('charts.ratings_count_short', { count: watchCount })}</Body> : null}
+                <StarRow value={parseFloat(avgRating)} size={13} />
+                <Body weight="bold" size={14}>{parseFloat(avgRating).toFixed(1)}</Body>
               </View>
             </View>
           ) : null}

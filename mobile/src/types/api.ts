@@ -157,6 +157,8 @@ export interface ChartEntry {
   media_type: MediaType | null;
   watch_count: number;
   score: number;
+  imdb_rating: number | null;
+  avg_rating: number | null;
 }
 
 export interface ChartResponse {

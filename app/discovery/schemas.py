@@ -13,6 +13,8 @@ class ChartEntry(BaseModel):
     media_type: MediaType | None
     watch_count: int
     score: float
+    imdb_rating: float | None = None
+    avg_rating: float | None = None
 
 
 class ChartResponse(BaseModel):

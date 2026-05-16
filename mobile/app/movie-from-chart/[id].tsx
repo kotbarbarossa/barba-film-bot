@@ -2,7 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { MovieFromChartScreen } from '@/screens/MovieFromChartScreen';
 
 export default function MovieFromChartPage() {
-  const { id, posterUrl, title, year, score, watchCount, rank, chartId } =
+  const { id, posterUrl, title, year, score, watchCount, rank, chartId, avgRating } =
     useLocalSearchParams<{
       id: string;
       posterUrl?: string;
@@ -12,6 +12,7 @@ export default function MovieFromChartPage() {
       watchCount?: string;
       rank?: string;
       chartId?: string;
+      avgRating?: string;
     }>();
   return (
     <MovieFromChartScreen
@@ -23,6 +24,7 @@ export default function MovieFromChartPage() {
       watchCount={watchCount}
       rank={rank}
       chartId={chartId}
+      avgRating={avgRating || undefined}
     />
   );
 }
