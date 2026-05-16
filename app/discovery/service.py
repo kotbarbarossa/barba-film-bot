@@ -36,7 +36,7 @@ async def get_movie_chart_positions(movie_id: int) -> list[MovieChartPosition]:
     cached_values = await redis.mget(*keys)
 
     positions: list[MovieChartPosition] = []
-    for slug, cached in zip(slugs, cached_values):
+    for slug, cached in zip(slugs, cached_values, strict=False):
         if not cached:
             continue
         entries = json.loads(cached).get('entries', [])
