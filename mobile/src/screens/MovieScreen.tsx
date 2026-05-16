@@ -210,7 +210,8 @@ export function MovieScreen({ id }: { id: string }) {
             <Button
               title={markingWatched ? '…' : t('movie.watched') + ' '}
               variant="primary"
-              style={{ flex: 1 }}
+              style={{ flex: 1, paddingHorizontal: 8 }}
+              textStyle={{ letterSpacing: 1 }}
               onPress={handleMarkWatched}
               disabled={markingWatched}
             />

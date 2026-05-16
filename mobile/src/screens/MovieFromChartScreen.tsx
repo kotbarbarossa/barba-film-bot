@@ -183,7 +183,7 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
 
       <View style={[styles.actions, { borderTopColor: theme.line, backgroundColor: theme.paper }]}>
         {isInList ? (
-          <Button title={t('chart_movie.in_list')} full variant="ghost" onPress={handleOpenMyCard} />
+          <Button title={t('chart_movie.in_list')} full variant="ghost" textStyle={{ letterSpacing: 1 }} onPress={handleOpenMyCard} />
         ) : (
           <Button
             title={isPending ? t('chart_movie.adding') : t('chart_movie.add_to_watchlist')}

@@ -221,9 +221,10 @@ export function ProfileScreen() {
           <View style={{ flex: 1, minWidth: 0 }}>
             <H size="md" style={{ lineHeight: 26 }}>{displayName}</H>
             {profile && (
-              <Mono size={12} style={{ marginTop: 4 }}>
-                {profile.username ? `@${profile.username} · ` : ''}{t('profile.since', { date: formatDate(profile.created_at, language) })}
-              </Mono>
+              <>
+                {profile.username && <Mono size={11} style={{ marginTop: 4 }}>@{profile.username}</Mono>}
+                <Mono size={11} style={{ marginTop: profile.username ? 1 : 4 }}>{t('profile.since', { date: formatDate(profile.created_at, language) })}</Mono>
+              </>
             )}
           </View>
         </View>
