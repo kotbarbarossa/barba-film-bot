@@ -428,6 +428,17 @@ async def add_user_movie(
     return await repo.get_detail(user_id, movie.id)
 
 
+@user_movies_router.get('/categories', response_model=list[CategoryResponse])
+async def list_user_movie_categories(
+    user_id: int,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    _require_own_user(user_id, current_user)
+    repo = CategoryRepository(session)
+    return await repo.get_by_user_processed(user_id)
+
+
 @user_movies_router.get('/{movie_id}', response_model=UserMovieDetailResponse)
 async def get_user_movie(
     user_id: int,

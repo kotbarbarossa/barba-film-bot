@@ -67,10 +67,10 @@ export function HomeScreen() {
               onPress={() => router.push('/add' as any)}
               style={[styles.addBtn, { backgroundColor: theme.accentOrange, borderColor: theme.ink, shadowColor: theme.line }]}
             >
-              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 18, color: theme.paper }}>{t('home.add_movie')}</Text>
+              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 18, lineHeight: 22, paddingVertical: 4, color: theme.paper }}>{t('home.add_movie')}</Text>
             </Pressable>
             <Pressable onPress={() => router.push('/charts' as any)}>
-              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, color: theme.inkSoft }}>{t('home.see_charts')}</Text>
+              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 16, lineHeight: 19, paddingVertical: 4, color: theme.inkSoft }}>{t('home.see_charts')}</Text>
             </Pressable>
           </View>
         </View>
@@ -152,7 +152,7 @@ function NavTile({
         <H size="md" color={fg}>{title}</H>
         <Body color={fg} size={11} style={{ opacity: 0.85 }}>{sub}</Body>
       </View>
-      <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: fg, opacity: 0.6 }}>›</Text>
+      <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4, letterSpacing: 6, color: fg, opacity: 0.6 }}>›</Text>
     </Pressable>
   );
 }

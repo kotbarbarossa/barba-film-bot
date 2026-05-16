@@ -17,6 +17,20 @@ _WINDOW_QUICK = 30
 _WINDOW_POSTPONED_MIN = 90
 
 
+def _avg_rating_subq():
+    return (
+        select(func.avg(cast(UserMovie.rating, Float)))
+        .where(
+            UserMovie.movie_id == Movie.id,
+            UserMovie.status == WatchStatus.WATCHED,
+            UserMovie.rating.is_not(None),
+        )
+        .correlate(Movie)
+        .scalar_subquery()
+        .label('avg_rating')
+    )
+
+
 def _base_movie_cols():
     return (
         Movie.id.label('movie_id'),
@@ -26,6 +40,8 @@ def _base_movie_cols():
         Movie.poster_url_original,
         Movie.year,
         Movie.media_type,
+        Movie.imdb_rating,
+        _avg_rating_subq(),
     )
 
 
@@ -253,6 +269,12 @@ class DiscoveryRepository:
                 media_type=row.media_type,
                 watch_count=row.watch_count,
                 score=round(float(row.score), 2) if row.score is not None else 0.0,
+                imdb_rating=(
+                    round(float(row.imdb_rating), 1) if row.imdb_rating is not None else None
+                ),
+                avg_rating=(
+                    round(float(row.avg_rating), 2) if row.avg_rating is not None else None
+                ),
             )
             for row in result
         ]

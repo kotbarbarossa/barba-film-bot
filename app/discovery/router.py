@@ -6,11 +6,13 @@ from app.core.auth import get_current_user
 from app.discovery.schemas import (
     ChartResponse,
     GlobalTrendingResponse,
+    MovieChartsResponse,
     PublicPosterEntry,
     PublicPostersResponse,
 )
 from app.discovery.service import (
     get_global_trending,
+    get_movie_chart_positions,
     get_top_controversial,
     get_top_postponed,
     get_top_quick,
@@ -55,6 +57,12 @@ async def recent_posters(
             for m in movies
         ]
     )
+
+
+@discovery_router.get('/movie/{movie_id}/charts', response_model=MovieChartsResponse)
+async def movie_chart_positions(movie_id: int) -> MovieChartsResponse:
+    positions = await get_movie_chart_positions(movie_id)
+    return MovieChartsResponse(positions=positions)
 
 
 @discovery_router.get('/global-trending', response_model=GlobalTrendingResponse)

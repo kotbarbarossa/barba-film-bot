@@ -32,9 +32,9 @@ export function TabBar() {
           styles.icon,
           active && { backgroundColor: theme.accentYellow, borderColor: theme.ink, borderWidth: 1.5, borderRadius: 6 },
         ]}>
-          <Text style={{ fontSize: 15 }}>{tab.icon}</Text>
+          <Text style={{ fontSize: 17 }}>{tab.icon}</Text>
         </View>
-        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 13, color: active ? theme.ink : theme.inkFaint }}>
+        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 14, lineHeight: 17, paddingVertical: 2, color: active ? theme.ink : theme.inkFaint }}>
           {tab.label}
         </Text>
       </Pressable>
@@ -53,7 +53,7 @@ export function TabBar() {
     ]}>
       {renderTab(TABS[0])}
       {renderTab(TABS[1])}
-      <View style={{ width: 56 }} />
+      <View style={styles.fabSlot} />
       {renderTab(TABS[2])}
       {renderTab(TABS[3])}
       <View pointerEvents="box-none" style={styles.fabWrapper}>
@@ -61,7 +61,7 @@ export function TabBar() {
           onPress={() => router.push('/add' as any)}
           style={[styles.fab, { backgroundColor: theme.accentOrange, borderColor: theme.ink, shadowColor: theme.ink }]}
         >
-          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 30, color: theme.paper, lineHeight: 32 }}>+</Text>
+          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 30, color: theme.paper, lineHeight: 36, paddingVertical: 4 }}>+</Text>
         </Pressable>
       </View>
     </View>
@@ -72,11 +72,12 @@ const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingHorizontal: 8,
     borderTopWidth: 1.5,
     position: 'relative',
     overflow: 'visible',
+  },
+  fabSlot: {
+    flex: 1,
   },
   tab: {
     flex: 1,

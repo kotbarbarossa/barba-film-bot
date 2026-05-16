@@ -58,7 +58,7 @@ export function ChartsScreen() {
               <Body weight="bold" size={14} color={i === 0 ? theme.onYellow : theme.ink}>{t(chartTitleKey(c.id))}</Body>
               <Body size={11} color={i === 0 ? theme.onYellow : theme.inkSoft} style={{ marginTop: 2, opacity: i === 0 ? 0.65 : 1 }}>{t(chartSubKey(c.id))}</Body>
             </View>
-            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: i === 0 ? theme.onYellow : theme.inkFaint, opacity: i === 0 ? 0.4 : 1 }}>›</Text>
+            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4, letterSpacing: 6, color: i === 0 ? theme.onYellow : theme.inkFaint, opacity: i === 0 ? 0.4 : 1 }}>›</Text>
           </Pressable>
         ))}
       </ScrollView>

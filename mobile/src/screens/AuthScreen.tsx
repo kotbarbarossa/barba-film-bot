@@ -197,7 +197,7 @@ export function AuthScreen({ variant }: { variant?: Variant }) {
         {/* Handle */}
         <View style={[styles.handle, { backgroundColor: theme.shade2 }]} />
 
-        <H size="xl" style={{ textAlign: 'center', marginBottom: 4 }}>{t('auth.tagline')}</H>
+        <H size="xl" adjustsFontSizeToFit numberOfLines={1} style={{ textAlign: 'center', marginBottom: 4, alignSelf: 'stretch' }}>{t('auth.tagline')}</H>
         <ArtNote style={{ textAlign: 'center', marginBottom: 24 }}>
           {t('auth.subtitle')}
         </ArtNote>
@@ -259,7 +259,7 @@ function TelegramAuth() {
                 value={phone}
                 onChangeText={setPhone}
                 keyboardType="phone-pad"
-                style={{ fontFamily: 'Kalam', fontSize: 18, color: theme.ink }}
+                style={{ fontFamily: 'Nunito', fontSize: 18, color: theme.ink }}
               />
             </View>
             <Body color={theme.inkSoft} size={12} style={{ marginTop: 8 }}>
@@ -280,14 +280,14 @@ function TelegramAuth() {
                 maxLength={5}
                 placeholder="• • • • •"
                 placeholderTextColor={theme.inkFaint}
-                style={{ fontFamily: 'Kalam-Bold', fontSize: 28, color: theme.ink, letterSpacing: 8, textAlign: 'center' }}
+                style={{ fontFamily: 'Nunito-Bold', fontSize: 28, color: theme.ink, letterSpacing: 8, textAlign: 'center' }}
               />
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
               <Pressable onPress={() => setStep('phone')}>
-                <Text style={{ fontFamily: 'Caveat-Bold', color: theme.accentOrange }}>{t('auth.change_phone')}</Text>
+                <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 16, lineHeight: 19, paddingVertical: 4, color: theme.accentOrange }}>{t('auth.change_phone') + ' '}</Text>
               </Pressable>
-              <Text style={{ fontFamily: 'Caveat-Bold', color: theme.inkFaint }}>{t('auth.resend')}</Text>
+              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 16, lineHeight: 19, paddingVertical: 4, color: theme.inkFaint }}>{t('auth.resend') + ' '}</Text>
             </View>
             <View style={{ marginTop: 22 }}>
               <Button title={t('auth.sign_in')} variant="primary" full />

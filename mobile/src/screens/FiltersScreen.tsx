@@ -7,7 +7,8 @@ import { Phone } from '@/components/Phone';
 import { Chip } from '@/components/Chip';
 import { H, Body, Mono } from '@/components/Text';
 import { Button } from '@/components/Button';
-import { useCategories } from '@/hooks/queries/useCategories';
+import { useMyCategories } from '@/hooks/queries/useMyCategories';
+import type { CategoryResponse } from '@/types/api';
 import {
   useFiltersStore,
   isFiltersActive,
@@ -15,13 +16,16 @@ import {
   type SortOption,
   type StatusFilter,
 } from '@/store/filters.store';
+import { useSettingsStore } from '@/store/settings.store';
+import { genreName } from '@/utils/localize';
 
 export function FiltersScreen() {
   const { theme } = useTheme();
   const router = useRouter();
   const { t } = useTranslation();
   const stored = useFiltersStore();
-  const { data: categories = [], isLoading: catsLoading } = useCategories();
+  const lang = useSettingsStore((s) => s.language);
+  const { data: categories = [] as CategoryResponse[], isLoading: catsLoading } = useMyCategories();
 
   const [status, setStatus] = useState<StatusFilter>(stored.status);
   const [categoryId, setCategoryId] = useState<number | null>(stored.categoryId);
@@ -60,6 +64,7 @@ export function FiltersScreen() {
   ];
 
   const activePeriod = YEAR_PERIODS.find((p) => p.from === yearFrom && p.to === yearTo);
+  const selectedCategory = categories.find((c) => c.id === categoryId);
 
   const draftActive = isFiltersActive({
     ...stored,
@@ -85,12 +90,12 @@ export function FiltersScreen() {
     <Phone safeBottom>
       <View style={[styles.header, { paddingHorizontal: 16, borderBottomColor: theme.line }]}>
         <Pressable onPress={() => router.back()}>
-          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, color: theme.ink }}>✕</Text>
+          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4, letterSpacing: 2, color: theme.ink }}>✕</Text>
         </Pressable>
-        <H size="md">{t('filters.title')}</H>
+        <H size="md" style={{ flexShrink: 0 }}>{t('filters.title') + ' '}</H>
         <Pressable onPress={handleReset}>
-          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 16, color: draftActive ? theme.accentOrange : theme.inkFaint }}>
-            {t('filters.reset')}
+          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 16, lineHeight: 19, paddingVertical: 4, letterSpacing: 1, color: draftActive ? theme.accentOrange : theme.inkFaint }}>
+            {t('filters.reset') + ' '}
           </Text>
         </Pressable>
       </View>
@@ -126,7 +131,7 @@ export function FiltersScreen() {
 
         <Section
           title={t('filters.genre')}
-          hint={categoryId ? categories.find(c => c.id === categoryId)?.name : undefined}
+          hint={selectedCategory ? genreName(selectedCategory, lang) : undefined}
         >
           {catsLoading ? (
             <ActivityIndicator color={theme.inkSoft} style={{ alignSelf: 'flex-start' }} />
@@ -137,7 +142,7 @@ export function FiltersScreen() {
               </Pressable>
               {categories.map((c) => (
                 <Pressable key={c.id} onPress={() => setCategoryId(categoryId === c.id ? null : c.id)}>
-                  <Chip label={c.name} tone={categoryId === c.id ? 'orange' : undefined} />
+                  <Chip label={genreName(c, lang)} tone={categoryId === c.id ? 'orange' : undefined} />
                 </Pressable>
               ))}
             </View>
@@ -196,7 +201,7 @@ export function FiltersScreen() {
       </ScrollView>
 
       <View style={[styles.actions, { borderTopColor: theme.line, backgroundColor: theme.paper }]}>
-        <Button title={t('filters.apply')} variant="primary" full onPress={handleApply} />
+        <Button title={t('filters.apply') + ' '} variant="primary" full onPress={handleApply} />
       </View>
     </Phone>
   );
@@ -207,7 +212,7 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
   return (
     <View style={{ marginBottom: 22 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 8 }}>
-        <H size="md" style={{ flexShrink: 0, paddingRight: 3 }}>{title}</H>
+        <H size="md" style={{ flexShrink: 0 }}>{title + ' '}</H>
         {hint ? (
           <Mono style={{ color: theme.accentOrange, flex: 1, minWidth: 0 }} numberOfLines={1}>
             {hint}

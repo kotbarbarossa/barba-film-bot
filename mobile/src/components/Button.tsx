@@ -59,7 +59,7 @@ export function Button({
       ]}
     >
       {children ?? (
-        <Text style={[styles.text, { color: palette.fg, fontSize: fontSize ?? 18 }, textStyle]}>
+        <Text numberOfLines={1} style={[styles.text, { color: palette.fg, fontSize: fontSize ?? 18, lineHeight: (fontSize ?? 18) * 1.2, letterSpacing: 2 }, textStyle]}>
           {title}
         </Text>
       )}

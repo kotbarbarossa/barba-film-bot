@@ -18,7 +18,7 @@ const KEY: Record<Status, string> = {
   dropped:  'status.dropped',
 };
 
-export function StatusPill({ status }: { status: Status }) {
+export function StatusPill({ status, size }: { status: Status; size?: number }) {
   const { t } = useTranslation();
-  return <Chip label={t(KEY[status])} tone={TONE[status]} />;
+  return <Chip label={t(KEY[status])} tone={TONE[status]} size={size} />;
 }

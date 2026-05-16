@@ -11,7 +11,7 @@ export function H({ size = 'md', color, style, children, ...rest }: TextProps & 
     <RNText
       {...rest}
       style={[
-        { fontFamily: 'Caveat-Bold', fontSize, color: color ?? theme.ink, lineHeight: fontSize * 1.2 },
+        { fontFamily: 'Caveat-Bold', fontSize, color: color ?? theme.ink, lineHeight: fontSize * 1.2, paddingVertical: 4, letterSpacing: 1 },
         style,
       ]}
     >
@@ -20,13 +20,13 @@ export function H({ size = 'md', color, style, children, ...rest }: TextProps & 
   );
 }
 
-export function Body({ color, style, children, weight, size = 13, ...rest }: TextProps & { color?: string; weight?: 'regular' | 'bold'; size?: number }) {
+export function Body({ color, style, children, weight, size = 16, ...rest }: TextProps & { color?: string; weight?: 'regular' | 'bold'; size?: number }) {
   const { theme } = useTheme();
   return (
     <RNText
       {...rest}
       style={[
-        { fontFamily: weight === 'bold' ? 'Kalam-Bold' : 'Kalam', fontSize: size, color: color ?? theme.ink, lineHeight: size * 1.4 },
+        { fontFamily: weight === 'bold' ? 'Nunito-Bold' : 'Nunito', fontSize: size, color: color ?? theme.ink, lineHeight: size * 1.4 },
         style,
       ]}
     >
@@ -35,13 +35,13 @@ export function Body({ color, style, children, weight, size = 13, ...rest }: Tex
   );
 }
 
-export function Mono({ color, style, children, size = 10, ...rest }: TextProps & { color?: string; size?: number }) {
+export function Mono({ color, style, children, size = 12, ...rest }: TextProps & { color?: string; size?: number }) {
   const { theme } = useTheme();
   return (
     <RNText
       {...rest}
       style={[
-        { fontFamily: 'JetBrainsMono', fontSize: size, color: color ?? theme.inkFaint, letterSpacing: 0.5, textTransform: 'uppercase' },
+        { fontFamily: 'JetBrainsMono', fontSize: size, color: color ?? theme.inkFaint, letterSpacing: 0.5, textTransform: 'uppercase', lineHeight: size * 1.5 },
         style,
       ]}
     >
@@ -55,7 +55,7 @@ export function ArtNote({ color, children, style }: { color?: string; children: 
   return (
     <RNText
       style={[
-        { fontFamily: 'Kalam', fontSize: 11, color: color ?? theme.inkFaint, fontStyle: 'italic', lineHeight: 14 },
+        { fontFamily: 'Nunito-Italic', fontSize: 14, color: color ?? theme.inkFaint, lineHeight: 20 },
         style,
       ]}
     >

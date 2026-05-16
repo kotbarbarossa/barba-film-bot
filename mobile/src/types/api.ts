@@ -157,6 +157,8 @@ export interface ChartEntry {
   media_type: MediaType | null;
   watch_count: number;
   score: number;
+  imdb_rating: number | null;
+  avg_rating: number | null;
 }
 
 export interface ChartResponse {
@@ -167,5 +169,14 @@ export interface GlobalTrendingResponse {
   entries: ChartEntry[];
   is_trending: boolean;
   min_count_used: number;
+}
+
+export interface MovieChartPosition {
+  chart_slug: ChartSlug;
+  rank: number;
+}
+
+export interface MovieChartsResponse {
+  positions: MovieChartPosition[];
 }
 
