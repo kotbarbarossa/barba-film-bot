@@ -118,7 +118,7 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
         <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
           {avgRating ? (
             <View style={[styles.ratingBox, { backgroundColor: theme.shade, borderColor: theme.line }]}>
-              <Mono size={9}>{t('chart_movie.our_rating')}</Mono>
+              <Mono size={9}>{t('charts.our_rating')}</Mono>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
                 <StarRow value={parseFloat(avgRating)} size={13} />
                 <Body weight="bold" size={14}>{parseFloat(avgRating).toFixed(1)}</Body>

@@ -19,7 +19,7 @@ const QUICK_KEYS = [
   { v: 3,  key: 'rating.bad' },
 ] as const;
 
-export function RatingPromptScreen({ title = '', movieId }: { title?: string; movieId?: string }) {
+export function RatingPromptScreen({ title = '', movieId, posterUrl }: { title?: string; movieId?: string; posterUrl?: string }) {
   const { theme } = useTheme();
   const router = useRouter();
   const { t } = useTranslation();
@@ -44,7 +44,7 @@ export function RatingPromptScreen({ title = '', movieId }: { title?: string; mo
         <View style={[styles.handle, { backgroundColor: theme.inkFaint }]} />
 
         <View style={{ alignItems: 'center', marginTop: 12 }}>
-          <Poster width={80} aspectRatio={2 / 3} label="POS" />
+          <Poster width={80} aspectRatio={2 / 3} posterUrl={posterUrl ?? null} label={title.slice(0, 4) || '?'} />
         </View>
 
         <H size="lg" style={{ textAlign: 'center', marginTop: 14 }}>{t('rating.question')}</H>

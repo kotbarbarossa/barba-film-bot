@@ -158,7 +158,7 @@ const en: Translations = {
     score_views: '{{count}} views',
     score_viewers_short: '{{count}} viewers',
     score_days: '{{count}}d',
-    score_less_1_day: '< 1d',
+    score_less_1_day: '< 1 day',
     score_stddev: '±{{value}} spread',
     empty_title: 'Chart is empty',
     empty_body: 'More user data is needed. Check back in a few days — the chart updates automatically.',

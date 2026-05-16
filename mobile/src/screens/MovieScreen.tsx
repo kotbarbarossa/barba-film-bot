@@ -79,7 +79,7 @@ export function MovieScreen({ id }: { id: string }) {
   const handleMarkWatched = async () => {
     try {
       await markWatched();
-      router.push({ pathname: '/rate', params: { title: movieTitle(movie, language), movieId: id } } as any);
+      router.push({ pathname: '/rate', params: { title: movieTitle(movie, language), movieId: id, posterUrl: posterUrl ?? '' } } as any);
     } catch {
       Alert.alert(t('movie.error'), t('movie.update_error'));
     }
@@ -144,7 +144,7 @@ export function MovieScreen({ id }: { id: string }) {
             <Body weight="bold" size={14}>{item.rating}/10</Body>
             <Pressable
               style={{ marginLeft: 'auto' }}
-              onPress={() => router.push({ pathname: '/rate', params: { title: movieTitle(movie, language), movieId: id } } as any)}
+              onPress={() => router.push({ pathname: '/rate', params: { title: movieTitle(movie, language), movieId: id, posterUrl: posterUrl ?? '' } } as any)}
             >
               <Text style={{ fontFamily: 'Caveat-Bold', color: theme.accentOrange }}>{t('movie.edit')}</Text>
             </Pressable>
