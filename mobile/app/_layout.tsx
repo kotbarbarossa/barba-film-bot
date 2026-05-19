@@ -9,6 +9,7 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { ThemeProvider } from '@/theme';
 import { useAuthStore } from '@/store/auth.store';
@@ -62,6 +63,7 @@ export default function RootLayout() {
     <ThemeProvider>
       <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
         <SafeAreaProvider>
+          <KeyboardProvider>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="auth" />
@@ -76,6 +78,7 @@ export default function RootLayout() {
             <Stack.Screen name="empty/movies" />
             <Stack.Screen name="empty/filter" />
           </Stack>
+          </KeyboardProvider>
         </SafeAreaProvider>
       </PersistQueryClientProvider>
     </ThemeProvider>
