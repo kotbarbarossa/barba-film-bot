@@ -15,7 +15,7 @@ const en: Translations = {
     add_movie: '+ Add movie',
     see_charts: '🔥 See charts',
     random: '🎲 Random',
-    random_sub: 'one of {{count}} movies in your list',
+    random_sub: 'one of {{count}} unwatched',
     all_mine: 'All mine',
     charts: 'Charts',
     seven_collections: '7 lists',

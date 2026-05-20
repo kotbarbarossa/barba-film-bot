@@ -13,7 +13,7 @@ const ru = {
     add_movie: '+ Добавить фильм',
     see_charts: '🔥 Посмотреть чарты',
     random: '🎲 Наугад',
-    random_sub: 'один из {{count}} фильмов в твоём списке',
+    random_sub: 'один из {{count}} непосмотренных',
     all_mine: 'Все мои',
     charts: 'Чарты',
     seven_collections: '7 подборок',

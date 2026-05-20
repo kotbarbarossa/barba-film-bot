@@ -46,9 +46,11 @@ export function HomeScreen() {
     [allMovies],
   );
 
+  const unwatched = useMemo(() => allMovies.filter(m => m.status !== 'watched'), [allMovies]);
+
   const onRandom = () => {
-    if (allMovies.length === 0) return;
-    const pick = allMovies[Math.floor(Math.random() * allMovies.length)];
+    if (unwatched.length === 0) return;
+    const pick = unwatched[Math.floor(Math.random() * unwatched.length)];
     router.push({ pathname: '/movie/[id]', params: { id: String(pick.movie.id) } } as any);
   };
 
@@ -105,7 +107,7 @@ export function HomeScreen() {
         >
           <H size="xl" color={theme.paper} style={{ fontSize: 40 }}>{t('home.random')}</H>
           <Body color={theme.paper} size={13} style={{ opacity: 0.85 }}>
-            {t('home.random_sub', { count: movieCount })}
+            {t('home.random_sub', { count: unwatched.length })}
           </Body>
         </Pressable>
 
