@@ -61,7 +61,7 @@ export function TabBar() {
           onPress={() => router.push('/add' as any)}
           style={[styles.fab, { backgroundColor: theme.accentOrange, borderColor: theme.ink, shadowColor: theme.ink }]}
         >
-          <Text style={{ fontFamily: 'Neucha', fontSize: 30, color: theme.paper, lineHeight: 36, paddingVertical: 4 }}>+</Text>
+          <Text style={{ fontFamily: 'Neucha', fontSize: 30, color: theme.paper, lineHeight: 36, marginTop: 4, marginLeft: 2 }}>+</Text>
         </Pressable>
       </View>
     </View>
