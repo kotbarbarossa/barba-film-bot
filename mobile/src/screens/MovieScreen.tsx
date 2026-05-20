@@ -191,24 +191,24 @@ export function MovieScreen({ id }: { id: string }) {
         {watched ? (
           <>
             <Button
-              title={t('share.button') + ' '}
+              title={t('share.button')}
               style={{ flex: 1, backgroundColor: theme.accentYellow }}
               textStyle={{ color: '#111' }}
               onPress={handleShare}
             />
-            <Button title={t('movie.rewatch') + ' '} style={{ flex: 1, paddingHorizontal: 8 }} onPress={handleMarkWatched} disabled={markingWatched} />
+            <Button title={t('movie.rewatch')} style={{ flex: 1, paddingHorizontal: 8 }} onPress={handleMarkWatched} disabled={markingWatched} />
             <Button title="🗑" style={{ paddingHorizontal: 14, minWidth: 52 }} onPress={handleDelete} disabled={deleting} />
           </>
         ) : (
           <>
             <Button
-              title={t('share.button') + ' '}
+              title={t('share.button')}
               style={{ flex: 1, backgroundColor: theme.accentYellow }}
               textStyle={{ color: '#111' }}
               onPress={handleShare}
             />
             <Button
-              title={markingWatched ? '…' : t('movie.watched') + ' '}
+              title={markingWatched ? '…' : t('movie.watched')}
               variant="primary"
               style={{ flex: 1, paddingHorizontal: 8 }}
               textStyle={{ letterSpacing: 1 }}

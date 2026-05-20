@@ -178,7 +178,7 @@ function NavTile({
         <H size="md" color={fg}>{title}</H>
         <Body color={fg} size={11} style={{ opacity: 0.85 }}>{sub}</Body>
       </View>
-      <Text style={{ fontFamily: 'Neucha', fontSize: 22, lineHeight: 26, paddingVertical: 4, letterSpacing: 6, color: fg, opacity: 0.6 }}>›</Text>
+      <Text style={{ fontFamily: 'Neucha', fontSize: 22, lineHeight: 26, paddingVertical: 4, color: fg, opacity: 0.6 }}>›</Text>
     </Pressable>
   );
 }

@@ -135,7 +135,7 @@ export function MoviesScreen() {
             </View>
           )}
         </View>
-        <Text style={{ fontFamily: 'Neucha', fontSize: 22, lineHeight: 26, paddingVertical: 4, letterSpacing: 6, color: theme.inkFaint }}>›</Text>
+        <Text style={{ fontFamily: 'Neucha', fontSize: 22, lineHeight: 26, paddingVertical: 4, color: theme.inkFaint }}>›</Text>
       </Pressable>
     );
   };

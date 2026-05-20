@@ -92,10 +92,10 @@ export function FiltersScreen() {
         <Pressable onPress={() => router.back()}>
           <Text style={{ fontFamily: 'Neucha', fontSize: 22, lineHeight: 26, paddingVertical: 4, letterSpacing: 2, color: theme.ink }}>✕</Text>
         </Pressable>
-        <H size="md" style={{ flexShrink: 0 }}>{t('filters.title') + ' '}</H>
+        <H size="md" style={{ flexShrink: 0 }}>{t('filters.title')}</H>
         <Pressable onPress={handleReset}>
           <Text style={{ fontFamily: 'Neucha', fontSize: 16, lineHeight: 19, paddingVertical: 4, letterSpacing: 1, color: draftActive ? theme.accentOrange : theme.inkFaint }}>
-            {t('filters.reset') + ' '}
+            {t('filters.reset')}
           </Text>
         </Pressable>
       </View>
@@ -201,7 +201,7 @@ export function FiltersScreen() {
       </ScrollView>
 
       <View style={[styles.actions, { borderTopColor: theme.line, backgroundColor: theme.paper }]}>
-        <Button title={t('filters.apply') + ' '} variant="primary" full onPress={handleApply} />
+        <Button title={t('filters.apply')} variant="primary" full onPress={handleApply} />
       </View>
     </Phone>
   );

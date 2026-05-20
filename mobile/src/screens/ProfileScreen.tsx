@@ -69,7 +69,7 @@ function SettingRow({ icon, title, value, danger, last, onPress, theme }: {
       {value !== undefined && (
         <Body size={14} color={theme.inkSoft} style={{ marginRight: 6 }}>{value}</Body>
       )}
-      <H size="sm" color={theme.inkFaint} style={{ fontSize: 20, lineHeight: 24, letterSpacing: 6 }}>›</H>
+      <H size="sm" color={theme.inkFaint} style={{ fontSize: 20, lineHeight: 24 }}>›</H>
     </Pressable>
   );
 }
@@ -205,7 +205,7 @@ export function ProfileScreen() {
       <View style={styles.header}>
         <H size="lg" style={{ flex: 1 }}>{t('profile.title')}</H>
         <Pressable hitSlop={8} onPress={openEdit}>
-          <H size="sm" color={theme.accentOrange}>{t('profile.edit') + ' '}</H>
+          <H size="sm" color={theme.accentOrange}>{t('profile.edit')}</H>
         </Pressable>
       </View>
 
