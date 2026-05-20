@@ -12,7 +12,7 @@ module.exports = {
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
   splash: {
-    image: './assets/splash.png',
+    image: './assets/adaptive-icon.png',
     resizeMode: 'cover',
     backgroundColor: '#faf7f2',
   },

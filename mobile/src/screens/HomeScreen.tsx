@@ -175,10 +175,9 @@ function NavTile({
     <Pressable onPress={onPress} style={[styles.tile, { backgroundColor: bg, borderColor: theme.line }]}>
       <Text style={{ fontSize: 24 }}>{emoji}</Text>
       <View style={{ flex: 1 }}>
-        <H size="md" color={fg}>{title}</H>
+        <H size="md" color={fg} numberOfLines={1} adjustsFontSizeToFit>{title}</H>
         <Body color={fg} size={11} style={{ opacity: 0.85 }}>{sub}</Body>
       </View>
-      <Text style={{ fontFamily: 'Neucha', fontSize: 22, lineHeight: 26, paddingVertical: 4, color: fg, opacity: 0.6 }}>›</Text>
     </Pressable>
   );
 }
