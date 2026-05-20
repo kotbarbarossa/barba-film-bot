@@ -95,14 +95,14 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
         )}
         <View style={styles.heroTop}>
           <Pressable onPress={() => router.back()}>
-            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4, color: heroTextColor }}>{t('chart_movie.back_to_chart')}</Text>
+            <Text style={{ fontFamily: 'Neucha', fontSize: 22, lineHeight: 26, paddingVertical: 4, color: heroTextColor }}>{t('chart_movie.back_to_chart')}</Text>
           </Pressable>
         </View>
         {chartData && chartData.positions.length > 0 ? (
           <View style={{ position: 'absolute', top: 46, left: 16, right: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
             {chartData.positions.map(pos => (
               <View key={pos.chart_slug} style={[styles.chartBadge, { backgroundColor: theme.accentYellow, borderColor: theme.line }]}>
-                <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 12, lineHeight: 15, paddingVertical: 4, letterSpacing: 2, color: theme.onYellow }} numberOfLines={1}>
+                <Text style={{ fontFamily: 'Neucha', fontSize: 12, lineHeight: 15, paddingVertical: 4, letterSpacing: 2, color: theme.onYellow }} numberOfLines={1}>
                   {`#${pos.rank} ${t(chartTitleKey(pos.chart_slug))} `}
                 </Text>
               </View>
@@ -110,7 +110,7 @@ export function MovieFromChartScreen({ movieId, posterUrl, title: titleProp, yea
           </View>
         ) : rank && chartTitle ? (
           <View style={[styles.chartBadge, { backgroundColor: theme.accentYellow, borderColor: theme.line }]}>
-            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 12, lineHeight: 15, paddingVertical: 4, letterSpacing: 2, color: theme.onYellow }} numberOfLines={1}>{`#${rank} ${chartTitle} `}</Text>
+            <Text style={{ fontFamily: 'Neucha', fontSize: 12, lineHeight: 15, paddingVertical: 4, letterSpacing: 2, color: theme.onYellow }} numberOfLines={1}>{`#${rank} ${chartTitle} `}</Text>
           </View>
         ) : null}
         <View style={styles.heroBottom}>

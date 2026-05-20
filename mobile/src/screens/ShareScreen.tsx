@@ -80,7 +80,7 @@ export function ShareScreen({
         <View style={styles.header}>
           <H size="lg">{t('share.title')}</H>
           <Pressable onPress={() => router.back()}>
-            <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4, color: theme.ink }}>✕</Text>
+            <Text style={{ fontFamily: 'Neucha', fontSize: 22, lineHeight: 26, paddingVertical: 4, color: theme.ink }}>✕</Text>
           </Pressable>
         </View>
 
@@ -115,7 +115,7 @@ export function ShareScreen({
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginTop: 10 }}>
                   {chartData.positions.map(pos => (
                     <View key={pos.chart_slug} style={[styles.chartBadge, { backgroundColor: theme.accentYellow, borderColor: theme.line }]}>
-                      <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 14, lineHeight: 17, paddingVertical: 4, letterSpacing: 2, color: theme.onYellow }} numberOfLines={1}>
+                      <Text style={{ fontFamily: 'Neucha', fontSize: 14, lineHeight: 17, paddingVertical: 4, letterSpacing: 2, color: theme.onYellow }} numberOfLines={1}>
                         {`#${pos.rank} ${t(`charts.${pos.chart_slug.replace(/-/g, '_')}_title`)} `}
                       </Text>
                     </View>

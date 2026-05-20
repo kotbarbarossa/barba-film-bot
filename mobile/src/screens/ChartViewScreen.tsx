@@ -46,14 +46,14 @@ type ScoreRowProps = {
 
 function ScoreRow({ chartId, score, imdbRating, avgRating, t }: ScoreRowProps) {
   const { theme } = useTheme();
-  const st = { fontFamily: 'Caveat-Bold', fontSize: 18, lineHeight: 22, color: theme.ink } as const;
-  const num = (s: string, minWidth = 52) => <Text style={[st, { minWidth }]} numberOfLines={1}>{s}</Text>;
+  const st = { fontFamily: 'Neucha', fontSize: 14, lineHeight: 22, color: theme.ink, includeFontPadding: false } as const;
+  const num = (s: string, minWidth = 40) => <Text style={[st, { minWidth, marginTop: -1 }]} numberOfLines={1}>{s}</Text>;
   if (RATING_CHARTS.has(chartId)) {
     return <><StarRow value={score} size={15} />{num(score.toFixed(1))}</>;
   }
   if (COUNT_CHARTS.has(chartId)) {
     const rating = imdbRating != null ? imdbRating.toFixed(1) : '—';
-    return num(`imdb ${rating}`, 90);
+    return num(`imdb ${rating}`, 70);
   }
   if (chartId === 'top-watched') {
     const rating = avgRating != null ? avgRating.toFixed(1) : '—';
@@ -115,7 +115,7 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
 
       <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
         <View style={{ paddingHorizontal: 18, paddingTop: 8 }}>
-          <H size="xl">{icon} {t(chartTitleKey(chartId))}</H>
+          <H size="xl" numberOfLines={1} adjustsFontSizeToFit>{icon} {t(chartTitleKey(chartId))}</H>
           <ArtNote>{t(chartSubKey(chartId))} · {t('charts.updated_today')}</ArtNote>
         </View>
 
@@ -149,13 +149,13 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
                 <View style={{ flex: 1 }}>
                   <Body weight="bold" size={15} style={{ lineHeight: 20 }}>{movieTitle(entry, language)}</Body>
                   <Mono>{entry.year}</Mono>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingRight: 10 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 4, paddingRight: 10 }}>
                     <ScoreRow chartId={chartId} score={entry.score} watchCount={entry.watch_count} imdbRating={entry.imdb_rating} avgRating={entry.avg_rating} t={t} />
                   </View>
                 </View>
                 {mine ? (
                   <View style={[styles.badge, { backgroundColor: theme.accentMint, borderColor: theme.line }]}>
-                    <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 13, lineHeight: 16, color: theme.ink }}>✓</Text>
+                    <Text style={{ fontFamily: 'Neucha', fontSize: 13, lineHeight: 16, color: theme.ink }}>✓</Text>
                   </View>
                 ) : null}
               </Pressable>
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   },
   rank: {
     minWidth: 36, textAlign: 'center',
-    fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4,
+    fontFamily: 'Neucha', fontSize: 22, lineHeight: 26, paddingVertical: 4,
   },
   badge: {
     width: 22, height: 22, borderRadius: 11,

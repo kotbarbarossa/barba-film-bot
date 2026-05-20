@@ -1,4 +1,6 @@
 from dataclasses import dataclass, field
+from enum import StrEnum
+from typing import Any
 
 from sqlalchemy import delete as sa_delete
 from sqlalchemy import func, or_, select
@@ -18,6 +20,14 @@ from app.movie.models import (
     WatchStatus,
     movie_category,
 )
+
+
+class UserMovieSortBy(StrEnum):
+    IMDB_RATING = 'imdb_rating'
+    YEAR = 'year'
+    USER_RATING = 'user_rating'
+    ADDED_AT = 'added_at'
+    WATCHED_AT = 'watched_at'
 
 
 @dataclass
@@ -50,7 +60,9 @@ class UserMovieFilter:
     user_rating_from: int | None = None
     user_rating_to: int | None = None
     media_types: list[MediaType] | None = field(default=None)
-    sort_by: str = 'imdb_rating'  # imdb_rating | year | user_rating | added_at | watched_at
+    sort_by: UserMovieSortBy = UserMovieSortBy.IMDB_RATING
+    limit: int | None = None
+    offset: int | None = None
 
 
 class MovieRepository(BaseRepository[Movie]):
@@ -341,14 +353,21 @@ class UserMovieRepository(BaseRepository[UserMovie]):  # type: ignore[type-var]
             stmt = stmt.where(UserMovie.rating <= filters.user_rating_to)
         if filters.media_types:
             stmt = stmt.where(Movie.media_type.in_(filters.media_types))
-        _sort_map = {
-            'imdb_rating': Movie.imdb_rating.desc().nullslast(),
-            'year': Movie.year.desc().nullslast(),
-            'user_rating': UserMovie.rating.desc().nullslast(),
-            'added_at': UserMovie.added_at.desc(),
-            'watched_at': UserMovie.watched_at.desc().nullslast(),
+        _sort_map: dict[UserMovieSortBy, Any] = {
+            UserMovieSortBy.IMDB_RATING: Movie.imdb_rating.desc().nullslast(),
+            UserMovieSortBy.YEAR: Movie.year.desc().nullslast(),
+            UserMovieSortBy.USER_RATING: UserMovie.rating.desc().nullslast(),
+            UserMovieSortBy.ADDED_AT: UserMovie.added_at.desc(),
+            UserMovieSortBy.WATCHED_AT: UserMovie.watched_at.desc().nullslast(),
         }
-        stmt = stmt.order_by(_sort_map.get(filters.sort_by, Movie.imdb_rating.desc().nullslast()))
+        stmt = stmt.order_by(
+            _sort_map.get(filters.sort_by, Movie.imdb_rating.desc().nullslast()),
+            UserMovie.id.asc(),
+        )
+        if filters.offset is not None:
+            stmt = stmt.offset(filters.offset)
+        if filters.limit is not None:
+            stmt = stmt.limit(filters.limit)
         return list((await self.session.execute(stmt)).scalars().all())
 
     async def get_random_active_processed(self, user_id: int) -> UserMovie | None:

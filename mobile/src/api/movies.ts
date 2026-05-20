@@ -21,6 +21,9 @@ export async function getMyMovies(
       year_from: filters.year_from,
       year_to: filters.year_to,
       category_id: filters.category_id,
+      sort_by: filters.sort_by,
+      limit: filters.limit,
+      offset: filters.offset,
     },
   });
   return data;

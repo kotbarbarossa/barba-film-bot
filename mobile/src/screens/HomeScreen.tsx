@@ -8,6 +8,7 @@ import { H, Body, Mono, ArtNote } from '@/components/Text';
 import { useRouter } from 'expo-router';
 import { useMyMovies } from '@/hooks/queries/useMyMovies';
 import { useSettingsStore } from '@/store/settings.store';
+import { useFiltersStore } from '@/store/filters.store';
 import { movieTitle } from '@/utils/localize';
 import type { UserMovieListResponse } from '@/types/api';
 
@@ -18,23 +19,38 @@ export function HomeScreen() {
   const { data: movies } = useMyMovies();
   const language = useSettingsStore(s => s.language);
 
+  const setFilters = useFiltersStore(s => s.setFilters);
+  const resetFilters = useFiltersStore(s => s.reset);
+
   const allMovies = movies ?? [];
   const movieCount = allMovies.length;
-  const wantCount = useMemo(() => allMovies.filter(m => m.status === 'want').length, [allMovies]);
+  const notWatchedCount = useMemo(() => allMovies.filter(m => m.status !== 'watched').length, [allMovies]);
   const watchedCount = useMemo(() => allMovies.filter(m => m.status === 'watched').length, [allMovies]);
 
   const recentAdded = useMemo(
-    () => [...allMovies].sort((a, b) => b.id - a.id).slice(0, 6),
+    () => [...allMovies]
+      .filter(m => m.status !== 'watched')
+      .sort((a, b) => new Date(b.added_at).getTime() - new Date(a.added_at).getTime())
+      .slice(0, 10),
     [allMovies],
   );
   const recentWatched = useMemo(
-    () => allMovies.filter(m => m.status === 'watched').sort((a, b) => b.id - a.id).slice(0, 6),
+    () => allMovies
+      .filter(m => m.status === 'watched')
+      .sort((a, b) => {
+        const aW = a.watched_at ? new Date(a.watched_at).getTime() : 0;
+        const bW = b.watched_at ? new Date(b.watched_at).getTime() : 0;
+        return bW - aW || new Date(b.added_at).getTime() - new Date(a.added_at).getTime();
+      })
+      .slice(0, 10),
     [allMovies],
   );
 
+  const unwatched = useMemo(() => allMovies.filter(m => m.status !== 'watched'), [allMovies]);
+
   const onRandom = () => {
-    if (allMovies.length === 0) return;
-    const pick = allMovies[Math.floor(Math.random() * allMovies.length)];
+    if (unwatched.length === 0) return;
+    const pick = unwatched[Math.floor(Math.random() * unwatched.length)];
     router.push({ pathname: '/movie/[id]', params: { id: String(pick.movie.id) } } as any);
   };
 
@@ -67,10 +83,10 @@ export function HomeScreen() {
               onPress={() => router.push('/add' as any)}
               style={[styles.addBtn, { backgroundColor: theme.accentOrange, borderColor: theme.ink, shadowColor: theme.line }]}
             >
-              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 18, lineHeight: 22, paddingVertical: 4, color: theme.paper }}>{t('home.add_movie')}</Text>
+              <Text style={{ fontFamily: 'Neucha', fontSize: 18, lineHeight: 22, paddingVertical: 4, color: theme.paper }}>{t('home.add_movie')}</Text>
             </Pressable>
             <Pressable onPress={() => router.push('/charts' as any)}>
-              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 16, lineHeight: 19, paddingVertical: 4, color: theme.inkSoft }}>{t('home.see_charts')}</Text>
+              <Text style={{ fontFamily: 'Neucha', fontSize: 16, lineHeight: 19, paddingVertical: 4, color: theme.inkSoft }}>{t('home.see_charts')}</Text>
             </Pressable>
           </View>
         </View>
@@ -91,7 +107,7 @@ export function HomeScreen() {
         >
           <H size="xl" color={theme.paper} style={{ fontSize: 40 }}>{t('home.random')}</H>
           <Body color={theme.paper} size={13} style={{ opacity: 0.85 }}>
-            {t('home.random_sub', { count: movieCount })}
+            {t('home.random_sub', { count: unwatched.length })}
           </Body>
         </Pressable>
 
@@ -114,15 +130,25 @@ export function HomeScreen() {
 
         <PosterShelf
           title={t('home.recently_added')}
-          sub={wantCount > 0 ? `${wantCount} →` : ''}
+          sub={notWatchedCount > 0 ? `${notWatchedCount} →` : ''}
           movies={recentAdded}
           onMoviePress={(m) => router.push({ pathname: '/movie/[id]', params: { id: String(m.movie.id) } } as any)}
+          onSubPress={() => {
+            resetFilters();
+            setFilters({ status: 'want', sort: 'added_desc' });
+            router.push('/movies' as any);
+          }}
         />
         <PosterShelf
           title={t('home.recently_watched')}
           sub={watchedCount > 0 ? `${watchedCount} →` : ''}
           movies={recentWatched}
           onMoviePress={(m) => router.push({ pathname: '/movie/[id]', params: { id: String(m.movie.id) } } as any)}
+          onSubPress={() => {
+            resetFilters();
+            setFilters({ status: 'watched', sort: 'watched_first' });
+            router.push('/movies' as any);
+          }}
         />
       </ScrollView>
     </Phone>
@@ -149,10 +175,9 @@ function NavTile({
     <Pressable onPress={onPress} style={[styles.tile, { backgroundColor: bg, borderColor: theme.line }]}>
       <Text style={{ fontSize: 24 }}>{emoji}</Text>
       <View style={{ flex: 1 }}>
-        <H size="md" color={fg}>{title}</H>
+        <H size="md" color={fg} numberOfLines={1} adjustsFontSizeToFit>{title}</H>
         <Body color={fg} size={11} style={{ opacity: 0.85 }}>{sub}</Body>
       </View>
-      <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4, letterSpacing: 6, color: fg, opacity: 0.6 }}>›</Text>
     </Pressable>
   );
 }
@@ -162,11 +187,13 @@ function PosterShelf({
   sub,
   movies,
   onMoviePress,
+  onSubPress,
 }: {
   title: string;
   sub: string;
   movies: UserMovieListResponse[];
   onMoviePress: (m: UserMovieListResponse) => void;
+  onSubPress?: () => void;
 }) {
   const language = useSettingsStore(s => s.language);
   if (movies.length === 0) return null;
@@ -174,7 +201,11 @@ function PosterShelf({
     <View style={{ marginTop: 14 }}>
       <View style={[styles.row, { paddingHorizontal: 18, marginBottom: 6 }]}>
         <H size="md" style={{ flex: 1 }}>{title}</H>
-        {sub ? <Mono style={{ flexShrink: 0 }}>{sub}</Mono> : null}
+        {sub ? (
+          <Pressable onPress={onSubPress} hitSlop={8}>
+            <Mono style={{ flexShrink: 0 }}>{sub}</Mono>
+          </Pressable>
+        ) : null}
       </View>
       <ScrollView
         horizontal

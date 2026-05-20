@@ -33,8 +33,8 @@ export const darkTheme: typeof lightTheme = {
 export type Theme = typeof lightTheme;
 
 export const fonts = {
-  caveat: 'Caveat',
-  caveatBold: 'Caveat-Bold',
+  caveat: 'Neucha',
+  caveatBold: 'Neucha',
   nunito: 'Nunito',
   nunitoBold: 'Nunito-Bold',
   mono: 'JetBrainsMono',

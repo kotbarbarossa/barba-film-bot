@@ -13,13 +13,13 @@ const ru = {
     add_movie: '+ Добавить фильм',
     see_charts: '🔥 Посмотреть чарты',
     random: '🎲 Наугад',
-    random_sub: 'один из {{count}} фильмов в твоём списке',
+    random_sub: 'один из {{count}} непосмотренных',
     all_mine: 'Все мои',
     charts: 'Чарты',
     seven_collections: '7 подборок',
     movies_count_sub: '{{count}} фильмов',
     recently_added: 'Недавно добавленные',
-    recently_watched: 'Недавно просмотренные',
+    recently_watched: 'Последние посмотренные',
   },
 
   poster: {

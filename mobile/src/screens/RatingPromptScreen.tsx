@@ -62,7 +62,7 @@ export function RatingPromptScreen({ title = '', movieId, posterUrl }: { title?:
               onPress={() => setValue(n)}
               style={[styles.scaleBtn, { backgroundColor: n <= value ? theme.accentOrange : theme.paper2, borderColor: theme.line }]}
             >
-              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 16, lineHeight: 19, paddingVertical: 4, color: n <= value ? theme.paper : theme.ink }}>{n}</Text>
+              <Text style={{ fontFamily: 'Neucha', fontSize: 16, lineHeight: 19, paddingVertical: 4, color: n <= value ? theme.paper : theme.ink }}>{n}</Text>
             </Pressable>
           ))}
         </View>
