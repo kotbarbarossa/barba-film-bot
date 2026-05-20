@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   text: {
-    fontFamily: 'Caveat-Bold',
+    fontFamily: 'Neucha',
     fontWeight: '600',
     textAlign: 'center',
   },

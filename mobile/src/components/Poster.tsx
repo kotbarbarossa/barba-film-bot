@@ -153,7 +153,7 @@ function MissingLens({
         width: lensSize, height: lensSize,
         textAlign: 'center',
         textAlignVertical: 'center',
-        fontFamily: 'Caveat-Bold',
+        fontFamily: 'Neucha',
         fontSize,
         color: orangeColor,
         includeFontPadding: false,

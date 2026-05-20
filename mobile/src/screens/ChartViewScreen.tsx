@@ -46,7 +46,7 @@ type ScoreRowProps = {
 
 function ScoreRow({ chartId, score, imdbRating, avgRating, t }: ScoreRowProps) {
   const { theme } = useTheme();
-  const st = { fontFamily: 'Caveat-Bold', fontSize: 18, lineHeight: 22, color: theme.ink } as const;
+  const st = { fontFamily: 'Neucha', fontSize: 18, lineHeight: 22, color: theme.ink } as const;
   const num = (s: string, minWidth = 52) => <Text style={[st, { minWidth }]} numberOfLines={1}>{s}</Text>;
   if (RATING_CHARTS.has(chartId)) {
     return <><StarRow value={score} size={15} />{num(score.toFixed(1))}</>;
@@ -155,7 +155,7 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
                 </View>
                 {mine ? (
                   <View style={[styles.badge, { backgroundColor: theme.accentMint, borderColor: theme.line }]}>
-                    <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 13, lineHeight: 16, color: theme.ink }}>✓</Text>
+                    <Text style={{ fontFamily: 'Neucha', fontSize: 13, lineHeight: 16, color: theme.ink }}>✓</Text>
                   </View>
                 ) : null}
               </Pressable>
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   },
   rank: {
     minWidth: 36, textAlign: 'center',
-    fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4,
+    fontFamily: 'Neucha', fontSize: 22, lineHeight: 26, paddingVertical: 4,
   },
   badge: {
     width: 22, height: 22, borderRadius: 11,

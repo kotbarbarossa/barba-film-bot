@@ -129,13 +129,13 @@ export function MoviesScreen() {
               {item.rating != null ? (
                 <>
                   <StarRow value={item.rating} size={13} />
-                  <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 17, lineHeight: 20, color: theme.ink, minWidth: 36 }} numberOfLines={1}>{item.rating}</Text>
+                  <Text style={{ fontFamily: 'Neucha', fontSize: 17, lineHeight: 20, color: theme.ink, minWidth: 36 }} numberOfLines={1}>{item.rating}</Text>
                 </>
               ) : null}
             </View>
           )}
         </View>
-        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4, letterSpacing: 6, color: theme.inkFaint }}>›</Text>
+        <Text style={{ fontFamily: 'Neucha', fontSize: 22, lineHeight: 26, paddingVertical: 4, letterSpacing: 6, color: theme.inkFaint }}>›</Text>
       </Pressable>
     );
   };
@@ -249,7 +249,7 @@ function EmptyListState({
         <Text style={{ fontSize: 36 }}>🔍</Text>
         <ArtNote style={{ textAlign: 'center' }}>{t('movies.nothing_found')}</ArtNote>
         <Pressable onPress={onReset}>
-          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, lineHeight: 18, paddingVertical: 4, color: theme.accentOrange }}>
+          <Text style={{ fontFamily: 'Neucha', fontSize: 15, lineHeight: 18, paddingVertical: 4, color: theme.accentOrange }}>
             {t('movies.reset_filters')}
           </Text>
         </Pressable>
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
   searchInput: {
     borderWidth: 1.5, borderRadius: 10,
     paddingHorizontal: 12, paddingVertical: 4,
-    fontFamily: 'Caveat-Bold', fontSize: 16, lineHeight: 19,
+    fontFamily: 'Neucha', fontSize: 16, lineHeight: 19,
   },
   tabsRow: {
     flexDirection: 'row',

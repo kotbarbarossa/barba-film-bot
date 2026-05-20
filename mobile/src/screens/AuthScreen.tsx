@@ -285,9 +285,9 @@ function TelegramAuth() {
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
               <Pressable onPress={() => setStep('phone')}>
-                <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 16, lineHeight: 19, paddingVertical: 4, color: theme.accentOrange }}>{t('auth.change_phone') + ' '}</Text>
+                <Text style={{ fontFamily: 'Neucha', fontSize: 16, lineHeight: 19, paddingVertical: 4, color: theme.accentOrange }}>{t('auth.change_phone') + ' '}</Text>
               </Pressable>
-              <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 16, lineHeight: 19, paddingVertical: 4, color: theme.inkFaint }}>{t('auth.resend') + ' '}</Text>
+              <Text style={{ fontFamily: 'Neucha', fontSize: 16, lineHeight: 19, paddingVertical: 4, color: theme.inkFaint }}>{t('auth.resend') + ' '}</Text>
             </View>
             <View style={{ marginTop: 22 }}>
               <Button title={t('auth.sign_in')} variant="primary" full />
