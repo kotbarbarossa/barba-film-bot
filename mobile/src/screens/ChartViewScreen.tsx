@@ -115,7 +115,7 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
 
       <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
         <View style={{ paddingHorizontal: 18, paddingTop: 8 }}>
-          <H size="xl">{icon} {t(chartTitleKey(chartId))}</H>
+          <H size="xl" numberOfLines={1} adjustsFontSizeToFit>{icon} {t(chartTitleKey(chartId))}</H>
           <ArtNote>{t(chartSubKey(chartId))} · {t('charts.updated_today')}</ArtNote>
         </View>
 
