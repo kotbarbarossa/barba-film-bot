@@ -195,6 +195,7 @@ class UserMovieBase(BaseModel):
 
 
 class UserMovieListResponse(UserMovieBase):
+    watched_at: datetime | None
     movie: MovieListResponse
 
 

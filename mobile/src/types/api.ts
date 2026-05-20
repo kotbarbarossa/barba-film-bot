@@ -105,6 +105,7 @@ export interface UserMovieBase {
 }
 
 export interface UserMovieListResponse extends UserMovieBase {
+  watched_at: string | null;
   movie: MovieListResponse;
 }
 

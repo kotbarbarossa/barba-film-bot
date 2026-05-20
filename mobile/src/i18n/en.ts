@@ -21,7 +21,7 @@ const en: Translations = {
     seven_collections: '7 lists',
     movies_count_sub: '{{count}} movies',
     recently_added: 'Recently added',
-    recently_watched: 'Recently watched',
+    recently_watched: 'Last watched',
   },
 
   poster: {

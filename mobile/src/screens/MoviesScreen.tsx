@@ -271,12 +271,14 @@ function sortMovies(list: UserMovieListResponse[], sort: string): UserMovieListR
     case 'rating_desc':
       return copy.sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1));
     case 'watched_first': {
-      const order: Record<string, number> = { watched: 0, watching: 1, want: 2 };
-      return copy.sort(
-        (a, b) =>
-          (order[a.status] ?? 3) - (order[b.status] ?? 3) ||
-          new Date(b.added_at).getTime() - new Date(a.added_at).getTime(),
-      );
+      return copy.sort((a, b) => {
+        const aW = a.watched_at ? new Date(a.watched_at).getTime() : null;
+        const bW = b.watched_at ? new Date(b.watched_at).getTime() : null;
+        if (bW !== null && aW !== null) return bW - aW;
+        if (bW !== null) return 1;
+        if (aW !== null) return -1;
+        return new Date(b.added_at).getTime() - new Date(a.added_at).getTime();
+      });
     }
     default:
       return copy.sort(
@@ -295,8 +297,8 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     borderWidth: 1.5, borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 8,
-    fontFamily: 'Caveat-Bold', fontSize: 16, lineHeight: 19, paddingVertical: 4,
+    paddingHorizontal: 12, paddingVertical: 4,
+    fontFamily: 'Caveat-Bold', fontSize: 16, lineHeight: 19,
   },
   tabsRow: {
     flexDirection: 'row',

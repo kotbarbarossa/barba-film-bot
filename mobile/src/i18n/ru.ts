@@ -19,7 +19,7 @@ const ru = {
     seven_collections: '7 подборок',
     movies_count_sub: '{{count}} фильмов',
     recently_added: 'Недавно добавленные',
-    recently_watched: 'Недавно просмотренные',
+    recently_watched: 'Последние посмотренные',
   },
 
   poster: {
