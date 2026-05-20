@@ -124,6 +124,9 @@ export interface UserMovieFilters {
   year_from?: number;
   year_to?: number;
   category_id?: number;
+  sort_by?: string;
+  limit?: number;
+  offset?: number;
 }
 
 // --- User profile ---

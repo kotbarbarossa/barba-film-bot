@@ -251,7 +251,7 @@ wheels = [
 
 [[package]]
 name = "barba-film-bot"
-version = "1.10.0"
+version = "1.11.0"
 source = { editable = "." }
 dependencies = [
     { name = "aiogram", extra = ["redis"] },

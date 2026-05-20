@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deleteMovie } from '@/api/movies';
 import { useAuthStore } from '@/store/auth.store';
 
+import { infiniteMoviesKeys } from '../queries/useInfiniteMovies';
 import { myMoviesKeys } from '../queries/useMyMovies';
 import { movieKeys } from '../queries/useMovie';
 
@@ -14,6 +15,7 @@ export function useDeleteMovie() {
     mutationFn: (movieId: number) => deleteMovie(userId!, movieId),
     onSuccess: (_data, movieId) => {
       queryClient.invalidateQueries({ queryKey: myMoviesKeys.all(userId!) });
+      queryClient.invalidateQueries({ queryKey: infiniteMoviesKeys.all(userId!) });
       queryClient.removeQueries({ queryKey: movieKeys.detail(userId!, movieId) });
     },
   });

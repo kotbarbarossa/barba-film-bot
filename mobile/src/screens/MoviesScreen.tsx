@@ -12,7 +12,7 @@ import { StatusPill } from '@/components/StatusPill';
 import { StarRow } from '@/components/StarRow';
 import { H, Body, Mono, ArtNote } from '@/components/Text';
 import { useRouter } from 'expo-router';
-import { useMyMovies } from '@/hooks/queries/useMyMovies';
+import { useInfiniteMovies } from '@/hooks/queries/useInfiniteMovies';
 import { useFiltersStore, isFiltersActive } from '@/store/filters.store';
 import { useSettingsStore } from '@/store/settings.store';
 import { movieTitle } from '@/utils/localize';
@@ -29,35 +29,43 @@ export function MoviesScreen() {
   const apiFilters = useMemo(
     () => filters.toApiFilters(),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [filters.status, filters.categoryId, filters.yearFrom, filters.yearTo],
+    [filters.status, filters.categoryId, filters.yearFrom, filters.yearTo, filters.sort],
   );
 
-  const { data: allMovies = [], isLoading } = useMyMovies(apiFilters);
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = useInfiniteMovies(apiFilters);
+
+  const allMovies = useMemo(() => data?.pages.flat() ?? [], [data]);
   const filtersActive = isFiltersActive(filters);
 
   const filtered = useMemo(() => {
-    let list = allMovies;
+    let list: UserMovieListResponse[] = allMovies;
 
     if (filters.search) {
       const q = filters.search.toLowerCase();
       list = list.filter(
-        (m) =>
+        (m: UserMovieListResponse) =>
           m.movie.title_ru?.toLowerCase().includes(q) ||
           m.movie.title_original?.toLowerCase().includes(q),
       );
     }
     if (filters.mediaType !== 'all') {
-      list = list.filter((m) => m.movie.media_type === filters.mediaType);
+      list = list.filter((m: UserMovieListResponse) => m.movie.media_type === filters.mediaType);
     }
     if (filters.hasRating) {
-      list = list.filter((m) => m.rating != null);
+      list = list.filter((m: UserMovieListResponse) => m.rating != null);
     }
 
-    return sortMovies(list, filters.sort);
-  }, [allMovies, filters.search, filters.mediaType, filters.hasRating, filters.sort]);
+    return list;
+  }, [allMovies, filters.search, filters.mediaType, filters.hasRating]);
 
   const countByStatus = (s: string) =>
-    allMovies.filter((m) => m.status === s).length;
+    allMovies.filter((m: UserMovieListResponse) => m.status === s).length;
 
   const STATUS_TABS = [
     { label: t('movies.tab_all',     { count: allMovies.length }),      value: 'all',      tone: 'solid' },
@@ -229,6 +237,13 @@ export function MoviesScreen() {
             styles.listContent,
             filtered.length === 0 && { flex: 1 },
           ]}
+          onEndReached={() => { if (hasNextPage && !isFetchingNextPage) fetchNextPage(); }}
+          onEndReachedThreshold={0.3}
+          ListFooterComponent={
+            isFetchingNextPage
+              ? <ActivityIndicator color={theme.ink} style={{ paddingVertical: 16 }} />
+              : null
+          }
           ListEmptyComponent={
             <EmptyListState filtersActive={filtersActive} onReset={() => filters.reset()} />
           }
@@ -263,29 +278,6 @@ function EmptyListState({
   );
 }
 
-function sortMovies(list: UserMovieListResponse[], sort: string): UserMovieListResponse[] {
-  const copy = [...list];
-  switch (sort) {
-    case 'year_desc':
-      return copy.sort((a, b) => (b.movie.year ?? 0) - (a.movie.year ?? 0));
-    case 'rating_desc':
-      return copy.sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1));
-    case 'watched_first': {
-      return copy.sort((a, b) => {
-        const aW = a.watched_at ? new Date(a.watched_at).getTime() : null;
-        const bW = b.watched_at ? new Date(b.watched_at).getTime() : null;
-        if (bW !== null && aW !== null) return bW - aW;
-        if (bW !== null) return 1;
-        if (aW !== null) return -1;
-        return new Date(b.added_at).getTime() - new Date(a.added_at).getTime();
-      });
-    }
-    default:
-      return copy.sort(
-        (a, b) => new Date(b.added_at).getTime() - new Date(a.added_at).getTime(),
-      );
-  }
-}
 
 const styles = StyleSheet.create({
   headerRow: {
