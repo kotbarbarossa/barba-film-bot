@@ -4,6 +4,7 @@ import { markWatched, updateMovie } from '@/api/movies';
 import { useAuthStore } from '@/store/auth.store';
 import type { UserMovieUpdate } from '@/types/api';
 
+import { infiniteMoviesKeys } from '../queries/useInfiniteMovies';
 import { myMoviesKeys } from '../queries/useMyMovies';
 import { movieKeys } from '../queries/useMovie';
 
@@ -16,6 +17,7 @@ export function useUpdateMovie(movieId: number) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: movieKeys.detail(userId!, movieId) });
       queryClient.invalidateQueries({ queryKey: myMoviesKeys.all(userId!) });
+      queryClient.invalidateQueries({ queryKey: infiniteMoviesKeys.all(userId!) });
     },
   });
 }
@@ -29,6 +31,7 @@ export function useMarkWatched(movieId: number) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: movieKeys.detail(userId!, movieId) });
       queryClient.invalidateQueries({ queryKey: myMoviesKeys.all(userId!) });
+      queryClient.invalidateQueries({ queryKey: infiniteMoviesKeys.all(userId!) });
     },
   });
 }

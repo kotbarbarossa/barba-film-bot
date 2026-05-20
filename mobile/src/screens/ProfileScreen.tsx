@@ -13,6 +13,7 @@ import {
   AppState,
 } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
@@ -68,7 +69,7 @@ function SettingRow({ icon, title, value, danger, last, onPress, theme }: {
       {value !== undefined && (
         <Body size={14} color={theme.inkSoft} style={{ marginRight: 6 }}>{value}</Body>
       )}
-      <H size="sm" color={theme.inkFaint} style={{ fontSize: 20, lineHeight: 24, letterSpacing: 6 }}>›</H>
+      <H size="sm" color={theme.inkFaint} style={{ fontSize: 20, lineHeight: 24 }}>›</H>
     </Pressable>
   );
 }
@@ -204,7 +205,7 @@ export function ProfileScreen() {
       <View style={styles.header}>
         <H size="lg" style={{ flex: 1 }}>{t('profile.title')}</H>
         <Pressable hitSlop={8} onPress={openEdit}>
-          <H size="sm" color={theme.accentOrange}>{t('profile.edit') + ' '}</H>
+          <H size="sm" color={theme.accentOrange}>{t('profile.edit')}</H>
         </Pressable>
       </View>
 
@@ -287,7 +288,7 @@ export function ProfileScreen() {
               {t('profile.delete_account')}
             </Body>
           </Pressable>
-          <Mono size={11} style={{ marginTop: 6 }}>{t('profile.app_name')} · {t('profile.app_version')}</Mono>
+          <Mono size={11} style={{ marginTop: 6 }}>{t('profile.app_name')} · v{Constants.expoConfig?.version ?? '—'}</Mono>
         </View>
       </ScrollView>
 

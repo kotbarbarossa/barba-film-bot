@@ -4,6 +4,7 @@ import { addMovie } from '@/api/movies';
 import { useAuthStore } from '@/store/auth.store';
 import type { UserMovieAddByTitle } from '@/types/api';
 
+import { infiniteMoviesKeys } from '../queries/useInfiniteMovies';
 import { myMoviesKeys } from '../queries/useMyMovies';
 
 export function useAddMovie() {
@@ -14,6 +15,7 @@ export function useAddMovie() {
     mutationFn: (payload: UserMovieAddByTitle) => addMovie(userId!, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: myMoviesKeys.all(userId!) });
+      queryClient.invalidateQueries({ queryKey: infiniteMoviesKeys.all(userId!) });
     },
   });
 }

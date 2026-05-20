@@ -7,12 +7,12 @@ module.exports = {
   name: IS_DEV ? 'Flickbook (dev)' : 'Flickbook',
   slug: 'flickbook',
   scheme: 'flickbook',
-  version: '1.2.0',
+  version: '1.3.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
   splash: {
-    image: './assets/splash.png',
+    image: './assets/adaptive-icon.png',
     resizeMode: 'cover',
     backgroundColor: '#faf7f2',
   },
@@ -31,7 +31,7 @@ module.exports = {
       backgroundColor: '#faf7f2',
     },
     package: 'com.barbarossa.flickbook',
-    versionCode: 5,
+    versionCode: 6,
   },
   web: {
     bundler: 'metro',

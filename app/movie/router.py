@@ -17,6 +17,7 @@ from app.movie.repository import (
     PersonRepository,
     UserMovieFilter,
     UserMovieRepository,
+    UserMovieSortBy,
 )
 from app.movie.schemas import (
     CategoryCreate,
@@ -389,6 +390,9 @@ async def list_user_movies(
     year_from: int | None = Query(default=None),
     year_to: int | None = Query(default=None),
     category_id: int | None = Query(default=None),
+    sort_by: UserMovieSortBy = Query(default=UserMovieSortBy.ADDED_AT),
+    limit: int | None = Query(default=None, ge=1, le=200),
+    offset: int | None = Query(default=None, ge=0),
     session: AsyncSession = Depends(get_session),
 ):
     _require_own_user(user_id, current_user)
@@ -402,6 +406,9 @@ async def list_user_movies(
             year_from=year_from,
             year_to=year_to,
             category_id=category_id,
+            sort_by=sort_by,
+            limit=limit,
+            offset=offset,
         )
     )
 

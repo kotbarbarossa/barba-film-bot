@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, ScrollView, StyleSheet, TextInput, Pressable, Text, Alert, Animated } from 'react-native';
+import { View, StyleSheet, TextInput, Pressable, Text, Alert, Animated } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
-import { H, Body, Mono, ArtNote } from '@/components/Text';
+import { H, Mono, ArtNote } from '@/components/Text';
 import { Button } from '@/components/Button';
 import { useAddMovie } from '@/hooks/mutations/useAddMovie';
 
@@ -17,9 +18,9 @@ export function AddScreen() {
   const [hint, setHint] = React.useState('');
   const [type, setType] = React.useState<'film' | 'series'>('film');
   const [toastVariant, setToastVariant] = React.useState<'pending' | 'found'>('pending');
-
   const { mutateAsync, isPending } = useAddMovie();
   const toastOpacity = React.useRef(new Animated.Value(0)).current;
+
 
   const showToastAndRedirect = (variant: 'pending' | 'found') => {
     setToastVariant(variant);
@@ -61,12 +62,15 @@ export function AddScreen() {
     <Phone safeBottom>
       <View style={[styles.header, { paddingHorizontal: 16 }]}>
         <Pressable onPress={() => router.back()}>
-          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4, color: theme.ink }}>{t('add.back')}</Text>
+          <Text style={{ fontFamily: 'Neucha', fontSize: 22, lineHeight: 26, paddingVertical: 4, color: theme.ink }}>{t('add.back')}</Text>
         </Pressable>
-        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 18, lineHeight: 22, paddingVertical: 4, color: theme.accentOrange }} numberOfLines={1}>{t('add.header_action')}</Text>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 22, paddingTop: 8 }}>
+      <KeyboardAwareScrollView
+        contentContainerStyle={{ padding: 22, paddingTop: 8, paddingBottom: 16 }}
+        keyboardShouldPersistTaps="handled"
+        bottomOffset={16}
+      >
         <H size="xl">{t('add.title')}</H>
         <ArtNote>{t('add.subtitle')}</ArtNote>
 
@@ -90,13 +94,13 @@ export function AddScreen() {
               onPress={() => setType('film')}
               style={[styles.segmentBtn, type === 'film' && { backgroundColor: theme.ink }]}
             >
-              <Text style={[styles.segmentText, { color: type === 'film' ? theme.paper : theme.ink }]}>{t('add.film')}</Text>
+              <Text numberOfLines={1} style={[styles.segmentText, { color: type === 'film' ? theme.paper : theme.ink }]}>{t('add.film')}</Text>
             </Pressable>
             <Pressable
               onPress={() => setType('series')}
               style={[styles.segmentBtn, type === 'series' && { backgroundColor: theme.ink }]}
             >
-              <Text style={[styles.segmentText, { color: type === 'series' ? theme.paper : theme.ink }]}>{t('add.series')}</Text>
+              <Text numberOfLines={1} style={[styles.segmentText, { color: type === 'series' ? theme.paper : theme.ink }]}>{t('add.series')}</Text>
             </Pressable>
           </View>
         </View>
@@ -134,15 +138,7 @@ export function AddScreen() {
             />
           </View>
         </View>
-      </ScrollView>
-
-      <Animated.View
-        style={[styles.toast, { backgroundColor: toastBg, borderColor: theme.ink, opacity: toastOpacity }]}
-        pointerEvents="none"
-      >
-        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 20, lineHeight: 24, paddingVertical: 4, color: toastFg }}>{toastTitle}</Text>
-        <Text style={{ fontFamily: 'Nunito', fontSize: 15, color: toastFg, opacity: 0.7 }}>{toastSub}</Text>
-      </Animated.View>
+      </KeyboardAwareScrollView>
 
       <View style={{ padding: 12 }}>
         <Button
@@ -153,6 +149,14 @@ export function AddScreen() {
           disabled={isPending}
         />
       </View>
+
+      <Animated.View
+        style={[styles.toast, { backgroundColor: toastBg, borderColor: theme.ink, opacity: toastOpacity }]}
+        pointerEvents="none"
+      >
+        <Text style={{ fontFamily: 'Neucha', fontSize: 20, lineHeight: 24, paddingVertical: 4, color: toastFg }}>{toastTitle}</Text>
+        <Text style={{ fontFamily: 'Nunito', fontSize: 15, color: toastFg, opacity: 0.7 }}>{toastSub}</Text>
+      </Animated.View>
     </Phone>
   );
 }
@@ -190,5 +194,5 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   segmentBtn: { flex: 1, paddingVertical: 10, alignItems: 'center' },
-  segmentText: { fontFamily: 'Caveat-Bold', fontSize: 18, lineHeight: 22, paddingVertical: 4 },
+  segmentText: { fontFamily: 'Neucha', fontSize: 18, lineHeight: 22, paddingVertical: 4 },
 });

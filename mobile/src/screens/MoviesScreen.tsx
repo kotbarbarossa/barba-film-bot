@@ -12,7 +12,7 @@ import { StatusPill } from '@/components/StatusPill';
 import { StarRow } from '@/components/StarRow';
 import { H, Body, Mono, ArtNote } from '@/components/Text';
 import { useRouter } from 'expo-router';
-import { useMyMovies } from '@/hooks/queries/useMyMovies';
+import { useInfiniteMovies } from '@/hooks/queries/useInfiniteMovies';
 import { useFiltersStore, isFiltersActive } from '@/store/filters.store';
 import { useSettingsStore } from '@/store/settings.store';
 import { movieTitle } from '@/utils/localize';
@@ -29,35 +29,43 @@ export function MoviesScreen() {
   const apiFilters = useMemo(
     () => filters.toApiFilters(),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [filters.status, filters.categoryId, filters.yearFrom, filters.yearTo],
+    [filters.status, filters.categoryId, filters.yearFrom, filters.yearTo, filters.sort],
   );
 
-  const { data: allMovies = [], isLoading } = useMyMovies(apiFilters);
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = useInfiniteMovies(apiFilters);
+
+  const allMovies = useMemo(() => data?.pages.flat() ?? [], [data]);
   const filtersActive = isFiltersActive(filters);
 
   const filtered = useMemo(() => {
-    let list = allMovies;
+    let list: UserMovieListResponse[] = allMovies;
 
     if (filters.search) {
       const q = filters.search.toLowerCase();
       list = list.filter(
-        (m) =>
+        (m: UserMovieListResponse) =>
           m.movie.title_ru?.toLowerCase().includes(q) ||
           m.movie.title_original?.toLowerCase().includes(q),
       );
     }
     if (filters.mediaType !== 'all') {
-      list = list.filter((m) => m.movie.media_type === filters.mediaType);
+      list = list.filter((m: UserMovieListResponse) => m.movie.media_type === filters.mediaType);
     }
     if (filters.hasRating) {
-      list = list.filter((m) => m.rating != null);
+      list = list.filter((m: UserMovieListResponse) => m.rating != null);
     }
 
-    return sortMovies(list, filters.sort);
-  }, [allMovies, filters.search, filters.mediaType, filters.hasRating, filters.sort]);
+    return list;
+  }, [allMovies, filters.search, filters.mediaType, filters.hasRating]);
 
   const countByStatus = (s: string) =>
-    allMovies.filter((m) => m.status === s).length;
+    allMovies.filter((m: UserMovieListResponse) => m.status === s).length;
 
   const STATUS_TABS = [
     { label: t('movies.tab_all',     { count: allMovies.length }),      value: 'all',      tone: 'solid' },
@@ -127,15 +135,15 @@ export function MoviesScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap', paddingRight: 10 }}>
               <StatusPill status={item.status} size={10} />
               {item.rating != null ? (
-                <>
-                  <StarRow value={item.rating} size={13} />
-                  <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 17, lineHeight: 20, color: theme.ink, minWidth: 36 }} numberOfLines={1}>{item.rating}</Text>
-                </>
+                <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 4 }}>
+                  <View style={{ marginTop: 1 }}><StarRow value={item.rating} size={13} /></View>
+                  <Text style={{ fontFamily: 'Neucha', fontSize: 14, lineHeight: 14, color: theme.ink, minWidth: 28, includeFontPadding: false, marginTop: 3 }} numberOfLines={1}>{item.rating}</Text>
+                </View>
               ) : null}
             </View>
           )}
         </View>
-        <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 22, lineHeight: 26, paddingVertical: 4, letterSpacing: 6, color: theme.inkFaint }}>›</Text>
+        <Text style={{ fontFamily: 'Neucha', fontSize: 22, lineHeight: 26, paddingVertical: 4, color: theme.inkFaint }}>›</Text>
       </Pressable>
     );
   };
@@ -229,6 +237,13 @@ export function MoviesScreen() {
             styles.listContent,
             filtered.length === 0 && { flex: 1 },
           ]}
+          onEndReached={() => { if (hasNextPage && !isFetchingNextPage) fetchNextPage(); }}
+          onEndReachedThreshold={0.3}
+          ListFooterComponent={
+            isFetchingNextPage
+              ? <ActivityIndicator color={theme.ink} style={{ paddingVertical: 16 }} />
+              : null
+          }
           ListEmptyComponent={
             <EmptyListState filtersActive={filtersActive} onReset={() => filters.reset()} />
           }
@@ -249,7 +264,7 @@ function EmptyListState({
         <Text style={{ fontSize: 36 }}>🔍</Text>
         <ArtNote style={{ textAlign: 'center' }}>{t('movies.nothing_found')}</ArtNote>
         <Pressable onPress={onReset}>
-          <Text style={{ fontFamily: 'Caveat-Bold', fontSize: 15, lineHeight: 18, paddingVertical: 4, color: theme.accentOrange }}>
+          <Text style={{ fontFamily: 'Neucha', fontSize: 15, lineHeight: 18, paddingVertical: 4, color: theme.accentOrange }}>
             {t('movies.reset_filters')}
           </Text>
         </Pressable>
@@ -263,27 +278,6 @@ function EmptyListState({
   );
 }
 
-function sortMovies(list: UserMovieListResponse[], sort: string): UserMovieListResponse[] {
-  const copy = [...list];
-  switch (sort) {
-    case 'year_desc':
-      return copy.sort((a, b) => (b.movie.year ?? 0) - (a.movie.year ?? 0));
-    case 'rating_desc':
-      return copy.sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1));
-    case 'watched_first': {
-      const order: Record<string, number> = { watched: 0, watching: 1, want: 2 };
-      return copy.sort(
-        (a, b) =>
-          (order[a.status] ?? 3) - (order[b.status] ?? 3) ||
-          new Date(b.added_at).getTime() - new Date(a.added_at).getTime(),
-      );
-    }
-    default:
-      return copy.sort(
-        (a, b) => new Date(b.added_at).getTime() - new Date(a.added_at).getTime(),
-      );
-  }
-}
 
 const styles = StyleSheet.create({
   headerRow: {
@@ -295,8 +289,8 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     borderWidth: 1.5, borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 8,
-    fontFamily: 'Caveat-Bold', fontSize: 16, lineHeight: 19, paddingVertical: 4,
+    paddingHorizontal: 12, paddingVertical: 4,
+    fontFamily: 'Neucha', fontSize: 16, lineHeight: 19,
   },
   tabsRow: {
     flexDirection: 'row',

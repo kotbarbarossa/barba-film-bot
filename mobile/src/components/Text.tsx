@@ -11,7 +11,7 @@ export function H({ size = 'md', color, style, children, ...rest }: TextProps & 
     <RNText
       {...rest}
       style={[
-        { fontFamily: 'Caveat-Bold', fontSize, color: color ?? theme.ink, lineHeight: fontSize * 1.2, paddingVertical: 4, letterSpacing: 1 },
+        { fontFamily: 'Neucha', fontSize, color: color ?? theme.ink, lineHeight: fontSize * 1.2, paddingVertical: 4, letterSpacing: 1 },
         style,
       ]}
     >

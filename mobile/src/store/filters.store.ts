@@ -40,14 +40,21 @@ export const useFiltersStore = create<FiltersState & FiltersActions>((set, get) 
 
   reset: () => set(DEFAULT),
 
-  // search stays client-side — don't send to API to avoid refetch on every keystroke
+  // search/mediaType/hasRating remain client-side — no refetch on every keystroke
   toApiFilters: (): UserMovieFilters => {
-    const { status, categoryId, yearFrom, yearTo } = get();
+    const { status, categoryId, yearFrom, yearTo, sort } = get();
+    const sortMap: Record<SortOption, string> = {
+      added_desc: 'added_at',
+      year_desc: 'year',
+      rating_desc: 'user_rating',
+      watched_first: 'watched_at',
+    };
     return {
       status: status !== 'all' ? status : undefined,
       category_id: categoryId ?? undefined,
       year_from: yearFrom ?? undefined,
       year_to: yearTo ?? undefined,
+      sort_by: sortMap[sort],
     };
   },
 }));
