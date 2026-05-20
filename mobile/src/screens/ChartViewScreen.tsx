@@ -46,14 +46,14 @@ type ScoreRowProps = {
 
 function ScoreRow({ chartId, score, imdbRating, avgRating, t }: ScoreRowProps) {
   const { theme } = useTheme();
-  const st = { fontFamily: 'Neucha', fontSize: 18, lineHeight: 22, color: theme.ink } as const;
-  const num = (s: string, minWidth = 52) => <Text style={[st, { minWidth }]} numberOfLines={1}>{s}</Text>;
+  const st = { fontFamily: 'Neucha', fontSize: 14, lineHeight: 18, color: theme.ink } as const;
+  const num = (s: string, minWidth = 40) => <Text style={[st, { minWidth }]} numberOfLines={1}>{s}</Text>;
   if (RATING_CHARTS.has(chartId)) {
     return <><StarRow value={score} size={15} />{num(score.toFixed(1))}</>;
   }
   if (COUNT_CHARTS.has(chartId)) {
     const rating = imdbRating != null ? imdbRating.toFixed(1) : '—';
-    return num(`imdb ${rating}`, 90);
+    return num(`imdb ${rating}`, 70);
   }
   if (chartId === 'top-watched') {
     const rating = avgRating != null ? avgRating.toFixed(1) : '—';

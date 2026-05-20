@@ -129,7 +129,7 @@ export function MoviesScreen() {
               {item.rating != null ? (
                 <>
                   <StarRow value={item.rating} size={13} />
-                  <Text style={{ fontFamily: 'Neucha', fontSize: 17, lineHeight: 20, color: theme.ink, minWidth: 36 }} numberOfLines={1}>{item.rating}</Text>
+                  <Text style={{ fontFamily: 'Neucha', fontSize: 14, lineHeight: 18, color: theme.ink, minWidth: 28 }} numberOfLines={1}>{item.rating}</Text>
                 </>
               ) : null}
             </View>
