@@ -13,6 +13,7 @@ import {
   AppState,
 } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
 import { Phone } from '@/components/Phone';
@@ -287,7 +288,7 @@ export function ProfileScreen() {
               {t('profile.delete_account')}
             </Body>
           </Pressable>
-          <Mono size={11} style={{ marginTop: 6 }}>{t('profile.app_name')} · {t('profile.app_version')}</Mono>
+          <Mono size={11} style={{ marginTop: 6 }}>{t('profile.app_name')} · v{Constants.expoConfig?.version ?? '—'}</Mono>
         </View>
       </ScrollView>
 
