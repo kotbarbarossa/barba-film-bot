@@ -64,7 +64,6 @@ export function AddScreen() {
         <Pressable onPress={() => router.back()}>
           <Text style={{ fontFamily: 'Neucha', fontSize: 22, lineHeight: 26, paddingVertical: 4, color: theme.ink }}>{t('add.back')}</Text>
         </Pressable>
-        <Text style={{ fontFamily: 'Neucha', fontSize: 18, lineHeight: 22, paddingVertical: 4, color: theme.accentOrange }} numberOfLines={1}>{t('add.header_action')}</Text>
       </View>
 
       <KeyboardAwareScrollView
