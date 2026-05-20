@@ -95,13 +95,13 @@ export function AddScreen() {
               onPress={() => setType('film')}
               style={[styles.segmentBtn, type === 'film' && { backgroundColor: theme.ink }]}
             >
-              <Text style={[styles.segmentText, { color: type === 'film' ? theme.paper : theme.ink }]}>{t('add.film')}</Text>
+              <Text numberOfLines={1} style={[styles.segmentText, { color: type === 'film' ? theme.paper : theme.ink }]}>{t('add.film')}</Text>
             </Pressable>
             <Pressable
               onPress={() => setType('series')}
               style={[styles.segmentBtn, type === 'series' && { backgroundColor: theme.ink }]}
             >
-              <Text style={[styles.segmentText, { color: type === 'series' ? theme.paper : theme.ink }]}>{t('add.series')}</Text>
+              <Text numberOfLines={1} style={[styles.segmentText, { color: type === 'series' ? theme.paper : theme.ink }]}>{t('add.series')}</Text>
             </Pressable>
           </View>
         </View>
