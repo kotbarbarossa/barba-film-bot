@@ -46,8 +46,8 @@ type ScoreRowProps = {
 
 function ScoreRow({ chartId, score, imdbRating, avgRating, t }: ScoreRowProps) {
   const { theme } = useTheme();
-  const st = { fontFamily: 'Neucha', fontSize: 14, lineHeight: 18, color: theme.ink } as const;
-  const num = (s: string, minWidth = 40) => <Text style={[st, { minWidth }]} numberOfLines={1}>{s}</Text>;
+  const st = { fontFamily: 'Neucha', fontSize: 14, lineHeight: 22, color: theme.ink, includeFontPadding: false } as const;
+  const num = (s: string, minWidth = 40) => <Text style={[st, { minWidth, marginTop: -1 }]} numberOfLines={1}>{s}</Text>;
   if (RATING_CHARTS.has(chartId)) {
     return <><StarRow value={score} size={15} />{num(score.toFixed(1))}</>;
   }
@@ -149,7 +149,7 @@ export function ChartViewScreen({ chartId = 'global-trending' }: { chartId?: str
                 <View style={{ flex: 1 }}>
                   <Body weight="bold" size={15} style={{ lineHeight: 20 }}>{movieTitle(entry, language)}</Body>
                   <Mono>{entry.year}</Mono>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingRight: 10 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 4, paddingRight: 10 }}>
                     <ScoreRow chartId={chartId} score={entry.score} watchCount={entry.watch_count} imdbRating={entry.imdb_rating} avgRating={entry.avg_rating} t={t} />
                   </View>
                 </View>

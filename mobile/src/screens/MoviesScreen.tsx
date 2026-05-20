@@ -127,10 +127,10 @@ export function MoviesScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap', paddingRight: 10 }}>
               <StatusPill status={item.status} size={10} />
               {item.rating != null ? (
-                <>
-                  <StarRow value={item.rating} size={13} />
-                  <Text style={{ fontFamily: 'Neucha', fontSize: 14, lineHeight: 18, color: theme.ink, minWidth: 28 }} numberOfLines={1}>{item.rating}</Text>
-                </>
+                <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 4 }}>
+                  <View style={{ marginTop: 1 }}><StarRow value={item.rating} size={13} /></View>
+                  <Text style={{ fontFamily: 'Neucha', fontSize: 14, lineHeight: 14, color: theme.ink, minWidth: 28, includeFontPadding: false, marginTop: 3 }} numberOfLines={1}>{item.rating}</Text>
+                </View>
               ) : null}
             </View>
           )}
